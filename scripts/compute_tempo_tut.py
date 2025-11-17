@@ -1,163 +1,240 @@
-﻿import argparse, json
+﻿import argparse, json, csv
 from pathlib import Path
-import numpy as np
-import pandas as pd
-from scipy.signal import savgol_filter, find_peaks
-
-VIDEO_EXTS = {'.mp4','.mov','.m4v','.avi','.webm','.mkv'}
+from statistics import mean
 
 def load_series(jsonl_path: Path):
-    t, ang = [], []
-    with jsonl_path.open('r', encoding='utf-8') as f:
+    frames = []
+    angles = []
+    with jsonl_path.open("r", encoding="utf-8") as f:
         for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            frame = row.get("frame")
+            a = None
+            angles_dict = row.get("angles") or {}
+            if isinstance(angles_dict, dict):
+                a = angles_dict.get("driver")
+            if a is None:
+                continue
             try:
-                row = json.loads(line)
-                a = row.get('angles', {}).get('driver', None)
-                tt = row.get('t', None)
-                if a is not None and tt is not None:
-                    t.append(float(tt)); ang.append(float(a))
-            except Exception:
-                pass
-    return np.array(t), np.array(ang)
+                a = float(a)
+            except (TypeError, ValueError):
+                continue
+            frames.append(int(frame))
+            angles.append(a)
+    return frames, angles
 
-def pick_window(n: int, fps: float):
-    if n < 7:
-        return max(3, n - (1 - n % 2))  # smallest odd
-    base = max(5, int(round(0.21 * fps)))   # ~0.2s window
-    if base % 2 == 0: base += 1
-    base = min(base, n - 1 if (n - 1) % 2 == 1 else n - 2)
-    return max(5, base)
+def smooth_angles(angles, win=5):
+    if not angles:
+        return []
+    out = []
+    n = len(angles)
+    half = win // 2
+    for i in range(n):
+        s = 0.0
+        c = 0
+        for j in range(max(0, i - half), min(n, i + half + 1)):
+            s += angles[j]
+            c += 1
+        out.append(s / c)
+    return out
 
-def smooth_and_deriv(t, ang, fps):
-    if len(ang) < 5:
-        return ang.copy(), np.zeros_like(ang)
-    w = pick_window(len(ang), fps)
-    poly = 3 if w >= 7 else (2 if w >= 5 else 1)
-    s = savgol_filter(ang, window_length=w, polyorder=poly, mode='interp')
-    # robust gradient on uneven dt
-    dt = np.gradient(t)
-    dt[dt == 0] = np.median(dt[dt > 0]) if np.any(dt > 0) else 1.0 / max(fps, 1.0)
-    v = np.gradient(s) / dt
-    return s, v
-
-def detect_reps(label: str, t, s, fps):
+def detect_reps(frames, angles_smooth, fps, label):
     """
-    Rep = top -> bottom -> top (extension peak to flexion trough to extension peak).
-    Works for bench/curl/squat with driver angles we chose.
+    Lenient rep detection:
+      - Use dynamic thresholds based on per-video ROM.
+      - Count any clear down->up->down cycle as a rep.
     """
-    if len(s) < 7:
+    if len(angles_smooth) < 5:
         return []
 
-    prom = 12.0  # deg
-    dist = max(3, int(0.25 * fps))  # >= ~0.25s between peaks
+    a_min = min(angles_smooth)
+    a_max = max(angles_smooth)
+    rom_total = a_max - a_min
 
-    hi_idx, _ = find_peaks(s, prominence=prom, distance=dist)
-    lo_idx, _ = find_peaks(-s, prominence=prom, distance=dist)
+    # If the joint barely moves, treat as no reps
+    if rom_total < 20.0:
+        return []
 
-    # merge extremes by time
-    extremes = [(i, 'hi') for i in hi_idx] + [(i, 'lo') for i in lo_idx]
-    extremes.sort(key=lambda x: x[0])
+    # Dynamic thresholds: top / bottom 25% of that video's range
+    down_thr = a_max - 0.25 * rom_total
+    up_thr   = a_min + 0.25 * rom_total
 
     reps = []
-    prev_hi = None
-    pending_lo = None
-    for i, typ in extremes:
-        if typ == 'hi':
-            if prev_hi is None:
-                prev_hi = i
-            elif pending_lo is not None:
-                # complete cycle: hi -> lo -> hi
-                top1, bot, top2 = prev_hi, pending_lo, i
-                if top1 < bot < top2:
-                    ecc = float(t[bot] - t[top1])
-                    con = float(t[top2] - t[bot])
-                    rom = float(abs(s[top1] - s[bot]))
-                    tut = ecc + con
-                    reps.append({
-                        "t_start": float(t[top1]),
-                        "t_mid": float(t[bot]),
-                        "t_end": float(t[top2]),
-                        "ecc_s": round(ecc, 3),
-                        "con_s": round(con, 3),
-                        "tut_s": round(tut, 3),
-                        "rom_deg": round(rom, 1),
-                    })
-                # shift window to new cycle
-                prev_hi = i
-                pending_lo = None
-            else:
-                # hi came but no lo yet -> update top marker
-                prev_hi = i
-        else:  # lo
-            if prev_hi is not None:
-                pending_lo = i
-            # else lo before any hi -> ignore
+    state = "down"  # start assuming arm is near extended
+    rep_start_idx = None
+
+    prev_a = angles_smooth[0]
+    prev_f = frames[0]
+
+    for i in range(1, len(angles_smooth)):
+        a = angles_smooth[i]
+        f = frames[i]
+
+        if state in ("init", "down"):
+            # Look for transition into "up" (curling / concentric)
+            if prev_a > up_thr and a <= up_thr:
+                state = "up"
+                rep_start_idx = i
+
+        elif state == "up":
+            # Look for return to "down" (eccentric back to start)
+            if prev_a < down_thr and a >= down_thr and rep_start_idx is not None:
+                rep_end_idx = i
+
+                start_f = frames[rep_start_idx]
+                end_f = frames[rep_end_idx]
+                dur_s = (end_f - start_f) / float(fps or 25.0)
+
+                # Reject ultra-quick jitters
+                if dur_s >= 0.25:
+                    seg = angles_smooth[rep_start_idx:rep_end_idx+1]
+                    seg_min = min(seg)
+                    seg_max = max(seg)
+                    seg_rom = seg_max - seg_min
+
+                    # Require the rep to use at least 30% of that person's ROM
+                    if seg_rom >= 0.30 * rom_total:
+                        reps.append({
+                            "start_frame": int(start_f),
+                            "end_frame": int(end_f),
+                            "duration_s": float(dur_s),
+                            "rom_deg": float(seg_rom),
+                        })
+
+                # Ready for next rep
+                state = "down"
+                rep_start_idx = None
+
+        prev_a = a
+        prev_f = f
+
     return reps
 
-def process_one(jsonl_path: Path, out_dir: Path):
-    label = jsonl_path.parent.name  # processed/<label>/
-    # read fps from sibling _summary.json
-    stem = jsonl_path.stem  # original video name
-    summary_path = jsonl_path.with_name(f"{stem}_summary.json")
-    fps = 25.0
-    try:
-        js = json.loads(summary_path.read_text(encoding='utf-8'))
-        fps = float(js.get('fps', 25.0))
-    except Exception:
-        pass
+def is_good_rep(rep, label):
+    rom = rep.get("rom_deg", 0.0)
+    dur = rep.get("duration_s", 0.0)
 
-    t, ang = load_series(jsonl_path)
-    if len(t) == 0:
-        return None
+    if label == "curl":
+        rom_ok = rom >= 60.0      # big elbow flexion
+        dur_ok = 0.6 <= dur <= 8.0
+    elif label == "bench":
+        rom_ok = rom >= 40.0
+        dur_ok = 0.6 <= dur <= 8.0
+    elif label == "squat":
+        rom_ok = rom >= 50.0
+        dur_ok = 0.8 <= dur <= 8.0
+    else:
+        rom_ok = rom >= 30.0
+        dur_ok = 0.4 <= dur <= 8.0
 
-    s, v = smooth_and_deriv(t, ang, fps)
-    reps = detect_reps(label, t, s, fps)
-
-    # write per-video CSV
-    vid_out_dir = out_dir / "reps" / label
-    vid_out_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = vid_out_dir / f"{stem}_reps.csv"
-    df = pd.DataFrame(reps)
-    if len(df) == 0:
-        # still write empty to mark attempted
-        df = pd.DataFrame(columns=["t_start","t_mid","t_end","ecc_s","con_s","tut_s","rom_deg"])
-    df.to_csv(csv_path, index=False)
-
-    # aggregate set-level metrics
-    agg = {
-        "video": stem,
-        "label": label,
-        "fps": fps,
-        "frames": int(js.get("frames", 0)) if 'js' in locals() else None,
-        "duration_s": float(js.get("duration_s", float(t[-1]) if len(t) else 0.0)) if 'js' in locals() else (float(t[-1]) if len(t) else 0.0),
-        "reps": int(len(reps)),
-        "avg_rom_deg": float(np.mean([r["rom_deg"] for r in reps])) if reps else 0.0,
-        "avg_tut_s": float(np.mean([r["tut_s"] for r in reps])) if reps else 0.0,
-        "avg_ecc_s": float(np.mean([r["ecc_s"] for r in reps])) if reps else 0.0,
-        "avg_con_s": float(np.mean([r["con_s"] for r in reps])) if reps else 0.0,
-    }
-    return agg
+    return rom_ok and dur_ok
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--in",  dest="in_dir",  required=True, help="processed root (e.g., data/processed)")
-    ap.add_argument("--out", dest="out_dir", required=True, help="reports root (e.g., data/reports)")
+    ap.add_argument("--in", dest="in_dir", required=True, help="processed root (e.g. data/processed)")
+    ap.add_argument("--out", dest="out_dir", required=True, help="reports root (e.g. data/reports)")
     args = ap.parse_args()
 
-    in_root  = Path(args.in_dir)
+    in_root = Path(args.in_dir)
     out_root = Path(args.out_dir)
     out_root.mkdir(parents=True, exist_ok=True)
 
-    jsonls = list(in_root.rglob("*.jsonl"))
-    aggs = []
-    for jp in jsonls:
-        agg = process_one(jp, out_root)
-        if agg:
-            aggs.append(agg)
+    # We'll drive off the *_summary.json files
+    summaries = sorted(in_root.rglob("*_summary.json"))
 
-    # write combined tables
-    sets_csv = out_root / "sets_all.csv"
-    pd.DataFrame(aggs).to_csv(sets_csv, index=False)
+    csv_path = out_root / "sets_all.csv"
+    fieldnames = [
+        "video", "label", "fps", "frames", "duration_s",
+        "reps", "avg_tut_s", "avg_rom_deg", "good_rep_pct"
+    ]
+
+    with csv_path.open("w", newline="", encoding="utf-8") as f_csv:
+        writer = csv.DictWriter(f_csv, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for summary_path in summaries:
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            label = summary.get("label", "unknown")
+            fps = float(summary.get("fps", 25.0))
+            frames_total = int(summary.get("frames", 0))
+            duration_s = float(summary.get("duration_s", 0.0))
+
+            stem = summary_path.stem.replace("_summary", "")
+            jsonl_path = summary_path.with_name(stem + ".jsonl")
+            if not jsonl_path.exists():
+                # No per-frame data; skip
+                row = {
+                    "video": stem,
+                    "label": label,
+                    "fps": fps,
+                    "frames": frames_total,
+                    "duration_s": duration_s,
+                    "reps": 0,
+                    "avg_tut_s": 0.0,
+                    "avg_rom_deg": 0.0,
+                    "good_rep_pct": 0.0,
+                }
+                writer.writerow(row)
+                continue
+
+            frames, angles = load_series(jsonl_path)
+            if not frames or not angles:
+                # Nothing usable; write zeros
+                row = {
+                    "video": stem,
+                    "label": label,
+                    "fps": fps,
+                    "frames": frames_total,
+                    "duration_s": duration_s,
+                    "reps": 0,
+                    "avg_tut_s": 0.0,
+                    "avg_rom_deg": 0.0,
+                    "good_rep_pct": 0.0,
+                }
+                writer.writerow(row)
+                continue
+
+            angles_smooth = smooth_angles(angles, win=5)
+            reps = detect_reps(frames, angles_smooth, fps, label)
+
+            # Save per-rep details for later analysis if needed
+            reps_out = []
+            good_flags = []
+            for rep in reps:
+                good = is_good_rep(rep, label)
+                rep_rec = dict(rep)
+                rep_rec["good_rep"] = bool(good)
+                reps_out.append(rep_rec)
+                good_flags.append(good)
+
+            if reps_out:
+                reps_path = summary_path.with_name(stem + "_reps.json")
+                reps_path.write_text(json.dumps(reps_out, indent=2), encoding="utf-8")
+
+            if reps:
+                avg_tut = mean(r["duration_s"] for r in reps)
+                avg_rom = mean(r["rom_deg"] for r in reps)
+                good_pct = (sum(1 for g in good_flags if g) / len(good_flags)) if good_flags else 0.0
+            else:
+                avg_tut = 0.0
+                avg_rom = 0.0
+                good_pct = 0.0
+
+            row = {
+                "video": stem,
+                "label": label,
+                "fps": fps,
+                "frames": frames_total,
+                "duration_s": duration_s,
+                "reps": len(reps),
+                "avg_tut_s": round(avg_tut, 3),
+                "avg_rom_deg": round(avg_rom, 1),
+                "good_rep_pct": round(good_pct * 100.0, 1),
+            }
+            writer.writerow(row)
 
 if __name__ == "__main__":
     main()
