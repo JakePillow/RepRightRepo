@@ -1,22 +1,19 @@
 ﻿# --- Python / venv ---
 .venv/
-venv/
 env/
 __pycache__/
 *.py[cod]
 
-# --- OS/editor ---
+# --- Editor / OS junk ---
 .vscode/
 .idea/
 *.log
 Thumbs.db
 .DS_Store
 
-# --- Streamlit ---
+# --- Streamlit cache ---
 .streamlit/
 
-# --- Data (ALL datasets + generated outputs stay local) ---
+# --- DATA: raw, processed, overlays, metrics, backups, uploads ---
 data/**
-
-# Keep folder skeleton only
-!data/.gitkeep
+data_backup_*/
