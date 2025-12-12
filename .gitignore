@@ -4,16 +4,16 @@ env/
 __pycache__/
 *.py[cod]
 
-# --- Editor / OS junk ---
+# --- OS / editor ---
 .vscode/
 .idea/
 *.log
 Thumbs.db
 .DS_Store
 
-# --- Streamlit cache ---
+# --- Streamlit ---
 .streamlit/
 
-# --- DATA: raw, processed, overlays, metrics, backups, uploads ---
+# --- Data (RAW/TRAIN/PROCESSED/UPLOADS/BACKUPS) ---
 data/**
 data_backup_*/
