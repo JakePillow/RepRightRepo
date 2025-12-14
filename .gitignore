@@ -17,3 +17,6 @@ Thumbs.db
 # --- Data (RAW/TRAIN/PROCESSED/UPLOADS/BACKUPS) ---
 data/**
 data_backup_*/
+# --- Large local logs / inventories (never commit) ---
+backup_*.log
+data_raw_filelist.txt
