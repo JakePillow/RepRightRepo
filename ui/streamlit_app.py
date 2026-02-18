@@ -1,272 +1,174 @@
 ﻿import os
-import sys
+import json
+import time
 from pathlib import Path
-from typing import Dict, Tuple, Optional, Any, List
 
 import streamlit as st
 
-# Make sure we can import scripts.engine when running via `streamlit run`
-BASE_DIR = Path(__file__).resolve().parents[1]
-if str(BASE_DIR) not in sys.path:
-    sys.path.insert(0, str(BASE_DIR))
-
-from scripts.engine import analyze_video  # type: ignore[attr-defined]
-
-EXERCISES = ["bench", "curl", "squat", "deadlift"]
-
-RAW_DIR = BASE_DIR / "data" / "raw"
-OVERLAY_DIR = BASE_DIR / "data" / "processed" / "overlays"
+from repright.analyzer import RepRightAnalyzer
 
 
-def _list_dataset_videos() -> Dict[str, List[Path]]:
-    """
-    Find all .mp4 clips under data/raw/{exercise}/ for our four lifts.
-    Returns: { "bench": [Path(...), ...], ... }
-    """
-    videos: Dict[str, List[Path]] = {}
-    for ex in EXERCISES:
-        folder = RAW_DIR / ex
-        if folder.exists():
-            clips = sorted(folder.glob("*.mp4"))
-            if clips:
-                videos[ex] = clips
-    return videos
+# ---------- Constants ----------
+REPO_ROOT = Path(__file__).resolve().parents[1]
+UPLOAD_DIR = REPO_ROOT / "data" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+SCHEMA_EXPECTED = "analysis_v1"  # adjust if you bump schema later
 
 
-def _angle_summary(exercise: str, angle_rom: Optional[Dict[str, float]]) -> Tuple[Optional[str], Optional[str]]:
-    """
-    Turn avg_angle_rom (e.g. {"elbow": 56.7}) into a short verdict and explanation.
-    Returns (label, explanation) or (None, None) if we can't say anything.
-    """
-    if not angle_rom:
-        return None, None
-
-    # Take first joint entry
-    joint, value = next(iter(angle_rom.items()))
-    joint_name = joint.capitalize()
-
-    label: str
-    explanation: str
-
-    # Simple, literature-inspired heuristics – good enough for a prototype
-    if exercise == "bench":
-        # elbow ROM: want something like ~40–70°+ for visible pressing
-        if value < 20:
-            label = "Very shallow press"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Bar path is very short – likely not reaching the chest."
-        elif value < 40:
-            label = "Shallow/moderate press"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Some motion, but could benefit from a deeper press."
-        else:
-            label = "Good press depth"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. This suggests a reasonably full pressing range."
-
-    elif exercise == "curl":
-        # elbow ROM: want big flexion (~60°+) for full contraction
-        if value < 30:
-            label = "Minimal curl ROM"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. The elbow barely moves – likely just swinging."
-        elif value < 60:
-            label = "Partial curl"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Decent motion, but not a full curl."
-        else:
-            label = "Good curl ROM"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. This looks like a strong elbow flexion range."
-
-    elif exercise == "squat":
-        # knee ROM: depth proxy – higher is deeper
-        if value < 20:
-            label = "Very shallow squat"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Likely just a slight bend, far from parallel."
-        elif value < 40:
-            label = "Shallow squat"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Quarter/half-depth – room to sit deeper."
-        else:
-            label = "Good squat depth"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Indicates a solid depth pattern."
-
-    elif exercise == "deadlift":
-        # hip ROM: hinge quality – larger means more hip travel
-        if value < 10:
-            label = "Minimal hip hinge"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Very small hip motion – bar may be barely moving."
-        elif value < 25:
-            label = "Partial hip hinge"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Some hip motion, but hinge could be stronger."
-        else:
-            label = "Good hip hinge"
-            explanation = f"{joint_name} ROM ≈ {value:.1f}°. Suggests a meaningful deadlift-style hip hinge."
-
-    else:
-        label = f"{joint_name} ROM ≈ {value:.1f}°"
-        explanation = None
-
-    return label, explanation
+# ---------- Helpers ----------
+def _safe_stem(name: str) -> str:
+    # keep it simple + filesystem safe
+    stem = "".join(c if (c.isalnum() or c in ("-", "_", ".")) else "_" for c in name)
+    return stem[:120] if len(stem) > 120 else stem
 
 
-def _find_overlay(exercise: str, video_path: str) -> Optional[Path]:
-    """
-    Given e.g. exercise='bench' and video_path='data/raw/bench/bench press_37.mp4',
-    try both the new overlay layout and the legacy one.
-    """
+def save_upload_to_disk(uploaded_file) -> Path:
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    stem = _safe_stem(Path(uploaded_file.name).stem)
+    suffix = Path(uploaded_file.name).suffix or ".mp4"
+    out_path = UPLOAD_DIR / f"{ts}_{stem}{suffix}"
+    with open(out_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    return out_path
+
+
+def fmt_seconds(x):
     try:
-        stem = Path(video_path).stem  # e.g. "bench press_37"
+        return f"{float(x):.2f}s"
     except Exception:
-        return None
-
-    candidates = [
-        OVERLAY_DIR / exercise / f"{stem}_overlay.mp4",           # new layout
-        PROCESSED_ROOT / exercise / f"{stem}_overlay.mp4",        # legacy layout
-    ]
-
-    for p in candidates:
-        if p.exists():
-            return p
-
-    return None
+        return ""
 
 
-def main() -> None:
-    st.set_page_config(page_title="RepRight Prototype", layout="wide")
-    st.title("RepRight – Prototype Exercise Coach")
+# ---------- Streamlit UI ----------
+st.set_page_config(page_title="RepRight", layout="wide")
 
-    st.markdown(
-        """
-Prototype Streamlit interface for your thesis system.
+st.title("RepRight — Video Rep Analysis")
 
-1. Choose an exercise and a recorded clip from the dataset.  
-2. Run analysis to see rep metrics, difficulty, and joint-angle ROM.  
-3. (If available) view the skeleton overlay video.
-"""
-    )
+with st.sidebar:
+    st.header("Input")
+    exercise = st.selectbox("Exercise", ["bench", "squat", "curl", "deadlift"], index=0)
+    uploaded = st.file_uploader("Upload a video", type=["mp4", "mov", "m4v", "avi"])
 
-    videos_by_ex = _list_dataset_videos()
-    if not videos_by_ex:
-        st.error("No dataset videos found under `data/raw/*`. Make sure your dataset is in place.")
-        return
+    st.divider()
+    st.header("Run Controls")
+    run_btn = st.button("Analyze", type="primary", disabled=(uploaded is None))
 
-    # --- Sidebar controls ---
-    with st.sidebar:
-        st.header("Select Clip")
+# Keep analyzer instance cached (fast repeated runs)
+@st.cache_resource
+def get_analyzer():
+    return RepRightAnalyzer()
 
-        valid_exercises = [ex for ex in EXERCISES if ex in videos_by_ex and videos_by_ex[ex]]
-        if not valid_exercises:
-            st.error("No videos discovered for any exercise under `data/raw`.")
-            return
+# Store last result in session state
+if "last_out" not in st.session_state:
+    st.session_state["last_out"] = None
+if "last_video_path" not in st.session_state:
+    st.session_state["last_video_path"] = None
 
-        exercise = st.selectbox("Exercise", options=valid_exercises, index=0)
+if run_btn and uploaded is not None:
+    video_path = save_upload_to_disk(uploaded)
+    st.session_state["last_video_path"] = str(video_path)
 
-        clips = videos_by_ex.get(exercise, [])
-        clip = st.selectbox(
-            "Clip",
-            options=clips,
-            index=0,
-            format_func=lambda p: p.name,
-        )
+    analyzer = get_analyzer()
 
-        run_button = st.button("Analyze Clip", type="primary")
+    with st.spinner("Analyzing video..."):
+        out = analyzer.analyze(str(video_path), exercise)
 
-    if not run_button:
-        st.info("Pick an exercise and clip in the sidebar, then click **Analyze Clip**.")
-        return
+    st.session_state["last_out"] = out
 
-    # --- Run analysis ---
-    video_path_str = str(clip)
-    try:
-        result: Dict[str, Any] = analyze_video(video_path_str, exercise)
-    except Exception as e:
-        st.error(f"Analysis failed: {e}")
-        return
+# ---------- Output ----------
+out = st.session_state["last_out"]
+video_path = st.session_state["last_video_path"]
 
-    # --- Layout: left = summary, right = overlay / extra ---
-    col_left, col_right = st.columns([2, 2])
+if out is None:
+    st.info("Upload a video and click **Analyze**.")
+else:
+    # Top summary row
+    c1, c2, c3, c4 = st.columns(4)
 
-    with col_left:
-        st.subheader("Summary")
+    schema_version = out.get("schema_version", "")
+    ex = out.get("exercise", "")
+    n_reps = out.get("n_reps", 0)
+    driver = out.get("driver", "")
 
-        st.write(f"**Exercise:** `{result.get('exercise', exercise)}`")
-        st.write(f"**Video:** `{result.get('video', video_path_str)}`")
-        st.write(f"**Valid:** {result.get('valid', True)}")
-        st.write(f"**Difficulty:** {result.get('difficulty', 'unknown')}")
+    c1.metric("Exercise", ex)
+    c2.metric("Reps", int(n_reps) if str(n_reps).isdigit() else n_reps)
+    c3.metric("Driver", driver)
+    c4.metric("Schema", schema_version)
 
-        n_reps = result.get("n_reps") or result.get("reps")
-        if n_reps is not None:
-            st.write(f"**Reps detected:** {int(n_reps)}")
+    if schema_version and schema_version != SCHEMA_EXPECTED:
+        st.warning(f"Schema mismatch: expected {SCHEMA_EXPECTED} but got {schema_version}")
 
-        avg_rom = result.get("avg_rom")
-        if avg_rom is not None:
-            st.write(f"**Avg normalized ROM:** {avg_rom:.3f}")
+    # Tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["Video", "Per-rep metrics", "Summary", "Raw JSON"])
 
-        avg_dur = result.get("avg_duration_sec") or result.get("avg_duration")
-        if avg_dur is not None:
-            st.write(f"**Avg rep duration:** {avg_dur:.2f} s")
-
-        angle_rom = result.get("avg_angle_rom") or result.get("avg_joint_rom")
-        if angle_rom:
-            # show the raw angle
-            joint, value = next(iter(angle_rom.items()))
-            st.write(f"**Avg {joint} ROM:** {value:.1f}°")
-
-            label, explanation = _angle_summary(exercise, angle_rom)
-            if label:
-                st.markdown(f"**Angle verdict:** {label}")
-            if explanation:
-                st.caption(explanation)
-
-        overall = result.get("overall") or result.get("summary")
-        if overall:
-            st.markdown(f"**Overall note:** {overall}")
-
-        load_suggestion = result.get("load_suggestion")
-        rep_range_suggestion = result.get("rep_range_suggestion")
-
-        if load_suggestion or rep_range_suggestion:
-            st.subheader("Training Suggestions")
-        if load_suggestion:
-            st.write(f"- **Load:** {load_suggestion}")
-        if rep_range_suggestion:
-            st.write(f"- **Rep range:** {rep_range_suggestion}")
-
-        # Per-rep feedback (compact)
-        per_rep = result.get("per_rep_feedback") or result.get("per_rep")
-        if per_rep:
-            st.subheader("Per-Rep Feedback")
-            for rep in per_rep:
-                idx = rep.get("rep_index") or rep.get("metrics", {}).get("rep_index")
-                msg = rep.get("analysis", {}).get("message", "")
-                rom_val = rep.get("metrics", {}).get("rom")
-                dur_val = rep.get("metrics", {}).get("duration_sec")
-
-                bullet = f"**Rep {idx}:** {msg}"
-                details: list[str] = []
-                if rom_val is not None:
-                    details.append(f"ROM={rom_val:.3f}")
-                if dur_val is not None:
-                    details.append(f"dur={dur_val:.2f}s")
-                if details:
-                    bullet += f" _( {' · '.join(details)} )_"
-
-                st.markdown(f"- {bullet}")
-
-    with col_right:
-        st.subheader("Pose Overlay (if available)")
-
-        overlay_path = _find_overlay(exercise, result.get("video", video_path_str))
-        if overlay_path is not None:
-            st.video(str(overlay_path))
+    with tab1:
+        if video_path and Path(video_path).exists():
+            st.video(video_path)
         else:
-            st.info(
-                "No overlay video found for this clip yet.\n\n"
-                "Expected location:\n"
-                f"`{OVERLAY_DIR / exercise / (Path(video_path_str).stem + '_overlay.mp4')}`"
-            )
+            st.warning("Uploaded video file not found on disk.")
 
-        st.markdown("---")
-        st.caption(
-            "This prototype uses precomputed metrics (including normalized ROM and joint-angle ROM) "
-            "to provide basic rep counting, difficulty estimation, and technique feedback."
-        )
+        # If you have an overlay path in out, show it too
+        overlay = out.get("overlay_path") or out.get("overlay_video") or out.get("overlay_rel")
+        if overlay:
+            ov_path = Path(overlay)
+            if not ov_path.is_absolute():
+                ov_path = (REPO_ROOT / overlay).resolve()
+            if ov_path.exists():
+                st.subheader("Overlay")
+                st.video(str(ov_path))
 
+    with tab2:
+        per_rep = out.get("per_rep") or out.get("reps") or []
+        if not per_rep:
+            st.info("No per-rep metrics available in output.")
+        else:
+            # normalize expected keys
+            rows = []
+            for i, rep in enumerate(per_rep, start=1):
+                # Some pipelines use nested analysis dict, some keep rep metrics flat
+                analysis = rep.get("analysis") or {}
+                rows.append({
+                    "rep": rep.get("rep_index", i),
+                    "start": rep.get("start_frame", ""),
+                    "peak": rep.get("peak_frame", ""),
+                    "end": rep.get("end_frame", ""),
+                    "rom": rep.get("rom", analysis.get("rom", "")),
+                    "duration": fmt_seconds(rep.get("duration_sec", analysis.get("duration_sec", ""))),
+                    "tempo_up": fmt_seconds(rep.get("tempo_up_sec", analysis.get("tempo_up_sec", ""))),
+                    "tempo_down": fmt_seconds(rep.get("tempo_down_sec", analysis.get("tempo_down_sec", ""))),
+                    "quality": analysis.get("quality", rep.get("quality", "")),
+                    "notes": ", ".join(analysis.get("notes", [])) if isinstance(analysis.get("notes", []), list) else analysis.get("notes", "")
+                })
+            st.dataframe(rows, use_container_width=True)
 
-if __name__ == "__main__":
-    main()
+    with tab3:
+        summary = out.get("summary") or {}
+        if summary:
+            st.subheader("Set summary")
+            st.json(summary)
+        else:
+            st.info("No summary object found. Showing common top-level fields instead.")
+            st.write({
+                "n_reps": out.get("n_reps"),
+                "driver": out.get("driver"),
+                "fps": out.get("fps"),
+                "n_frames": out.get("n_frames"),
+            })
+
+        feedback = out.get("feedback") or out.get("flags") or out.get("coaching") or None
+        if feedback:
+            st.subheader("Feedback")
+            st.json(feedback)
+
+    with tab4:
+        st.json(out)
+
+    # Download raw JSON
+    st.download_button(
+        label="Download analysis JSON",
+        file_name="analysis.json",
+        mime="application/json",
+        data=json.dumps(out, indent=2).encode("utf-8"),
+        use_container_width=True,
+    )

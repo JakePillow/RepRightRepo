@@ -4,11 +4,12 @@ import csv
 from pathlib import Path
 from typing import Any, Dict, List
 
-from engine import analyze_video
+from repright.analyzer import RepRightAnalyzer
 from labels import load_all_labels
 
 REPORTS_DIR = Path("data/reports")
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def parse_rep_good_labels(s: str) -> List[int]:
     s = (s or "").strip()
@@ -23,8 +24,11 @@ def parse_rep_good_labels(s: str) -> List[int]:
             pass
     return out
 
+
 def main() -> None:
     rows = load_all_labels()
+    analyzer = RepRightAnalyzer()
+
     out_rows: List[Dict[str, Any]] = []
 
     for r in rows:
@@ -40,7 +44,7 @@ def main() -> None:
         rep_good = parse_rep_good_labels(r.get("rep_good_labels", ""))
 
         try:
-            res = analyze_video(video_rel, exercise)
+            res = analyzer.analyze(video_rel, exercise)
             status = "ok"
         except FileNotFoundError:
             res = {}
@@ -48,14 +52,12 @@ def main() -> None:
 
         pred_reps = int(res.get("n_reps", 0) or 0)
 
-        # Per-rep predicted quality from engine
-        per_rep = res.get("per_rep") or []
+        # Per-rep predicted quality (placeholder for now)
         pred_good: List[int] = []
-        for rep in per_rep:
-            q = (rep.get("analysis") or {}).get("quality", "good")
-            pred_good.append(1 if q == "good" else 0)
+        reps = res.get("reps") or []
+        for _ in reps:
+            pred_good.append(1)  # assume good until LLM layer
 
-        # Compare only on min length
         n_cmp = min(len(rep_good), len(pred_good))
         rep_acc: Any = ""
         if n_cmp > 0:
@@ -78,6 +80,7 @@ def main() -> None:
         })
 
     out_path = REPORTS_DIR / "eval_summary.csv"
+
     fieldnames = list(out_rows[0].keys()) if out_rows else [
         "video_rel","exercise","status","variant","camera_angle",
         "expected_reps","pred_reps","rep_count_ok",
@@ -92,6 +95,7 @@ def main() -> None:
             w.writerow(row)
 
     print(f"Wrote: {out_path} ({len(out_rows)} rows)")
+
 
 if __name__ == "__main__":
     main()
