@@ -3,16 +3,15 @@
 import json
 import time
 import subprocess
-import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict
 
 import numpy as np
 
 from repright.pose_extract import extract_pose_npz
 
-# Reuse proven rep logic from scripts/compute_rep_metrics.py (single-video, in-process)
+# Reuse proven rep logic (in-process)
 from scripts.compute_rep_metrics import (
     choose_best_signal,
     per_exercise_params,
@@ -25,15 +24,12 @@ from scripts.compute_rep_metrics import (
 class RepRightAnalyzer:
     processed_root: Path = Path("data/processed")
     uploads_root: Path = Path("data/uploads")
-    python_exe: Optional[str] = None  # if None, uses current interpreter
+    python_exe: str = ""  # optional override
 
     def _py(self) -> str:
-        return self.python_exe or shutil.which("python") or "python"
+        return self.python_exe or "python"
 
     def _stage_upload(self, video_path: Path, exercise: str) -> Path:
-        """
-        Copy to uploads/ with an exercise-tagged filename so downstream inference is stable.
-        """
         video_path = Path(video_path)
         ex = (exercise or "").strip().lower()
         self.uploads_root.mkdir(parents=True, exist_ok=True)
@@ -54,9 +50,10 @@ class RepRightAnalyzer:
         out_dir.mkdir(parents=True, exist_ok=True)
         return out_dir / f"{stem}_metrics.json"
 
-    def _compute_metrics_single(self, npz_path: Path, meta_path: Path, exercise: str, stem_for_metrics: str) -> Path:
+    def _compute_metrics_single(self, npz_path: Path, meta_path: Path, exercise: str) -> Path:
         ex = (exercise or "").strip().lower()
-        metrics_path = self._metrics_path(stem_for_metrics, ex)
+        stem = Path(npz_path).stem
+        metrics_path = self._metrics_path(stem, ex)
 
         pose = np.load(npz_path)["pose"]
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
@@ -83,89 +80,57 @@ class RepRightAnalyzer:
         metrics_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
         return metrics_path
 
-    def _overlay_paths_for_npz(self, npz_path: Path) -> Tuple[Path, Path]:
-        """
-        We generate tmp (mp4v) then transcode to final (h264) for browser reliability.
-        """
-        base = Path(npz_path).with_suffix("")  # remove .npz
-        tmp_mp4v = Path(str(base) + "_overlay_tmp.mp4")
-        final_mp4 = Path(str(base) + "_overlay.mp4")
-        return tmp_mp4v, final_mp4
+    def _ensure_overlay(self, staged: Path, npz_path: Path) -> Path | None:
+        overlay_path = Path(npz_path).with_name(Path(npz_path).stem + "_overlay.mp4")
+        if overlay_path.exists() and overlay_path.stat().st_size > 0:
+            return overlay_path
 
-    def _ensure_overlay(self, video_path: Path, npz_path: Path) -> str:
-        """
-        Ensure overlay exists and is non-empty. Returns '' if generation fails.
-        """
-        tmp_mp4v, final_mp4 = self._overlay_paths_for_npz(npz_path)
-
-        # If final already exists and non-empty, trust it
-        if final_mp4.exists() and final_mp4.stat().st_size > 0:
-            return str(final_mp4).replace("\\", "/")
-
-        # Generate tmp overlay (mp4v) from NPZ
+        cmd = [
+            self._py(),
+            "scripts/make_overlay_from_npz.py",
+            "--video", str(staged),
+            "--npz", str(npz_path),
+            "--out", str(overlay_path),
+        ]
         try:
-            cmd = [
-                self._py(),
-                "scripts/make_overlay_from_npz.py",
-                "--video", str(video_path),
-                "--npz", str(npz_path),
-                "--out", str(tmp_mp4v),
-            ]
             subprocess.run(cmd, check=True)
         except Exception:
-            return ""
+            return None
 
-        if (not tmp_mp4v.exists()) or tmp_mp4v.stat().st_size == 0:
-            return ""
-
-        # Transcode to H.264 using ffmpeg if available (best for Streamlit/Chrome)
-        ff = shutil.which("ffmpeg")
-        if ff:
-            try:
-                cmd2 = [
-                    ff, "-y",
-                    "-i", str(tmp_mp4v),
-                    "-c:v", "libx264",
-                    "-pix_fmt", "yuv420p",
-                    "-movflags", "+faststart",
-                    str(final_mp4),
-                ]
-                subprocess.run(cmd2, check=True)
-            except Exception:
-                # fallback: if transcode fails, at least return tmp_mp4v
-                return str(tmp_mp4v).replace("\\", "/")
-
-            if final_mp4.exists() and final_mp4.stat().st_size > 0:
-                return str(final_mp4).replace("\\", "/")
-
-        # If no ffmpeg, return tmp_mp4v
-        return str(tmp_mp4v).replace("\\", "/") if tmp_mp4v.exists() and tmp_mp4v.stat().st_size > 0 else ""
+        if overlay_path.exists() and overlay_path.stat().st_size > 0:
+            return overlay_path
+        return None
 
     def analyze(self, video_path: str, exercise: str) -> Dict[str, Any]:
         ex = (exercise or "").strip().lower()
         vp = Path(video_path)
 
-        # Stage upload to stable name
         staged = self._stage_upload(vp, ex)
         stem = staged.stem
 
         metrics_path = self._metrics_path(stem, ex)
 
-        # If metrics missing, extract pose + compute metrics
+        overlay_path: Path | None = None
+
         if not metrics_path.exists():
+            # 1) Extract pose NPZ for THIS video only
             npz_path, meta_path = extract_pose_npz(staged, ex, processed_root=self.processed_root)
-            metrics_path = self._compute_metrics_single(npz_path, meta_path, ex, stem_for_metrics=stem)
 
-        # Load metrics (even cached) so we can locate source_npz and ensure overlay
+            # 2) Generate overlay MP4 (demo critical)
+            overlay_path = self._ensure_overlay(staged, npz_path)
+
+            # 3) Compute metrics for THIS video only
+            metrics_path = self._compute_metrics_single(npz_path, meta_path, ex)
+
+        # load metrics json
         data = json.loads(metrics_path.read_text(encoding="utf-8"))
-        src_npz = (data.get("source_npz") or "").replace("\\", "/")
-        npz_path2 = Path(src_npz) if src_npz else None
 
-        overlay_path = ""
-        if npz_path2 and npz_path2.exists():
-            overlay_path = self._ensure_overlay(staged, npz_path2)
+        # If overlay wasn't generated this run (metrics existed already), try to find it
+        if overlay_path is None:
+            cand = Path("data/processed") / "pose" / ex / f"{stem}_overlay.mp4"
+            if cand.exists() and cand.stat().st_size > 0:
+                overlay_path = cand
 
-        # Stable schema return for UI + demo
         out: Dict[str, Any] = {
             "schema_version": "analysis_v1",
             "exercise": ex,
@@ -175,9 +140,8 @@ class RepRightAnalyzer:
             "n_frames": int(data.get("n_frames", 0) or 0),
             "n_reps": int(data.get("n_reps", 0) or 0),
             "metrics_path": str(metrics_path).replace("\\", "/"),
-            "overlay_path": overlay_path,
+            "overlay_path": (str(overlay_path).replace("\\", "/") if overlay_path else ""),
             "reps": data.get("reps", []),
             "raw": data,
         }
         return out
-

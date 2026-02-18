@@ -1,0 +1,62 @@
+﻿import streamlit as st
+from pathlib import Path
+from repright.analyzer import RepRightAnalyzer
+
+st.set_page_config(page_title="RepRight", layout="wide")
+st.title("RepRight — Video Rep Analysis")
+
+# Keep a single analyzer instance across reruns
+@st.cache_resource
+def get_analyzer():
+    return RepRightAnalyzer(python_exe=r".\.venv\Scripts\python.exe")
+
+analyzer = get_analyzer()
+
+exercise = st.selectbox("Exercise", ["bench", "squat", "curl", "deadlift"], index=0)
+up = st.file_uploader("Upload a video", type=["mp4", "mov", "avi", "mkv"])
+
+if up is not None:
+    # Save the uploaded file to a temp location.
+    # The analyzer will stage/copy it into its own timestamped uploads file.
+    tmp_dir = Path("data/uploads/_tmp")
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_name = up.name.replace(" ", "_")
+    tmp_path = tmp_dir / safe_name
+    tmp_path.write_bytes(up.getbuffer())
+
+    st.success(f"Uploaded: {tmp_path.as_posix()}")
+
+    with st.spinner("Running analysis..."):
+        out = analyzer.analyze(str(tmp_path), exercise)
+
+    st.subheader("Summary")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Exercise", out.get("exercise", ""))
+    c2.metric("Reps", int(out.get("n_reps", 0) or 0))
+    c3.metric("Driver", out.get("driver", ""))
+    c4.metric("FPS", float(out.get("fps", 0) or 0))
+
+    st.write("Metrics JSON:", out.get("metrics_path", ""))
+
+    overlay_path = (out.get("overlay_path") or "").strip()
+    if overlay_path:
+        p = Path(overlay_path)
+        if p.exists() and p.stat().st_size > 0:
+            st.subheader("Overlay (pose skeleton)")
+            # IMPORTANT: bytes render is the reliable Streamlit fix (no black video / no path issues)
+            st.video(p.read_bytes())
+        else:
+            st.warning(f"Overlay path returned but file missing/empty: {overlay_path}")
+    else:
+        st.info("Overlay not generated. Metrics are still valid.")
+
+    with st.expander("Raw output JSON"):
+        st.json(out)
+
+    reps = out.get("reps") or []
+    if reps:
+        st.subheader("Per-rep metrics")
+        st.dataframe(reps, use_container_width=True)
+    st.subheader("Per-rep metrics")
+        st.dataframe(reps)

@@ -88,7 +88,7 @@ class RepRightAnalyzer:
         We generate tmp (mp4v) then transcode to final (h264) for browser reliability.
         """
         base = Path(npz_path).with_suffix("")  # remove .npz
-        tmp_mp4v = Path(str(base) + "_overlay_tmp.mp4")
+        tmp_mp4v = Path(str(base) + "_overlay.tmp_mp4v.mp4")
         final_mp4 = Path(str(base) + "_overlay.mp4")
         return tmp_mp4v, final_mp4
 
@@ -180,4 +180,3 @@ class RepRightAnalyzer:
             "raw": data,
         }
         return out
-

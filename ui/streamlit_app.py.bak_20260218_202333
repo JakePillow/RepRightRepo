@@ -1,15 +1,15 @@
 ﻿import streamlit as st
 from pathlib import Path
+import json
 
 from repright.analyzer import RepRightAnalyzer
 
 st.set_page_config(page_title="RepRight", layout="wide")
 st.title("RepRight — Video Rep Analysis")
 
-# Make sure analyzer uses the venv python (important if it shells out / ffmpeg usage differs)
-analyzer = RepRightAnalyzer(python_exe=r".\.venv\Scripts\python.exe")
+analyzer = RepRightAnalyzer()
 
-exercise = st.selectbox("Exercise", ["bench", "squat", "curl", "deadlift"], index=2)
+exercise = st.selectbox("Exercise", ["bench", "squat", "curl", "deadlift"], index=0)
 up = st.file_uploader("Upload a video", type=["mp4", "mov", "avi", "mkv"])
 
 if up is not None:
@@ -19,11 +19,27 @@ if up is not None:
     name = up.name.replace(" ", "_")
     video_path = uploads_dir / name
 
-    video_path.write_bytes(up.getbuffer())
+    with open(video_path, "wb") as f:
+        f.write(up.getbuffer())
+
     st.success(f"Saved: {video_path.as_posix()}")
 
-    with st.spinner("Running analysis (pose + metrics + overlay)..."):
+    # 1) Run metrics path (works on any valid video)
+    with st.spinner("Running analysis (metrics)..."):
         out = analyzer.analyze(str(video_path), exercise)
+
+    # 2) Try to generate overlay (best-effort; never blocks demo)
+    overlay_path = None
+    try:
+        from scripts.extract_all import process_video
+        out_dir = Path("data/processed/overlays") / exercise
+        out_dir.mkdir(parents=True, exist_ok=True)
+        process_video(video_path, out_dir)
+        overlay_path = out_dir / f"{video_path.stem}_overlay.mp4"
+        if not overlay_path.exists():
+            overlay_path = None
+    except Exception:
+        overlay_path = None
 
     st.subheader("Summary")
     c1, c2, c3, c4 = st.columns(4)
@@ -34,17 +50,11 @@ if up is not None:
 
     st.write("Metrics JSON:", out.get("metrics_path", ""))
 
-    overlay_path = (out.get("overlay_path") or "").strip()
-    st.subheader("Overlay (pose skeleton)")
-    if overlay_path and Path(overlay_path).exists() and Path(overlay_path).stat().st_size > 0:
-        st.video(Path(overlay_path).read_bytes())
-        st.caption(overlay_path)
+    if overlay_path is not None:
+        st.subheader("Overlay (pose skeleton)")
+        st.video(str(overlay_path))
     else:
-        st.warning(f"Overlay missing/empty: {overlay_path}")
-
-    with st.expander("Original uploaded video"):
-        st.video(video_path.read_bytes())
-        st.caption(video_path.as_posix())
+        st.info("Overlay not generated (best-effort). Metrics are still valid.")
 
     with st.expander("Raw output JSON"):
         st.json(out)
@@ -52,4 +62,4 @@ if up is not None:
     reps = out.get("reps") or []
     if reps:
         st.subheader("Per-rep metrics")
-        st.dataframe(reps, use_container_width=True)
+        st.dataframe(reps)

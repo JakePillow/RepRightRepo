@@ -1,0 +1,111 @@
+﻿from __future__ import annotations
+
+import argparse
+from pathlib import Path
+import shutil
+import subprocess
+
+import cv2
+import numpy as np
+
+# MediaPipe landmark indices (match compute_rep_metrics expectations)
+# BlazePose has 33 landmarks; we draw basic skeleton lines by common connections.
+# If your NPZ is shape [T, 33, 4] (x,y,z,visibility) where x,y are pixel coords.
+MP_EDGES = [
+    (11, 13), (13, 15),  # L arm
+    (12, 14), (14, 16),  # R arm
+    (11, 12),            # shoulders
+    (23, 24),            # hips
+    (11, 23), (12, 24),  # torso
+    (23, 25), (25, 27),  # L leg
+    (24, 26), (26, 28),  # R leg
+]
+
+def draw_pose(frame, pose_xy, vis=None, min_vis=0.2):
+    h, w = frame.shape[:2]
+
+    def ok(i):
+        if vis is None:
+            return True
+        return float(vis[i]) >= min_vis
+
+    # edges
+    for a, b in MP_EDGES:
+        if a < len(pose_xy) and b < len(pose_xy) and ok(a) and ok(b):
+            ax, ay = pose_xy[a]
+            bx, by = pose_xy[b]
+            cv2.line(frame, (int(ax), int(ay)), (int(bx), int(by)), (0, 255, 0), 2)
+
+    # joints
+    for i, (x, y) in enumerate(pose_xy):
+        if ok(i):
+            cv2.circle(frame, (int(x), int(y)), 3, (0, 0, 255), -1)
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--video", required=True)
+    ap.add_argument("--npz", required=True)
+    ap.add_argument("--out", required=True)
+    args = ap.parse_args()
+
+    video_path = Path(args.video)
+    npz_path = Path(args.npz)
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    data = np.load(npz_path)
+    pose = data["pose"]  # [T, 33, 4] or [T, 33, 3/4]
+    T = pose.shape[0]
+
+    cap = cv2.VideoCapture(str(video_path))
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    w   = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # Write a temp mp4v first (NO OpenH264 dependency)
+    tmp_out = out_path.with_suffix(".tmp_mp4v.mp4")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    writer = cv2.VideoWriter(str(tmp_out), fourcc, fps, (w, h))
+    if not writer.isOpened():
+        raise RuntimeError("VideoWriter failed to open (mp4v). Check OpenCV/ffmpeg build.")
+
+    i = 0
+    while True:
+        ok, frame = cap.read()
+        if not ok or i >= T:
+            break
+
+        pts = pose[i, :, :2]
+        vis = pose[i, :, 3] if pose.shape[2] >= 4 else None
+        draw_pose(frame, pts, vis=vis)
+
+        writer.write(frame)
+        i += 1
+
+    cap.release()
+    writer.release()
+
+    # Transcode to H.264 for Streamlit/Chrome reliability
+    ff = shutil.which("ffmpeg")
+    if ff:
+        cmd = [
+            ff, "-y",
+            "-i", str(tmp_out),
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            str(out_path),
+        ]
+        subprocess.run(cmd, check=True)
+        try:
+            tmp_out.unlink()
+        except Exception:
+            pass
+    else:
+        # If ffmpeg isn't available, keep the mp4v output
+        tmp_out.replace(out_path)
+
+    print(str(out_path).replace("\\", "/"))
+
+if __name__ == "__main__":
+    main()
