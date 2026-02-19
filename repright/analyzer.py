@@ -67,8 +67,17 @@ class RepRightAnalyzer:
 
         low, high, min_rep_sec = per_exercise_params(ex)
         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
-        rep_metrics = compute_rep_metrics(sig, reps, fps)
+        metrics_out = compute_rep_metrics(sig, reps, fps, pose=pose, exercise=ex, low=low, high=high)
 
+        # Backward compatible:
+        # - old compute_rep_metrics returns List[dict]
+        # - newer versions may return {"reps":[...], "set_summary_v1":{...}}
+        if isinstance(metrics_out, dict):
+            rep_metrics = metrics_out.get("reps", [])
+            set_summary_v1 = metrics_out.get("set_summary_v1", {})
+        else:
+            rep_metrics = metrics_out
+            set_summary_v1 = {}
         summary = {
             "exercise": ex,
             "driver": driver,
@@ -78,6 +87,7 @@ class RepRightAnalyzer:
             "n_frames": int(pose.shape[0]),
             "n_reps": len(rep_metrics),
             "reps": rep_metrics,
+            "set_summary_v1": set_summary_v1,
         }
 
         metrics_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -180,4 +190,10 @@ class RepRightAnalyzer:
             "raw": data,
         }
         return out
+
+
+
+
+
+
 
