@@ -187,9 +187,57 @@ class RepRightAnalyzer:
             "metrics_path": str(metrics_path).replace("\\", "/"),
             "overlay_path": overlay_path,
             "reps": data.get("reps", []),
+            "set_summary_v1": data.get("set_summary_v1", {}),
+            "set_summary_v1": data.get("set_summary_v1", {}),
             "raw": data,
         }
         return out
+def main() -> None:
+    import argparse
+    import sys
+
+    ap = argparse.ArgumentParser(description="RepRight Analyzer (single-pipeline entrypoint).")
+    ap.add_argument("--video", required=True, help="Path to input video")
+    ap.add_argument("--exercise", required=True, help="Exercise label (curl, bench, squat, deadlift, ...)")
+    ap.add_argument("--processed-root", default="data/processed", help="Processed output root")
+    ap.add_argument("--uploads-root", default="data/uploads", help="Uploads staging root")
+    ap.add_argument("--python-exe", default=None, help="Optional python exe for overlay script subprocess")
+    ap.add_argument("--out", default=None, help="Optional path to write analyzer output JSON")
+    args = ap.parse_args()
+
+    analyzer = RepRightAnalyzer(
+        processed_root=Path(args.processed_root),
+        uploads_root=Path(args.uploads_root),
+        python_exe=args.python_exe,
+    )
+
+    result = analyzer.analyze(args.video, args.exercise)
+
+    # Print the most useful “demo” lines first (stable + script-friendly)
+    # (Don’t crash if keys differ; analyzer already returns a dict)
+    metrics_path = result.get("metrics_path") or result.get("metrics_json") or ""
+    overlay_path = result.get("overlay_path") or ""
+    n_reps = result.get("n_reps")
+    if n_reps is None:
+        reps = result.get("reps", [])
+        n_reps = len(reps) if isinstance(reps, list) else 0
+
+    if metrics_path:
+        print(str(metrics_path).replace("\\", "/"))
+    if overlay_path:
+        print(str(overlay_path).replace("\\", "/"))
+    print(f"n_reps={n_reps}")
+
+    # Optional: write the full analyzer output to a JSON file
+    if args.out:
+        out_path = Path(args.out).resolve()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+
+if __name__ == "__main__":
+    main()
+
 
 
 

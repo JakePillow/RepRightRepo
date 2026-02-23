@@ -1,0 +1,3025 @@
+﻿C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo
+├─ _gpt_inspect
+│  ├─ 40_code
+│  │  ├─ repright_analyzer.py.txt
+│  │  ├─ repright_pose_extract.py.txt
+│  │  ├─ scripts_compute_rep_metrics.py.txt
+│  │  ├─ scripts_make_overlay_from_npz.py.txt
+│  │  └─ ui_streamlit_app.py.txt
+│  ├─ 00_pwd.txt
+│  ├─ 01_git_status.txt
+│  ├─ 02_git_branch.txt
+│  ├─ 03_git_remotes.txt
+│  ├─ 04_git_head.txt
+│  ├─ 10_tree_depth4.txt
+│  ├─ 11_tree_depth6.txt
+│  ├─ 12_files_all.txt
+│  ├─ 20_key_files_presence.txt
+│  ├─ 30_grep_hits.txt
+│  ├─ 50_env_python.txt
+│  └─ 51_env_pip.txt
+├─ data
+│  ├─ baselines
+│  ├─ labels
+│  │  ├─ _backup_20260212_215919
+│  │  │  ├─ bench_labels.csv
+│  │  │  ├─ curl_labels.csv
+│  │  │  ├─ deadlift_labels.csv
+│  │  │  └─ squat_labels.csv
+│  │  ├─ _backup_20260216_111525
+│  │  ├─ _backup_20260216_111703
+│  │  ├─ ~$bench_labels.xlsx
+│  │  ├─ ~$curl_labels.xlsx
+│  │  ├─ ~$deadlift_labels.xlsx
+│  │  ├─ bench_labels.csv
+│  │  ├─ bench_labels.xlsx
+│  │  ├─ curl_labels.csv
+│  │  ├─ curl_labels.xlsx
+│  │  ├─ deadlift_labels.csv
+│  │  ├─ deadlift_labels.xlsx
+│  │  ├─ squat_labels.csv
+│  │  └─ squat_labels.xlsx
+│  ├─ raw
+│  │  ├─ bench
+│  │  │  ├─ bench press_1.mp4
+│  │  │  ├─ bench press_10.mp4
+│  │  │  ├─ bench press_11.mp4
+│  │  │  ├─ bench press_12.mp4
+│  │  │  ├─ bench press_13.mp4
+│  │  │  ├─ bench press_14.mp4
+│  │  │  ├─ bench press_15.mp4
+│  │  │  ├─ bench press_16.mp4
+│  │  │  ├─ bench press_17.mp4
+│  │  │  ├─ bench press_18.mp4
+│  │  │  ├─ bench press_19.mp4
+│  │  │  ├─ bench press_2.mp4
+│  │  │  ├─ bench press_20.mp4
+│  │  │  ├─ bench press_21.mp4
+│  │  │  ├─ bench press_22.mp4
+│  │  │  ├─ bench press_23.mp4
+│  │  │  ├─ bench press_24.mp4
+│  │  │  ├─ bench press_25.mp4
+│  │  │  ├─ bench press_26.mp4
+│  │  │  ├─ bench press_27.mp4
+│  │  │  ├─ bench press_28.mp4
+│  │  │  ├─ bench press_29.mp4
+│  │  │  ├─ bench press_3.mp4
+│  │  │  ├─ bench press_30.mp4
+│  │  │  ├─ bench press_31.mp4
+│  │  │  ├─ bench press_32.mp4
+│  │  │  ├─ bench press_33.mp4
+│  │  │  ├─ bench press_34.mp4
+│  │  │  ├─ bench press_35.mp4
+│  │  │  ├─ bench press_36.mp4
+│  │  │  ├─ bench press_37.mp4
+│  │  │  ├─ bench press_38.mp4
+│  │  │  ├─ bench press_39.mp4
+│  │  │  ├─ bench press_4.mp4
+│  │  │  ├─ bench press_40.mp4
+│  │  │  ├─ bench press_41.mp4
+│  │  │  ├─ bench press_42.mp4
+│  │  │  ├─ bench press_43.mp4
+│  │  │  ├─ bench press_44.mp4
+│  │  │  ├─ bench press_45.mp4
+│  │  │  ├─ bench press_46.mp4
+│  │  │  ├─ bench press_47.mp4
+│  │  │  ├─ bench press_48.mp4
+│  │  │  ├─ bench press_49.mp4
+│  │  │  ├─ bench press_5.mp4
+│  │  │  ├─ bench press_50.mp4
+│  │  │  ├─ bench press_51.mp4
+│  │  │  ├─ bench press_52.mp4
+│  │  │  ├─ bench press_53.mp4
+│  │  │  ├─ bench press_54.mp4
+│  │  │  ├─ bench press_55.mp4
+│  │  │  ├─ bench press_56.mp4
+│  │  │  ├─ bench press_57.mp4
+│  │  │  ├─ bench press_58.mp4
+│  │  │  ├─ bench press_59.mp4
+│  │  │  ├─ bench press_6.mp4
+│  │  │  ├─ bench press_60.mp4
+│  │  │  ├─ bench press_61.mp4
+│  │  │  ├─ bench press_7.mp4
+│  │  │  ├─ bench press_8.mp4
+│  │  │  └─ bench press_9.mp4
+│  │  ├─ curl
+│  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  ├─ barbell biceps curl_26.mp4
+│  │  │  ├─ barbell biceps curl_27.mp4
+│  │  │  ├─ barbell biceps curl_28.mp4
+│  │  │  ├─ barbell biceps curl_29.mp4
+│  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  ├─ barbell biceps curl_30.mp4
+│  │  │  ├─ barbell biceps curl_31.mp4
+│  │  │  ├─ barbell biceps curl_32.mp4
+│  │  │  ├─ barbell biceps curl_33.mp4
+│  │  │  ├─ barbell biceps curl_34.mp4
+│  │  │  ├─ barbell biceps curl_35.mp4
+│  │  │  ├─ barbell biceps curl_36.mp4
+│  │  │  ├─ barbell biceps curl_37.mp4
+│  │  │  ├─ barbell biceps curl_38.mp4
+│  │  │  ├─ barbell biceps curl_39.mp4
+│  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  ├─ barbell biceps curl_40.mp4
+│  │  │  ├─ barbell biceps curl_41.mp4
+│  │  │  ├─ barbell biceps curl_42.mp4
+│  │  │  ├─ barbell biceps curl_43.mp4
+│  │  │  ├─ barbell biceps curl_44.mp4
+│  │  │  ├─ barbell biceps curl_45.mp4
+│  │  │  ├─ barbell biceps curl_46.mp4
+│  │  │  ├─ barbell biceps curl_47.mp4
+│  │  │  ├─ barbell biceps curl_48.mp4
+│  │  │  ├─ barbell biceps curl_49.mp4
+│  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  ├─ barbell biceps curl_50.mp4
+│  │  │  ├─ barbell biceps curl_51.mp4
+│  │  │  ├─ barbell biceps curl_52.mp4
+│  │  │  ├─ barbell biceps curl_53.mp4
+│  │  │  ├─ barbell biceps curl_54.mp4
+│  │  │  ├─ barbell biceps curl_55.mp4
+│  │  │  ├─ barbell biceps curl_56.mp4
+│  │  │  ├─ barbell biceps curl_57.mp4
+│  │  │  ├─ barbell biceps curl_58.mp4
+│  │  │  ├─ barbell biceps curl_59.mp4
+│  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  ├─ barbell biceps curl_60.mp4
+│  │  │  ├─ barbell biceps curl_61.mp4
+│  │  │  ├─ barbell biceps curl_62.mp4
+│  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  ├─ barbell biceps curl_9.mp4
+│  │  │  ├─ hammer curl_1.MOV
+│  │  │  ├─ hammer curl_10.mp4
+│  │  │  ├─ hammer curl_11.mp4
+│  │  │  ├─ hammer curl_12.mp4
+│  │  │  ├─ hammer curl_13.mp4
+│  │  │  ├─ hammer curl_14.mp4
+│  │  │  ├─ hammer curl_15.mp4
+│  │  │  ├─ hammer curl_16.mp4
+│  │  │  ├─ hammer curl_17.mp4
+│  │  │  ├─ hammer curl_18.mp4
+│  │  │  ├─ hammer curl_19.mp4
+│  │  │  ├─ hammer curl_2.MOV
+│  │  │  ├─ hammer curl_3.MOV
+│  │  │  ├─ hammer curl_4.MOV
+│  │  │  ├─ hammer curl_5.MOV
+│  │  │  ├─ hammer curl_6.MOV
+│  │  │  ├─ hammer curl_7.MOV
+│  │  │  ├─ hammer curl_8.mp4
+│  │  │  └─ hammer curl_9.mp4
+│  │  ├─ deadlift
+│  │  │  ├─ deadlift_1.mp4
+│  │  │  ├─ deadlift_10.mp4
+│  │  │  ├─ deadlift_11.mp4
+│  │  │  ├─ deadlift_12.mp4
+│  │  │  ├─ deadlift_13.mp4
+│  │  │  ├─ deadlift_14.mp4
+│  │  │  ├─ deadlift_15.mp4
+│  │  │  ├─ deadlift_16.mp4
+│  │  │  ├─ deadlift_17.mp4
+│  │  │  ├─ deadlift_18.mp4
+│  │  │  ├─ deadlift_19.mp4
+│  │  │  ├─ deadlift_2.mp4
+│  │  │  ├─ deadlift_20.mp4
+│  │  │  ├─ deadlift_21.mp4
+│  │  │  ├─ deadlift_22.mp4
+│  │  │  ├─ deadlift_23.mp4
+│  │  │  ├─ deadlift_24.mp4
+│  │  │  ├─ deadlift_25.mp4
+│  │  │  ├─ deadlift_26.mp4
+│  │  │  ├─ deadlift_27.mp4
+│  │  │  ├─ deadlift_28.mp4
+│  │  │  ├─ deadlift_29.mp4
+│  │  │  ├─ deadlift_3.mp4
+│  │  │  ├─ deadlift_30.mp4
+│  │  │  ├─ deadlift_31.mp4
+│  │  │  ├─ deadlift_32.mp4
+│  │  │  ├─ deadlift_4.mp4
+│  │  │  ├─ deadlift_5.mp4
+│  │  │  ├─ deadlift_6.mp4
+│  │  │  ├─ deadlift_7.mp4
+│  │  │  ├─ deadlift_8.mp4
+│  │  │  └─ deadlift_9.mp4
+│  │  ├─ kaggle_gym
+│  │  │  ├─ barbell biceps curl
+│  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  │  ├─ barbell biceps curl_26.mp4
+│  │  │  │  ├─ barbell biceps curl_27.mp4
+│  │  │  │  ├─ barbell biceps curl_28.mp4
+│  │  │  │  ├─ barbell biceps curl_29.mp4
+│  │  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  │  ├─ barbell biceps curl_30.mp4
+│  │  │  │  ├─ barbell biceps curl_31.mp4
+│  │  │  │  ├─ barbell biceps curl_32.mp4
+│  │  │  │  ├─ barbell biceps curl_33.mp4
+│  │  │  │  ├─ barbell biceps curl_34.mp4
+│  │  │  │  ├─ barbell biceps curl_35.mp4
+│  │  │  │  ├─ barbell biceps curl_36.mp4
+│  │  │  │  ├─ barbell biceps curl_37.mp4
+│  │  │  │  ├─ barbell biceps curl_38.mp4
+│  │  │  │  ├─ barbell biceps curl_39.mp4
+│  │  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  │  ├─ barbell biceps curl_40.mp4
+│  │  │  │  ├─ barbell biceps curl_41.mp4
+│  │  │  │  ├─ barbell biceps curl_42.mp4
+│  │  │  │  ├─ barbell biceps curl_43.mp4
+│  │  │  │  ├─ barbell biceps curl_44.mp4
+│  │  │  │  ├─ barbell biceps curl_45.mp4
+│  │  │  │  ├─ barbell biceps curl_46.mp4
+│  │  │  │  ├─ barbell biceps curl_47.mp4
+│  │  │  │  ├─ barbell biceps curl_48.mp4
+│  │  │  │  ├─ barbell biceps curl_49.mp4
+│  │  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  │  ├─ barbell biceps curl_50.mp4
+│  │  │  │  ├─ barbell biceps curl_51.mp4
+│  │  │  │  ├─ barbell biceps curl_52.mp4
+│  │  │  │  ├─ barbell biceps curl_53.mp4
+│  │  │  │  ├─ barbell biceps curl_54.mp4
+│  │  │  │  ├─ barbell biceps curl_55.mp4
+│  │  │  │  ├─ barbell biceps curl_56.mp4
+│  │  │  │  ├─ barbell biceps curl_57.mp4
+│  │  │  │  ├─ barbell biceps curl_58.mp4
+│  │  │  │  ├─ barbell biceps curl_59.mp4
+│  │  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  │  ├─ barbell biceps curl_60.mp4
+│  │  │  │  ├─ barbell biceps curl_61.mp4
+│  │  │  │  ├─ barbell biceps curl_62.mp4
+│  │  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  │  └─ barbell biceps curl_9.mp4
+│  │  │  ├─ bench press
+│  │  │  │  ├─ bench press_1.mp4
+│  │  │  │  ├─ bench press_10.mp4
+│  │  │  │  ├─ bench press_11.mp4
+│  │  │  │  ├─ bench press_12.mp4
+│  │  │  │  ├─ bench press_13.mp4
+│  │  │  │  ├─ bench press_14.mp4
+│  │  │  │  ├─ bench press_15.mp4
+│  │  │  │  ├─ bench press_16.mp4
+│  │  │  │  ├─ bench press_17.mp4
+│  │  │  │  ├─ bench press_18.mp4
+│  │  │  │  ├─ bench press_19.mp4
+│  │  │  │  ├─ bench press_2.mp4
+│  │  │  │  ├─ bench press_20.mp4
+│  │  │  │  ├─ bench press_21.mp4
+│  │  │  │  ├─ bench press_22.mp4
+│  │  │  │  ├─ bench press_23.mp4
+│  │  │  │  ├─ bench press_24.mp4
+│  │  │  │  ├─ bench press_25.mp4
+│  │  │  │  ├─ bench press_26.mp4
+│  │  │  │  ├─ bench press_27.mp4
+│  │  │  │  ├─ bench press_28.mp4
+│  │  │  │  ├─ bench press_29.mp4
+│  │  │  │  ├─ bench press_3.mp4
+│  │  │  │  ├─ bench press_30.mp4
+│  │  │  │  ├─ bench press_31.mp4
+│  │  │  │  ├─ bench press_32.mp4
+│  │  │  │  ├─ bench press_33.mp4
+│  │  │  │  ├─ bench press_34.mp4
+│  │  │  │  ├─ bench press_35.mp4
+│  │  │  │  ├─ bench press_36.mp4
+│  │  │  │  ├─ bench press_37.mp4
+│  │  │  │  ├─ bench press_38.mp4
+│  │  │  │  ├─ bench press_39.mp4
+│  │  │  │  ├─ bench press_4.mp4
+│  │  │  │  ├─ bench press_40.mp4
+│  │  │  │  ├─ bench press_41.mp4
+│  │  │  │  ├─ bench press_42.mp4
+│  │  │  │  ├─ bench press_43.mp4
+│  │  │  │  ├─ bench press_44.mp4
+│  │  │  │  ├─ bench press_45.mp4
+│  │  │  │  ├─ bench press_46.mp4
+│  │  │  │  ├─ bench press_47.mp4
+│  │  │  │  ├─ bench press_48.mp4
+│  │  │  │  ├─ bench press_49.mp4
+│  │  │  │  ├─ bench press_5.mp4
+│  │  │  │  ├─ bench press_50.mp4
+│  │  │  │  ├─ bench press_51.mp4
+│  │  │  │  ├─ bench press_52.mp4
+│  │  │  │  ├─ bench press_53.mp4
+│  │  │  │  ├─ bench press_54.mp4
+│  │  │  │  ├─ bench press_55.mp4
+│  │  │  │  ├─ bench press_56.mp4
+│  │  │  │  ├─ bench press_57.mp4
+│  │  │  │  ├─ bench press_58.mp4
+│  │  │  │  ├─ bench press_59.mp4
+│  │  │  │  ├─ bench press_6.mp4
+│  │  │  │  ├─ bench press_60.mp4
+│  │  │  │  ├─ bench press_61.mp4
+│  │  │  │  ├─ bench press_7.mp4
+│  │  │  │  ├─ bench press_8.mp4
+│  │  │  │  └─ bench press_9.mp4
+│  │  │  ├─ chest fly machine
+│  │  │  │  ├─ chest fly machine_1.mp4
+│  │  │  │  ├─ chest fly machine_10.mp4
+│  │  │  │  ├─ chest fly machine_11.mp4
+│  │  │  │  ├─ chest fly machine_12.mp4
+│  │  │  │  ├─ chest fly machine_13.mp4
+│  │  │  │  ├─ chest fly machine_14.mp4
+│  │  │  │  ├─ chest fly machine_15.mp4
+│  │  │  │  ├─ chest fly machine_16.mp4
+│  │  │  │  ├─ chest fly machine_17.mp4
+│  │  │  │  ├─ chest fly machine_18.mp4
+│  │  │  │  ├─ chest fly machine_19.mp4
+│  │  │  │  ├─ chest fly machine_2.mp4
+│  │  │  │  ├─ chest fly machine_20.mp4
+│  │  │  │  ├─ chest fly machine_21.mp4
+│  │  │  │  ├─ chest fly machine_22.mp4
+│  │  │  │  ├─ chest fly machine_23.mp4
+│  │  │  │  ├─ chest fly machine_24.mp4
+│  │  │  │  ├─ chest fly machine_25.mp4
+│  │  │  │  ├─ chest fly machine_26.mp4
+│  │  │  │  ├─ chest fly machine_27.mp4
+│  │  │  │  ├─ chest fly machine_28.mp4
+│  │  │  │  ├─ chest fly machine_3.mp4
+│  │  │  │  ├─ chest fly machine_4.mp4
+│  │  │  │  ├─ chest fly machine_5.mp4
+│  │  │  │  ├─ chest fly machine_6.mp4
+│  │  │  │  ├─ chest fly machine_7.mp4
+│  │  │  │  ├─ chest fly machine_8.mp4
+│  │  │  │  └─ chest fly machine_9.mp4
+│  │  │  ├─ deadlift
+│  │  │  │  ├─ deadlift_1.mp4
+│  │  │  │  ├─ deadlift_10.mp4
+│  │  │  │  ├─ deadlift_11.mp4
+│  │  │  │  ├─ deadlift_12.mp4
+│  │  │  │  ├─ deadlift_13.mp4
+│  │  │  │  ├─ deadlift_14.mp4
+│  │  │  │  ├─ deadlift_15.mp4
+│  │  │  │  ├─ deadlift_16.mp4
+│  │  │  │  ├─ deadlift_17.mp4
+│  │  │  │  ├─ deadlift_18.mp4
+│  │  │  │  ├─ deadlift_19.mp4
+│  │  │  │  ├─ deadlift_2.mp4
+│  │  │  │  ├─ deadlift_20.mp4
+│  │  │  │  ├─ deadlift_21.mp4
+│  │  │  │  ├─ deadlift_22.mp4
+│  │  │  │  ├─ deadlift_23.mp4
+│  │  │  │  ├─ deadlift_24.mp4
+│  │  │  │  ├─ deadlift_25.mp4
+│  │  │  │  ├─ deadlift_26.mp4
+│  │  │  │  ├─ deadlift_27.mp4
+│  │  │  │  ├─ deadlift_28.mp4
+│  │  │  │  ├─ deadlift_29.mp4
+│  │  │  │  ├─ deadlift_3.mp4
+│  │  │  │  ├─ deadlift_30.mp4
+│  │  │  │  ├─ deadlift_31.mp4
+│  │  │  │  ├─ deadlift_32.mp4
+│  │  │  │  ├─ deadlift_4.mp4
+│  │  │  │  ├─ deadlift_5.mp4
+│  │  │  │  ├─ deadlift_6.mp4
+│  │  │  │  ├─ deadlift_7.mp4
+│  │  │  │  ├─ deadlift_8.mp4
+│  │  │  │  └─ deadlift_9.mp4
+│  │  │  ├─ decline bench press
+│  │  │  │  ├─ dbp_1.mp4
+│  │  │  │  ├─ dbp_10.mp4
+│  │  │  │  ├─ dbp_11.mp4
+│  │  │  │  ├─ dbp_12.mp4
+│  │  │  │  ├─ dbp_2.MOV
+│  │  │  │  ├─ dbp_3.MOV
+│  │  │  │  ├─ dbp_4.MOV
+│  │  │  │  ├─ dbp_5.MOV
+│  │  │  │  ├─ dbp_6.MOV
+│  │  │  │  ├─ dbp_7.MOV
+│  │  │  │  ├─ dbp_8.mp4
+│  │  │  │  └─ dbp_9.mp4
+│  │  │  ├─ hammer curl
+│  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  ├─ hammer curl_11.mp4
+│  │  │  │  ├─ hammer curl_12.mp4
+│  │  │  │  ├─ hammer curl_13.mp4
+│  │  │  │  ├─ hammer curl_14.mp4
+│  │  │  │  ├─ hammer curl_15.mp4
+│  │  │  │  ├─ hammer curl_16.mp4
+│  │  │  │  ├─ hammer curl_17.mp4
+│  │  │  │  ├─ hammer curl_18.mp4
+│  │  │  │  ├─ hammer curl_19.mp4
+│  │  │  │  ├─ hammer curl_2.MOV
+│  │  │  │  ├─ hammer curl_3.MOV
+│  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  ├─ hammer curl_6.MOV
+│  │  │  │  ├─ hammer curl_7.MOV
+│  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  └─ hammer curl_9.mp4
+│  │  │  ├─ hip thrust
+│  │  │  │  ├─ Barbell_Hip_Thrust_Tutorial__gluteworkout_AdobeExpress.mp4
+│  │  │  │  ├─ hip thrust_1.MOV
+│  │  │  │  ├─ hip thrust_10.mp4
+│  │  │  │  ├─ hip thrust_11.mp4
+│  │  │  │  ├─ hip thrust_12.mp4
+│  │  │  │  ├─ hip thrust_13.mp4
+│  │  │  │  ├─ hip thrust_14.mp4
+│  │  │  │  ├─ hip thrust_15.mp4
+│  │  │  │  ├─ hip thrust_16.mp4
+│  │  │  │  ├─ hip thrust_17.mp4
+│  │  │  │  ├─ hip thrust_2.MOV
+│  │  │  │  ├─ hip thrust_3.MOV
+│  │  │  │  ├─ hip thrust_4.MOV
+│  │  │  │  ├─ hip thrust_5.mp4
+│  │  │  │  ├─ hip thrust_6.mp4
+│  │  │  │  ├─ hip thrust_7.mp4
+│  │  │  │  ├─ hip thrust_8.mp4
+│  │  │  │  └─ hip thrust_9.mp4
+│  │  │  ├─ incline bench press
+│  │  │  │  ├─ incline bench press_1.mp4
+│  │  │  │  ├─ incline bench press_10.mp4
+│  │  │  │  ├─ incline bench press_11.mp4
+│  │  │  │  ├─ incline bench press_12.mp4
+│  │  │  │  ├─ incline bench press_13.mp4
+│  │  │  │  ├─ incline bench press_14.mp4
+│  │  │  │  ├─ incline bench press_15.mp4
+│  │  │  │  ├─ incline bench press_16.mp4
+│  │  │  │  ├─ incline bench press_17.mp4
+│  │  │  │  ├─ incline bench press_18.mp4
+│  │  │  │  ├─ incline bench press_19.mp4
+│  │  │  │  ├─ incline bench press_2.mp4
+│  │  │  │  ├─ incline bench press_20.mp4
+│  │  │  │  ├─ incline bench press_21.mp4
+│  │  │  │  ├─ incline bench press_22.mp4
+│  │  │  │  ├─ incline bench press_23.mp4
+│  │  │  │  ├─ incline bench press_24.mp4
+│  │  │  │  ├─ incline bench press_25.mp4
+│  │  │  │  ├─ incline bench press_26.mp4
+│  │  │  │  ├─ incline bench press_27.mp4
+│  │  │  │  ├─ incline bench press_28.mp4
+│  │  │  │  ├─ incline bench press_29.mp4
+│  │  │  │  ├─ incline bench press_3.mp4
+│  │  │  │  ├─ incline bench press_30.mp4
+│  │  │  │  ├─ incline bench press_31.mp4
+│  │  │  │  ├─ incline bench press_32.mp4
+│  │  │  │  ├─ incline bench press_33.mp4
+│  │  │  │  ├─ incline bench press_4.mp4
+│  │  │  │  ├─ incline bench press_5.mp4
+│  │  │  │  ├─ incline bench press_6.mp4
+│  │  │  │  ├─ incline bench press_7.mp4
+│  │  │  │  ├─ incline bench press_8.mp4
+│  │  │  │  └─ incline bench press_9.mp4
+│  │  │  ├─ lat pulldown
+│  │  │  │  ├─ lat pulldown_1.mp4
+│  │  │  │  ├─ lat pulldown_10.mp4
+│  │  │  │  ├─ lat pulldown_11.mp4
+│  │  │  │  ├─ lat pulldown_12.mp4
+│  │  │  │  ├─ lat pulldown_13.mp4
+│  │  │  │  ├─ lat pulldown_14.mp4
+│  │  │  │  ├─ lat pulldown_15.mp4
+│  │  │  │  ├─ lat pulldown_16.mp4
+│  │  │  │  ├─ lat pulldown_17.mp4
+│  │  │  │  ├─ lat pulldown_18.mp4
+│  │  │  │  ├─ lat pulldown_19.mp4
+│  │  │  │  ├─ lat pulldown_2.mp4
+│  │  │  │  ├─ lat pulldown_20.mp4
+│  │  │  │  ├─ lat pulldown_21.mp4
+│  │  │  │  ├─ lat pulldown_22.mp4
+│  │  │  │  ├─ lat pulldown_23.mp4
+│  │  │  │  ├─ lat pulldown_24.mp4
+│  │  │  │  ├─ lat pulldown_25.mp4
+│  │  │  │  ├─ lat pulldown_26.mp4
+│  │  │  │  ├─ lat pulldown_27.mp4
+│  │  │  │  ├─ lat pulldown_28.mp4
+│  │  │  │  ├─ lat pulldown_29.mp4
+│  │  │  │  ├─ lat pulldown_3.mp4
+│  │  │  │  ├─ lat pulldown_30.mp4
+│  │  │  │  ├─ lat pulldown_31.mp4
+│  │  │  │  ├─ lat pulldown_32.mp4
+│  │  │  │  ├─ lat pulldown_33.mp4
+│  │  │  │  ├─ lat pulldown_34.mp4
+│  │  │  │  ├─ lat pulldown_35.mp4
+│  │  │  │  ├─ lat pulldown_36.mp4
+│  │  │  │  ├─ lat pulldown_37.mp4
+│  │  │  │  ├─ lat pulldown_38.mp4
+│  │  │  │  ├─ lat pulldown_39.mp4
+│  │  │  │  ├─ lat pulldown_4.mp4
+│  │  │  │  ├─ lat pulldown_40.mp4
+│  │  │  │  ├─ lat pulldown_41.mp4
+│  │  │  │  ├─ lat pulldown_42.mp4
+│  │  │  │  ├─ lat pulldown_43.mp4
+│  │  │  │  ├─ lat pulldown_44.mp4
+│  │  │  │  ├─ lat pulldown_45.mp4
+│  │  │  │  ├─ lat pulldown_46.mp4
+│  │  │  │  ├─ lat pulldown_47.mp4
+│  │  │  │  ├─ lat pulldown_48.mp4
+│  │  │  │  ├─ lat pulldown_49.mp4
+│  │  │  │  ├─ lat pulldown_5.mp4
+│  │  │  │  ├─ lat pulldown_50.mp4
+│  │  │  │  ├─ lat pulldown_51.mp4
+│  │  │  │  ├─ lat pulldown_6.mp4
+│  │  │  │  ├─ lat pulldown_7.mp4
+│  │  │  │  ├─ lat pulldown_8.mp4
+│  │  │  │  └─ lat pulldown_9.mp4
+│  │  │  ├─ lateral raise
+│  │  │  │  ├─ lateral raise_1.MOV
+│  │  │  │  ├─ lateral raise_10.mp4
+│  │  │  │  ├─ lateral raise_11.mp4
+│  │  │  │  ├─ lateral raise_12.mp4
+│  │  │  │  ├─ lateral raise_13.mp4
+│  │  │  │  ├─ lateral raise_14.mp4
+│  │  │  │  ├─ lateral raise_15.mp4
+│  │  │  │  ├─ lateral raise_16.mp4
+│  │  │  │  ├─ lateral raise_17.mp4
+│  │  │  │  ├─ lateral raise_18.mp4
+│  │  │  │  ├─ lateral raise_19.mp4
+│  │  │  │  ├─ lateral raise_2.MOV
+│  │  │  │  ├─ lateral raise_20.mp4
+│  │  │  │  ├─ lateral raise_21.mp4
+│  │  │  │  ├─ lateral raise_22.mp4
+│  │  │  │  ├─ lateral raise_23.mp4
+│  │  │  │  ├─ lateral raise_24.mp4
+│  │  │  │  ├─ lateral raise_25.mp4
+│  │  │  │  ├─ lateral raise_26.mp4
+│  │  │  │  ├─ lateral raise_27.mp4
+│  │  │  │  ├─ lateral raise_28.mp4
+│  │  │  │  ├─ lateral raise_29.mp4
+│  │  │  │  ├─ lateral raise_3.MOV
+│  │  │  │  ├─ lateral raise_30.mp4
+│  │  │  │  ├─ lateral raise_31.mp4
+│  │  │  │  ├─ lateral raise_32.mp4
+│  │  │  │  ├─ lateral raise_33.mp4
+│  │  │  │  ├─ lateral raise_34.mp4
+│  │  │  │  ├─ lateral raise_35.mp4
+│  │  │  │  ├─ lateral raise_36.mp4
+│  │  │  │  ├─ lateral raise_37.mp4
+│  │  │  │  ├─ lateral raise_4.MOV
+│  │  │  │  ├─ lateral raise_5.MOV
+│  │  │  │  ├─ lateral raise_6.MOV
+│  │  │  │  ├─ lateral raise_7.mp4
+│  │  │  │  ├─ lateral raise_8.mp4
+│  │  │  │  └─ lateral raise_9.mp4
+│  │  │  ├─ leg extension
+│  │  │  │  ├─ leg extension_1.MOV
+│  │  │  │  ├─ leg extension_10.mp4
+│  │  │  │  ├─ leg extension_11.mp4
+│  │  │  │  ├─ leg extension_12.mp4
+│  │  │  │  ├─ leg extension_13.mp4
+│  │  │  │  ├─ leg extension_14.mp4
+│  │  │  │  ├─ leg extension_15.mp4
+│  │  │  │  ├─ leg extension_16.mp4
+│  │  │  │  ├─ leg extension_17.mp4
+│  │  │  │  ├─ leg extension_18.mp4
+│  │  │  │  ├─ leg extension_19.mp4
+│  │  │  │  ├─ leg extension_2.MOV
+│  │  │  │  ├─ leg extension_20.mp4
+│  │  │  │  ├─ leg extension_21.mp4
+│  │  │  │  ├─ leg extension_22.mp4
+│  │  │  │  ├─ leg extension_23.mp4
+│  │  │  │  ├─ leg extension_24.mp4
+│  │  │  │  ├─ leg extension_25.mp4
+│  │  │  │  ├─ leg extension_3.MOV
+│  │  │  │  ├─ leg extension_4.MOV
+│  │  │  │  ├─ leg extension_5.MOV
+│  │  │  │  ├─ leg extension_6.MOV
+│  │  │  │  ├─ leg extension_7.mp4
+│  │  │  │  ├─ leg extension_8.mp4
+│  │  │  │  └─ leg extension_9.mp4
+│  │  │  ├─ leg raises
+│  │  │  │  ├─ leg raises_1.MOV
+│  │  │  │  ├─ leg raises_10.mp4
+│  │  │  │  ├─ leg raises_11.mp4
+│  │  │  │  ├─ leg raises_12.mp4
+│  │  │  │  ├─ leg raises_13.mp4
+│  │  │  │  ├─ leg raises_14.mp4
+│  │  │  │  ├─ leg raises_15.mp4
+│  │  │  │  ├─ leg raises_16.mp4
+│  │  │  │  ├─ leg raises_17.mp4
+│  │  │  │  ├─ leg raises_18.mp4
+│  │  │  │  ├─ leg raises_19.mp4
+│  │  │  │  ├─ leg raises_2.MOV
+│  │  │  │  ├─ leg raises_20.mp4
+│  │  │  │  ├─ leg raises_21.mp4
+│  │  │  │  ├─ leg raises_3.MOV
+│  │  │  │  ├─ leg raises_4.MOV
+│  │  │  │  ├─ leg raises_5.MOV
+│  │  │  │  ├─ leg raises_6.MOV
+│  │  │  │  ├─ leg raises_7.mp4
+│  │  │  │  ├─ leg raises_8.mp4
+│  │  │  │  └─ leg raises_9.mp4
+│  │  │  ├─ plank
+│  │  │  │  ├─ plank_1.MOV
+│  │  │  │  ├─ plank_2.mp4
+│  │  │  │  ├─ plank_3.mp4
+│  │  │  │  ├─ plank_4.mp4
+│  │  │  │  ├─ plank_5.mp4
+│  │  │  │  ├─ plank_6.mp4
+│  │  │  │  └─ plank_7.mp4
+│  │  │  ├─ pull Up
+│  │  │  │  ├─ pull up_1.mp4
+│  │  │  │  ├─ pull up_10.mp4
+│  │  │  │  ├─ pull up_11.mp4
+│  │  │  │  ├─ pull up_12.mp4
+│  │  │  │  ├─ pull up_13.mp4
+│  │  │  │  ├─ pull up_14.mp4
+│  │  │  │  ├─ pull up_15.mp4
+│  │  │  │  ├─ pull up_16.mp4
+│  │  │  │  ├─ pull up_17.mp4
+│  │  │  │  ├─ pull up_18.mp4
+│  │  │  │  ├─ pull up_19.mp4
+│  │  │  │  ├─ pull up_2.mp4
+│  │  │  │  ├─ pull up_20.mp4
+│  │  │  │  ├─ pull up_21.mp4
+│  │  │  │  ├─ pull up_22.mp4
+│  │  │  │  ├─ pull up_23.mp4
+│  │  │  │  ├─ pull up_24.mp4
+│  │  │  │  ├─ pull up_25.mp4
+│  │  │  │  ├─ pull up_26.mp4
+│  │  │  │  ├─ pull up_3.mp4
+│  │  │  │  ├─ pull up_4.mp4
+│  │  │  │  ├─ pull up_5.mp4
+│  │  │  │  ├─ pull up_6.mp4
+│  │  │  │  ├─ pull up_7.mp4
+│  │  │  │  ├─ pull up_8.mp4
+│  │  │  │  └─ pull up_9.mp4
+│  │  │  ├─ push-up
+│  │  │  │  ├─ push-up_1.mp4
+│  │  │  │  ├─ push-up_10.mp4
+│  │  │  │  ├─ push-up_11.mp4
+│  │  │  │  ├─ push-up_12.mp4
+│  │  │  │  ├─ push-up_13.mp4
+│  │  │  │  ├─ push-up_14.mp4
+│  │  │  │  ├─ push-up_15.mp4
+│  │  │  │  ├─ push-up_16.mp4
+│  │  │  │  ├─ push-up_17.mp4
+│  │  │  │  ├─ push-up_18.mp4
+│  │  │  │  ├─ push-up_19.mp4
+│  │  │  │  ├─ push-up_2.mp4
+│  │  │  │  ├─ push-up_20.mp4
+│  │  │  │  ├─ push-up_21.mp4
+│  │  │  │  ├─ push-up_22.mp4
+│  │  │  │  ├─ push-up_23.mp4
+│  │  │  │  ├─ push-up_24.mp4
+│  │  │  │  ├─ push-up_25.mp4
+│  │  │  │  ├─ push-up_26.mp4
+│  │  │  │  ├─ push-up_27.mp4
+│  │  │  │  ├─ push-up_28.mp4
+│  │  │  │  ├─ push-up_29.mp4
+│  │  │  │  ├─ push-up_3.mp4
+│  │  │  │  ├─ push-up_30.mp4
+│  │  │  │  ├─ push-up_31.mp4
+│  │  │  │  ├─ push-up_32.mp4
+│  │  │  │  ├─ push-up_33.mp4
+│  │  │  │  ├─ push-up_34.mp4
+│  │  │  │  ├─ push-up_35.mp4
+│  │  │  │  ├─ push-up_36.mp4
+│  │  │  │  ├─ push-up_37.mp4
+│  │  │  │  ├─ push-up_38.mp4
+│  │  │  │  ├─ push-up_39.mp4
+│  │  │  │  ├─ push-up_4.mp4
+│  │  │  │  ├─ push-up_40.mp4
+│  │  │  │  ├─ push-up_41.mp4
+│  │  │  │  ├─ push-up_42.mp4
+│  │  │  │  ├─ push-up_43.mp4
+│  │  │  │  ├─ push-up_44.mp4
+│  │  │  │  ├─ push-up_45.mp4
+│  │  │  │  ├─ push-up_46.mp4
+│  │  │  │  ├─ push-up_47.mp4
+│  │  │  │  ├─ push-up_48.mp4
+│  │  │  │  ├─ push-up_49.mp4
+│  │  │  │  ├─ push-up_5.mp4
+│  │  │  │  ├─ push-up_50.mp4
+│  │  │  │  ├─ push-up_51.mp4
+│  │  │  │  ├─ push-up_52.mp4
+│  │  │  │  ├─ push-up_53.mp4
+│  │  │  │  ├─ push-up_54.mp4
+│  │  │  │  ├─ push-up_55.mp4
+│  │  │  │  ├─ push-up_56.mp4
+│  │  │  │  ├─ push-up_6.mp4
+│  │  │  │  ├─ push-up_7.mp4
+│  │  │  │  ├─ push-up_8.mp4
+│  │  │  │  └─ push-up_9.mp4
+│  │  │  ├─ raw_data
+│  │  │  │  └─ raw_data
+│  │  │  │     ├─ data-btc
+│  │  │  │     └─ data-crawl
+│  │  │  ├─ romanian deadlift
+│  │  │  │  ├─ romanian deadlift_1.mov
+│  │  │  │  ├─ romanian deadlift_10.mp4
+│  │  │  │  ├─ romanian deadlift_11.mp4
+│  │  │  │  ├─ romanian deadlift_12.mp4
+│  │  │  │  ├─ romanian deadlift_13.mp4
+│  │  │  │  ├─ romanian deadlift_14.mp4
+│  │  │  │  ├─ romanian deadlift_2.MOV
+│  │  │  │  ├─ romanian deadlift_3.mov
+│  │  │  │  ├─ romanian deadlift_4.MOV
+│  │  │  │  ├─ romanian deadlift_5.mp4
+│  │  │  │  ├─ romanian deadlift_6.mp4
+│  │  │  │  ├─ romanian deadlift_7.mp4
+│  │  │  │  ├─ romanian deadlift_8.mp4
+│  │  │  │  └─ romanian deadlift_9.mp4
+│  │  │  ├─ russian twist
+│  │  │  │  ├─ russian twist_1.MOV
+│  │  │  │  ├─ russian twist_10.mp4
+│  │  │  │  ├─ russian twist_11.mp4
+│  │  │  │  ├─ russian twist_12.mp4
+│  │  │  │  ├─ russian twist_13.mp4
+│  │  │  │  ├─ russian twist_2.mp4
+│  │  │  │  ├─ russian twist_3.mp4
+│  │  │  │  ├─ russian twist_4.mp4
+│  │  │  │  ├─ russian twist_5.mp4
+│  │  │  │  ├─ russian twist_6.mp4
+│  │  │  │  ├─ russian twist_7.mp4
+│  │  │  │  ├─ russian twist_8.mp4
+│  │  │  │  └─ russian twist_9.mp4
+│  │  │  ├─ shoulder press
+│  │  │  │  ├─ shoulder press_1.MOV
+│  │  │  │  ├─ shoulder press_10.mp4
+│  │  │  │  ├─ shoulder press_11.mp4
+│  │  │  │  ├─ shoulder press_12.mp4
+│  │  │  │  ├─ shoulder press_13.mp4
+│  │  │  │  ├─ shoulder press_14.mp4
+│  │  │  │  ├─ shoulder press_15.mp4
+│  │  │  │  ├─ shoulder press_16.mp4
+│  │  │  │  ├─ shoulder press_17.mp4
+│  │  │  │  ├─ shoulder press_2.MOV
+│  │  │  │  ├─ shoulder press_3.MOV
+│  │  │  │  ├─ shoulder press_4.MOV
+│  │  │  │  ├─ shoulder press_5.mp4
+│  │  │  │  ├─ shoulder press_6.mp4
+│  │  │  │  ├─ shoulder press_7.mp4
+│  │  │  │  ├─ shoulder press_8.mp4
+│  │  │  │  └─ shoulder press_9.mp4
+│  │  │  ├─ squat
+│  │  │  │  ├─ squat_1.MOV
+│  │  │  │  ├─ squat_10.mp4
+│  │  │  │  ├─ squat_11.mp4
+│  │  │  │  ├─ squat_12.mp4
+│  │  │  │  ├─ squat_13.mp4
+│  │  │  │  ├─ squat_14.mp4
+│  │  │  │  ├─ squat_15.mp4
+│  │  │  │  ├─ squat_16.mp4
+│  │  │  │  ├─ squat_17.mp4
+│  │  │  │  ├─ squat_18.mp4
+│  │  │  │  ├─ squat_19.mp4
+│  │  │  │  ├─ squat_2.MOV
+│  │  │  │  ├─ squat_20.mp4
+│  │  │  │  ├─ squat_21.mp4
+│  │  │  │  ├─ squat_22.mp4
+│  │  │  │  ├─ squat_23.mp4
+│  │  │  │  ├─ squat_24.mp4
+│  │  │  │  ├─ squat_25.mp4
+│  │  │  │  ├─ squat_26.mp4
+│  │  │  │  ├─ squat_27.mp4
+│  │  │  │  ├─ squat_28.mp4
+│  │  │  │  ├─ squat_29.mp4
+│  │  │  │  ├─ squat_3.MOV
+│  │  │  │  ├─ squat_4.MOV
+│  │  │  │  ├─ squat_5.MOV
+│  │  │  │  ├─ squat_6.MOV
+│  │  │  │  ├─ squat_7.mp4
+│  │  │  │  ├─ squat_8.mp4
+│  │  │  │  └─ squat_9.mp4
+│  │  │  ├─ t bar row
+│  │  │  │  ├─ t bar row_1.MOV
+│  │  │  │  ├─ t bar row_10.mp4
+│  │  │  │  ├─ t bar row_11.mp4
+│  │  │  │  ├─ t bar row_12.mp4
+│  │  │  │  ├─ t bar row_13.mp4
+│  │  │  │  ├─ t bar row_14.mp4
+│  │  │  │  ├─ t bar row_15.mp4
+│  │  │  │  ├─ t bar row_16.mp4
+│  │  │  │  ├─ t bar row_17.mp4
+│  │  │  │  ├─ t bar row_18.mp4
+│  │  │  │  ├─ t bar row_19.mp4
+│  │  │  │  ├─ t bar row_2.MOV
+│  │  │  │  ├─ t bar row_20.mp4
+│  │  │  │  ├─ t bar row_21.mp4
+│  │  │  │  ├─ t bar row_3.MOV
+│  │  │  │  ├─ t bar row_4.MOV
+│  │  │  │  ├─ t bar row_5.MOV
+│  │  │  │  ├─ t bar row_6.MOV
+│  │  │  │  ├─ t bar row_7.MOV
+│  │  │  │  ├─ t bar row_8.mp4
+│  │  │  │  └─ t bar row_9.mp4
+│  │  │  ├─ test
+│  │  │  │  └─ test
+│  │  │  │     ├─ barbell biceps curl
+│  │  │  │     ├─ bench press
+│  │  │  │     ├─ chest fly machine
+│  │  │  │     ├─ deadlift
+│  │  │  │     ├─ decline bench press
+│  │  │  │     ├─ hammer curl
+│  │  │  │     ├─ hip thrust
+│  │  │  │     ├─ incline bench press
+│  │  │  │     ├─ lat pulldown
+│  │  │  │     ├─ lateral raise
+│  │  │  │     ├─ leg extension
+│  │  │  │     ├─ leg raises
+│  │  │  │     ├─ plank
+│  │  │  │     ├─ pull Up
+│  │  │  │     ├─ push-up
+│  │  │  │     ├─ romanian deadlift
+│  │  │  │     ├─ russian twist
+│  │  │  │     ├─ shoulder press
+│  │  │  │     ├─ squat
+│  │  │  │     ├─ t bar row
+│  │  │  │     ├─ tricep dips
+│  │  │  │     └─ tricep Pushdown
+│  │  │  ├─ tricep dips
+│  │  │  │  ├─ tricep dips_1.MOV
+│  │  │  │  ├─ tricep dips_10.mp4
+│  │  │  │  ├─ tricep dips_11.mp4
+│  │  │  │  ├─ tricep dips_12.mp4
+│  │  │  │  ├─ tricep dips_13.mp4
+│  │  │  │  ├─ tricep dips_14.mp4
+│  │  │  │  ├─ tricep dips_15.mp4
+│  │  │  │  ├─ tricep dips_16.mp4
+│  │  │  │  ├─ tricep dips_17.mp4
+│  │  │  │  ├─ tricep dips_18.mp4
+│  │  │  │  ├─ tricep dips_19.mp4
+│  │  │  │  ├─ tricep dips_2.MOV
+│  │  │  │  ├─ tricep dips_20.mp4
+│  │  │  │  ├─ tricep dips_3.MOV
+│  │  │  │  ├─ tricep dips_4.MOV
+│  │  │  │  ├─ tricep dips_5.mp4
+│  │  │  │  ├─ tricep dips_6.mp4
+│  │  │  │  ├─ tricep dips_7.mp4
+│  │  │  │  ├─ tricep dips_8.mp4
+│  │  │  │  └─ tricep dips_9.mp4
+│  │  │  ├─ tricep Pushdown
+│  │  │  │  ├─ tricep pushdown_1.mp4
+│  │  │  │  ├─ tricep pushdown_10.mp4
+│  │  │  │  ├─ tricep pushdown_11.mp4
+│  │  │  │  ├─ tricep pushdown_12.mp4
+│  │  │  │  ├─ tricep pushdown_13.mp4
+│  │  │  │  ├─ tricep pushdown_14.mp4
+│  │  │  │  ├─ tricep pushdown_15.mp4
+│  │  │  │  ├─ tricep pushdown_16.mp4
+│  │  │  │  ├─ tricep pushdown_17.mp4
+│  │  │  │  ├─ tricep pushdown_18.mp4
+│  │  │  │  ├─ tricep pushdown_19.mp4
+│  │  │  │  ├─ tricep pushdown_2.mp4
+│  │  │  │  ├─ tricep pushdown_20.mp4
+│  │  │  │  ├─ tricep pushdown_21.mp4
+│  │  │  │  ├─ tricep pushdown_22.mp4
+│  │  │  │  ├─ tricep pushdown_23.mp4
+│  │  │  │  ├─ tricep pushdown_24.mp4
+│  │  │  │  ├─ tricep pushdown_25.mp4
+│  │  │  │  ├─ tricep pushdown_26.mp4
+│  │  │  │  ├─ tricep pushdown_27.mp4
+│  │  │  │  ├─ tricep pushdown_28.mp4
+│  │  │  │  ├─ tricep pushdown_29.mp4
+│  │  │  │  ├─ tricep pushdown_3.mp4
+│  │  │  │  ├─ tricep pushdown_30.mp4
+│  │  │  │  ├─ tricep pushdown_31.mp4
+│  │  │  │  ├─ tricep pushdown_32.mp4
+│  │  │  │  ├─ tricep pushdown_33.mp4
+│  │  │  │  ├─ tricep pushdown_34.mp4
+│  │  │  │  ├─ tricep pushdown_35.mp4
+│  │  │  │  ├─ tricep pushdown_36.mp4
+│  │  │  │  ├─ tricep pushdown_37.mp4
+│  │  │  │  ├─ tricep pushdown_38.mp4
+│  │  │  │  ├─ tricep pushdown_39.mp4
+│  │  │  │  ├─ tricep pushdown_4.mp4
+│  │  │  │  ├─ tricep pushdown_40.mp4
+│  │  │  │  ├─ tricep pushdown_41.mp4
+│  │  │  │  ├─ tricep pushdown_42.mp4
+│  │  │  │  ├─ tricep pushdown_43.mp4
+│  │  │  │  ├─ tricep pushdown_44.mp4
+│  │  │  │  ├─ tricep pushdown_45.mp4
+│  │  │  │  ├─ tricep pushdown_46.mp4
+│  │  │  │  ├─ tricep pushdown_47.mp4
+│  │  │  │  ├─ tricep pushdown_48.mp4
+│  │  │  │  ├─ tricep pushdown_49.mp4
+│  │  │  │  ├─ tricep pushdown_5.mp4
+│  │  │  │  ├─ tricep pushdown_50.mp4
+│  │  │  │  ├─ tricep pushdown_6.mp4
+│  │  │  │  ├─ tricep pushdown_7.mp4
+│  │  │  │  ├─ tricep pushdown_8.mp4
+│  │  │  │  └─ tricep pushdown_9.mp4
+│  │  │  └─ verified_data
+│  │  │     └─ verified_data
+│  │  │        ├─ data_btc_10s
+│  │  │        └─ data_crawl_10s
+│  │  ├─ riccardo
+│  │  ├─ riccardo_realtime
+│  │  │  ├─ final_kaggle_with_additional_video
+│  │  │  │  ├─ barbell biceps curl
+│  │  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  │  │  └─ barbell biceps curl_9.mp4
+│  │  │  │  ├─ hammer curl
+│  │  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  │  ├─ hammer curl_11.mp4
+│  │  │  │  │  ├─ hammer curl_12.mp4
+│  │  │  │  │  ├─ hammer curl_13.mp4
+│  │  │  │  │  ├─ hammer curl_14.mp4
+│  │  │  │  │  ├─ hammer curl_15.mp4
+│  │  │  │  │  ├─ hammer curl_16.mp4
+│  │  │  │  │  ├─ hammer curl_17.mp4
+│  │  │  │  │  ├─ hammer curl_18.mp4
+│  │  │  │  │  ├─ hammer curl_19.mp4
+│  │  │  │  │  ├─ hammer curl_2.MOV
+│  │  │  │  │  ├─ hammer curl_3.MOV
+│  │  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  │  ├─ hammer curl_6.MOV
+│  │  │  │  │  ├─ hammer curl_7.MOV
+│  │  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  │  └─ hammer curl_9.mp4
+│  │  │  │  ├─ push-up
+│  │  │  │  │  ├─ push-up_1.mp4
+│  │  │  │  │  ├─ push-up_10.mp4
+│  │  │  │  │  ├─ push-up_11.mp4
+│  │  │  │  │  ├─ push-up_12.mp4
+│  │  │  │  │  ├─ push-up_13.mp4
+│  │  │  │  │  ├─ push-up_14.mp4
+│  │  │  │  │  ├─ push-up_15.mp4
+│  │  │  │  │  ├─ push-up_16.mp4
+│  │  │  │  │  ├─ push-up_17.mp4
+│  │  │  │  │  ├─ push-up_18.mp4
+│  │  │  │  │  ├─ push-up_19.mp4
+│  │  │  │  │  ├─ push-up_2.mp4
+│  │  │  │  │  ├─ push-up_20.mp4
+│  │  │  │  │  ├─ push-up_21.mp4
+│  │  │  │  │  ├─ push-up_22.mp4
+│  │  │  │  │  ├─ push-up_23.mp4
+│  │  │  │  │  ├─ push-up_24.mp4
+│  │  │  │  │  ├─ push-up_25.mp4
+│  │  │  │  │  ├─ push-up_3.mp4
+│  │  │  │  │  ├─ push-up_4.mp4
+│  │  │  │  │  ├─ push-up_5.mp4
+│  │  │  │  │  ├─ push-up_6.mp4
+│  │  │  │  │  ├─ push-up_7.mp4
+│  │  │  │  │  ├─ push-up_8.mp4
+│  │  │  │  │  └─ push-up_9.mp4
+│  │  │  │  ├─ shoulder press
+│  │  │  │  │  ├─ shoulder press_1.mp4
+│  │  │  │  │  ├─ shoulder press_10.mp4
+│  │  │  │  │  ├─ shoulder press_11.mp4
+│  │  │  │  │  ├─ shoulder press_12.mp4
+│  │  │  │  │  ├─ shoulder press_13.mp4
+│  │  │  │  │  ├─ shoulder press_14.mp4
+│  │  │  │  │  ├─ shoulder press_15.mp4
+│  │  │  │  │  ├─ shoulder press_16.mp4
+│  │  │  │  │  ├─ shoulder press_17.mp4
+│  │  │  │  │  ├─ shoulder press_18.mp4
+│  │  │  │  │  ├─ shoulder press_19.MOV
+│  │  │  │  │  ├─ shoulder press_2.mp4
+│  │  │  │  │  ├─ shoulder press_20.MOV
+│  │  │  │  │  ├─ shoulder press_21.mov
+│  │  │  │  │  ├─ shoulder press_22.mp4
+│  │  │  │  │  ├─ shoulder press_23.mp4
+│  │  │  │  │  ├─ shoulder press_24.mp4
+│  │  │  │  │  ├─ shoulder press_25.mp4
+│  │  │  │  │  ├─ shoulder press_3.MOV
+│  │  │  │  │  ├─ shoulder press_4.MOV
+│  │  │  │  │  ├─ shoulder press_5.mp4
+│  │  │  │  │  ├─ shoulder press_6.mp4
+│  │  │  │  │  ├─ shoulder press_7.mp4
+│  │  │  │  │  ├─ shoulder press_8.mp4
+│  │  │  │  │  └─ shoulder press_9.mp4
+│  │  │  │  └─ squat
+│  │  │  │     ├─ squat_1.MOV
+│  │  │  │     ├─ squat_10.mp4
+│  │  │  │     ├─ squat_11.mp4
+│  │  │  │     ├─ squat_12.mp4
+│  │  │  │     ├─ squat_13.mp4
+│  │  │  │     ├─ squat_14.mp4
+│  │  │  │     ├─ squat_15.mp4
+│  │  │  │     ├─ squat_16.mp4
+│  │  │  │     ├─ squat_17.mp4
+│  │  │  │     ├─ squat_18.mp4
+│  │  │  │     ├─ squat_19.mp4
+│  │  │  │     ├─ squat_2.MOV
+│  │  │  │     ├─ squat_20.mp4
+│  │  │  │     ├─ squat_21.mp4
+│  │  │  │     ├─ squat_22.mp4
+│  │  │  │     ├─ squat_23.mp4
+│  │  │  │     ├─ squat_24.mp4
+│  │  │  │     ├─ squat_25.mp4
+│  │  │  │     ├─ squat_3.MOV
+│  │  │  │     ├─ squat_4.MOV
+│  │  │  │     ├─ squat_5.MOV
+│  │  │  │     ├─ squat_6.MOV
+│  │  │  │     ├─ squat_7.mp4
+│  │  │  │     ├─ squat_8.mp4
+│  │  │  │     └─ squat_9.mp4
+│  │  │  ├─ my_test_video_1
+│  │  │  │  ├─ shoulder press
+│  │  │  │  │  ├─ shoulder press_1.mp4
+│  │  │  │  │  ├─ shoulder press_2.mp4
+│  │  │  │  │  ├─ shoulder press_3.mp4
+│  │  │  │  │  └─ shoulder press_4.mp4
+│  │  │  │  └─ squat
+│  │  │  │     ├─ squat_1.mp4
+│  │  │  │     ├─ squat_2.mp4
+│  │  │  │     ├─ squat_3.mp4
+│  │  │  │     └─ squat_4.mp4
+│  │  │  ├─ similar_dataset
+│  │  │  │  ├─ barbell biceps curl
+│  │  │  │  │  ├─ 0d402adf-578c-4c26-ba50-3b28a6f0e648.mp4
+│  │  │  │  │  ├─ 1a3e6f0d-fb99-4e4d-b80f-831c7f38aca9.mp4
+│  │  │  │  │  ├─ 27d82bac-ce83-4f91-a381-c11dd0bf6932.mp4
+│  │  │  │  │  ├─ 3f034ee8-792b-4646-8746-c0dbbf6e5b50.mp4
+│  │  │  │  │  ├─ 6933f339-2ee5-4e59-9031-8bfee0f6e900.mp4
+│  │  │  │  │  ├─ 72fb4cb4-ecad-44df-a0e1-5e4f4b581f9e.mp4
+│  │  │  │  │  ├─ 89b99b36-5491-4bc6-952c-53a67b889b62.mp4
+│  │  │  │  │  ├─ ac696ae8-e815-4f5f-bd32-864e2477e3ce.mp4
+│  │  │  │  │  ├─ f20150e2-f6e1-41e9-ab13-9d1e42599bba.mp4
+│  │  │  │  │  ├─ f32c33d2-e298-499a-a61e-7236d6f1ba64.mp4
+│  │  │  │  │  ├─ f9d9d0bb-7286-4074-8d3c-e73d4072ad79.mp4
+│  │  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  │  ├─ notsure (2).mp4
+│  │  │  │  │  └─ notsure.mp4
+│  │  │  │  ├─ push-up
+│  │  │  │  │  ├─ 01b09356-3985-474f-827f-20c79cfcda78.mp4
+│  │  │  │  │  ├─ 02dd7b9d-c7fe-41b8-993a-e250b07a5ceb.mp4
+│  │  │  │  │  ├─ 0b78db8e-3c32-4248-bbff-b483f9d910d3.mp4
+│  │  │  │  │  ├─ 10cad66c-a298-4de5-ac55-16ff825f8101.mp4
+│  │  │  │  │  ├─ 53f39e2a-4ca3-45d1-af84-6ddfde7ff818.mp4
+│  │  │  │  │  ├─ 57f76c55-838a-4184-9ad0-effced296b5c.mp4
+│  │  │  │  │  ├─ 5b596f14-2afd-45c1-a79b-f5b61bf050a7.mp4
+│  │  │  │  │  ├─ 5e507b14-eaeb-4b1a-9ff0-3de5883d0d22.mp4
+│  │  │  │  │  ├─ 64f7ef6d-5a82-48e1-b75f-cca64f151315.mp4
+│  │  │  │  │  ├─ 6e4f0e04-4dbd-476c-9884-a476bd7a2c33.mp4
+│  │  │  │  │  ├─ a31bfef9-b3ea-4fb9-8541-572fa62f15bb.mp4
+│  │  │  │  │  ├─ bd26f1c8-271f-45d2-a877-0deaa4f6e6f2.mp4
+│  │  │  │  │  ├─ v_PushUps_g01_c02.avi
+│  │  │  │  │  ├─ v_PushUps_g17_c02.avi
+│  │  │  │  │  ├─ v_PushUps_g17_c03.avi
+│  │  │  │  │  ├─ v_PushUps_g19_c03.avi
+│  │  │  │  │  ├─ v_PushUps_g25_c01.avi
+│  │  │  │  │  └─ v_PushUps_g25_c02.avi
+│  │  │  │  ├─ shoulder press
+│  │  │  │  │  ├─ 17496a37-c1f7-4105-9c07-e7cfbca06106.mp4
+│  │  │  │  │  ├─ 237de26b-2b1e-4f62-9844-b30fc9860c72.mp4
+│  │  │  │  │  ├─ 30fe126e-0985-48af-813f-65c30d49913d.mp4
+│  │  │  │  │  ├─ 51f72e68-ec28-4272-b15c-45586c244398.mp4
+│  │  │  │  │  ├─ 555859e7-8a16-4494-8dca-dff27cbdd9c8.mp4
+│  │  │  │  │  ├─ 6397dc79-5ba3-4244-a426-c24d6e7cfeb0.mp4
+│  │  │  │  │  ├─ a34f39ab-161f-41fe-853d-3eeea21073bd.mp4
+│  │  │  │  │  ├─ b066cbc1-931a-4af5-b668-36e98e7091b6.mp4
+│  │  │  │  │  ├─ b8a72e6b-f7ad-406a-9aa5-a3df903ec40e.mp4
+│  │  │  │  │  ├─ f44ec93a-ce42-46a4-97f4-015bea952a00.mp4
+│  │  │  │  │  ├─ fc319e88-4be0-467e-9dfd-cb7b3512f3ed.mp4
+│  │  │  │  │  ├─ shoulder press_12.mp4
+│  │  │  │  │  ├─ shoulder press_3.MOV
+│  │  │  │  │  ├─ shoulder press_4.MOV
+│  │  │  │  │  ├─ shoulder press_6.mp4
+│  │  │  │  │  ├─ shoulder press_7.mp4
+│  │  │  │  │  ├─ shoulder press_8.mp4
+│  │  │  │  │  └─ shoulder press_9.mp4
+│  │  │  │  └─ squat
+│  │  │  │     ├─ 1e2c254b-0d5a-4fd6-a6d4-2681333d927b.mp4
+│  │  │  │     ├─ 2a516b63-bccf-490e-807a-e6102303381f.mp4
+│  │  │  │     ├─ 385c01f2-e604-46d4-a84b-949b733395dd.mp4
+│  │  │  │     ├─ 6dddd176-2460-48cf-bd01-3eaaa0dc754f.mp4
+│  │  │  │     ├─ 71ef5d06-bfea-449b-8ff3-b428ae7dbaa7.mp4
+│  │  │  │     ├─ 7ddd38c8-0649-4092-8ddc-5ce2ba0bd4d1.mp4
+│  │  │  │     ├─ 897f5a21-f1a1-477e-aa8b-11b7ee9378d2.mp4
+│  │  │  │     ├─ v_BodyWeightSquats_g01_c01.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g01_c02.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g02_c02.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g02_c03.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g04_c03.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g04_c04.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g06_c01.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g06_c02.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g15_c03.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g15_c04.avi
+│  │  │  │     └─ v_BodyWeightSquats_g22_c03.avi
+│  │  │  └─ synthetic_dataset
+│  │  │     └─ synthetic_dataset
+│  │  │        ├─ barbell biceps curl
+│  │  │        ├─ push-up
+│  │  │        ├─ shoulder press
+│  │  │        └─ squat
+│  │  └─ squat
+│  │     ├─ squat_1.MOV
+│  │     ├─ squat_10.mp4
+│  │     ├─ squat_11.mp4
+│  │     ├─ squat_12.mp4
+│  │     ├─ squat_13.mp4
+│  │     ├─ squat_14.mp4
+│  │     ├─ squat_15.mp4
+│  │     ├─ squat_16.mp4
+│  │     ├─ squat_17.mp4
+│  │     ├─ squat_18.mp4
+│  │     ├─ squat_19.mp4
+│  │     ├─ squat_2.MOV
+│  │     ├─ squat_20.mp4
+│  │     ├─ squat_21.mp4
+│  │     ├─ squat_22.mp4
+│  │     ├─ squat_23.mp4
+│  │     ├─ squat_24.mp4
+│  │     ├─ squat_25.mp4
+│  │     ├─ squat_26.mp4
+│  │     ├─ squat_27.mp4
+│  │     ├─ squat_28.mp4
+│  │     ├─ squat_29.mp4
+│  │     ├─ squat_3.MOV
+│  │     ├─ squat_4.MOV
+│  │     ├─ squat_5.MOV
+│  │     ├─ squat_6.MOV
+│  │     ├─ squat_7.mp4
+│  │     ├─ squat_8.mp4
+│  │     └─ squat_9.mp4
+│  ├─ raw-Jakes_PC
+│  │  ├─ bench
+│  │  │  ├─ bench press_1.mp4
+│  │  │  ├─ bench press_10.mp4
+│  │  │  ├─ bench press_11.mp4
+│  │  │  ├─ bench press_12.mp4
+│  │  │  ├─ bench press_13.mp4
+│  │  │  ├─ bench press_14.mp4
+│  │  │  ├─ bench press_15.mp4
+│  │  │  ├─ bench press_16.mp4
+│  │  │  ├─ bench press_17.mp4
+│  │  │  ├─ bench press_18.mp4
+│  │  │  ├─ bench press_19.mp4
+│  │  │  ├─ bench press_2.mp4
+│  │  │  ├─ bench press_20.mp4
+│  │  │  ├─ bench press_21.mp4
+│  │  │  ├─ bench press_22.mp4
+│  │  │  ├─ bench press_23.mp4
+│  │  │  ├─ bench press_24.mp4
+│  │  │  ├─ bench press_25.mp4
+│  │  │  ├─ bench press_26.mp4
+│  │  │  ├─ bench press_27.mp4
+│  │  │  ├─ bench press_28.mp4
+│  │  │  ├─ bench press_29.mp4
+│  │  │  ├─ bench press_3.mp4
+│  │  │  ├─ bench press_30.mp4
+│  │  │  ├─ bench press_31.mp4
+│  │  │  ├─ bench press_32.mp4
+│  │  │  ├─ bench press_33.mp4
+│  │  │  ├─ bench press_34.mp4
+│  │  │  ├─ bench press_35.mp4
+│  │  │  ├─ bench press_36.mp4
+│  │  │  ├─ bench press_37.mp4
+│  │  │  ├─ bench press_38.mp4
+│  │  │  ├─ bench press_39.mp4
+│  │  │  ├─ bench press_4.mp4
+│  │  │  ├─ bench press_40.mp4
+│  │  │  ├─ bench press_41.mp4
+│  │  │  ├─ bench press_42.mp4
+│  │  │  ├─ bench press_43.mp4
+│  │  │  ├─ bench press_44.mp4
+│  │  │  ├─ bench press_45.mp4
+│  │  │  ├─ bench press_46.mp4
+│  │  │  ├─ bench press_47.mp4
+│  │  │  ├─ bench press_48.mp4
+│  │  │  ├─ bench press_49.mp4
+│  │  │  ├─ bench press_5.mp4
+│  │  │  ├─ bench press_50.mp4
+│  │  │  ├─ bench press_51.mp4
+│  │  │  ├─ bench press_52.mp4
+│  │  │  ├─ bench press_53.mp4
+│  │  │  ├─ bench press_54.mp4
+│  │  │  ├─ bench press_55.mp4
+│  │  │  ├─ bench press_56.mp4
+│  │  │  ├─ bench press_57.mp4
+│  │  │  ├─ bench press_58.mp4
+│  │  │  ├─ bench press_59.mp4
+│  │  │  ├─ bench press_6.mp4
+│  │  │  ├─ bench press_60.mp4
+│  │  │  ├─ bench press_61.mp4
+│  │  │  ├─ bench press_7.mp4
+│  │  │  ├─ bench press_8.mp4
+│  │  │  └─ bench press_9.mp4
+│  │  ├─ curl
+│  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  ├─ barbell biceps curl_26.mp4
+│  │  │  ├─ barbell biceps curl_27.mp4
+│  │  │  ├─ barbell biceps curl_28.mp4
+│  │  │  ├─ barbell biceps curl_29.mp4
+│  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  ├─ barbell biceps curl_30.mp4
+│  │  │  ├─ barbell biceps curl_31.mp4
+│  │  │  ├─ barbell biceps curl_32.mp4
+│  │  │  ├─ barbell biceps curl_33.mp4
+│  │  │  ├─ barbell biceps curl_34.mp4
+│  │  │  ├─ barbell biceps curl_35.mp4
+│  │  │  ├─ barbell biceps curl_36.mp4
+│  │  │  ├─ barbell biceps curl_37.mp4
+│  │  │  ├─ barbell biceps curl_38.mp4
+│  │  │  ├─ barbell biceps curl_39.mp4
+│  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  ├─ barbell biceps curl_40.mp4
+│  │  │  ├─ barbell biceps curl_41.mp4
+│  │  │  ├─ barbell biceps curl_42.mp4
+│  │  │  ├─ barbell biceps curl_43.mp4
+│  │  │  ├─ barbell biceps curl_44.mp4
+│  │  │  ├─ barbell biceps curl_45.mp4
+│  │  │  ├─ barbell biceps curl_46.mp4
+│  │  │  ├─ barbell biceps curl_47.mp4
+│  │  │  ├─ barbell biceps curl_48.mp4
+│  │  │  ├─ barbell biceps curl_49.mp4
+│  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  ├─ barbell biceps curl_50.mp4
+│  │  │  ├─ barbell biceps curl_51.mp4
+│  │  │  ├─ barbell biceps curl_52.mp4
+│  │  │  ├─ barbell biceps curl_53.mp4
+│  │  │  ├─ barbell biceps curl_54.mp4
+│  │  │  ├─ barbell biceps curl_55.mp4
+│  │  │  ├─ barbell biceps curl_56.mp4
+│  │  │  ├─ barbell biceps curl_57.mp4
+│  │  │  ├─ barbell biceps curl_58.mp4
+│  │  │  ├─ barbell biceps curl_59.mp4
+│  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  ├─ barbell biceps curl_60.mp4
+│  │  │  ├─ barbell biceps curl_61.mp4
+│  │  │  ├─ barbell biceps curl_62.mp4
+│  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  ├─ barbell biceps curl_9.mp4
+│  │  │  ├─ hammer curl_1.MOV
+│  │  │  ├─ hammer curl_10.mp4
+│  │  │  ├─ hammer curl_11.mp4
+│  │  │  ├─ hammer curl_12.mp4
+│  │  │  ├─ hammer curl_13.mp4
+│  │  │  ├─ hammer curl_14.mp4
+│  │  │  ├─ hammer curl_15.mp4
+│  │  │  ├─ hammer curl_16.mp4
+│  │  │  ├─ hammer curl_17.mp4
+│  │  │  ├─ hammer curl_18.mp4
+│  │  │  ├─ hammer curl_19.mp4
+│  │  │  ├─ hammer curl_2.MOV
+│  │  │  ├─ hammer curl_3.MOV
+│  │  │  ├─ hammer curl_4.MOV
+│  │  │  ├─ hammer curl_5.MOV
+│  │  │  ├─ hammer curl_6.MOV
+│  │  │  ├─ hammer curl_7.MOV
+│  │  │  ├─ hammer curl_8.mp4
+│  │  │  └─ hammer curl_9.mp4
+│  │  ├─ deadlift
+│  │  │  ├─ deadlift_1.mp4
+│  │  │  ├─ deadlift_10.mp4
+│  │  │  ├─ deadlift_11.mp4
+│  │  │  ├─ deadlift_12.mp4
+│  │  │  ├─ deadlift_13.mp4
+│  │  │  ├─ deadlift_14.mp4
+│  │  │  ├─ deadlift_15.mp4
+│  │  │  ├─ deadlift_16.mp4
+│  │  │  ├─ deadlift_17.mp4
+│  │  │  ├─ deadlift_18.mp4
+│  │  │  ├─ deadlift_19.mp4
+│  │  │  ├─ deadlift_2.mp4
+│  │  │  ├─ deadlift_20.mp4
+│  │  │  ├─ deadlift_21.mp4
+│  │  │  ├─ deadlift_22.mp4
+│  │  │  ├─ deadlift_23.mp4
+│  │  │  ├─ deadlift_24.mp4
+│  │  │  ├─ deadlift_25.mp4
+│  │  │  ├─ deadlift_26.mp4
+│  │  │  ├─ deadlift_27.mp4
+│  │  │  ├─ deadlift_28.mp4
+│  │  │  ├─ deadlift_29.mp4
+│  │  │  ├─ deadlift_3.mp4
+│  │  │  ├─ deadlift_30.mp4
+│  │  │  ├─ deadlift_31.mp4
+│  │  │  ├─ deadlift_32.mp4
+│  │  │  ├─ deadlift_4.mp4
+│  │  │  ├─ deadlift_5.mp4
+│  │  │  ├─ deadlift_6.mp4
+│  │  │  ├─ deadlift_7.mp4
+│  │  │  ├─ deadlift_8.mp4
+│  │  │  └─ deadlift_9.mp4
+│  │  ├─ kaggle_gym
+│  │  │  ├─ barbell biceps curl
+│  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  │  ├─ barbell biceps curl_26.mp4
+│  │  │  │  ├─ barbell biceps curl_27.mp4
+│  │  │  │  ├─ barbell biceps curl_28.mp4
+│  │  │  │  ├─ barbell biceps curl_29.mp4
+│  │  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  │  ├─ barbell biceps curl_30.mp4
+│  │  │  │  ├─ barbell biceps curl_31.mp4
+│  │  │  │  ├─ barbell biceps curl_32.mp4
+│  │  │  │  ├─ barbell biceps curl_33.mp4
+│  │  │  │  ├─ barbell biceps curl_34.mp4
+│  │  │  │  ├─ barbell biceps curl_35.mp4
+│  │  │  │  ├─ barbell biceps curl_36.mp4
+│  │  │  │  ├─ barbell biceps curl_37.mp4
+│  │  │  │  ├─ barbell biceps curl_38.mp4
+│  │  │  │  ├─ barbell biceps curl_39.mp4
+│  │  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  │  ├─ barbell biceps curl_40.mp4
+│  │  │  │  ├─ barbell biceps curl_41.mp4
+│  │  │  │  ├─ barbell biceps curl_42.mp4
+│  │  │  │  ├─ barbell biceps curl_43.mp4
+│  │  │  │  ├─ barbell biceps curl_44.mp4
+│  │  │  │  ├─ barbell biceps curl_45.mp4
+│  │  │  │  ├─ barbell biceps curl_46.mp4
+│  │  │  │  ├─ barbell biceps curl_47.mp4
+│  │  │  │  ├─ barbell biceps curl_48.mp4
+│  │  │  │  ├─ barbell biceps curl_49.mp4
+│  │  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  │  ├─ barbell biceps curl_50.mp4
+│  │  │  │  ├─ barbell biceps curl_51.mp4
+│  │  │  │  ├─ barbell biceps curl_52.mp4
+│  │  │  │  ├─ barbell biceps curl_53.mp4
+│  │  │  │  ├─ barbell biceps curl_54.mp4
+│  │  │  │  ├─ barbell biceps curl_55.mp4
+│  │  │  │  ├─ barbell biceps curl_56.mp4
+│  │  │  │  ├─ barbell biceps curl_57.mp4
+│  │  │  │  ├─ barbell biceps curl_58.mp4
+│  │  │  │  ├─ barbell biceps curl_59.mp4
+│  │  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  │  ├─ barbell biceps curl_60.mp4
+│  │  │  │  ├─ barbell biceps curl_61.mp4
+│  │  │  │  ├─ barbell biceps curl_62.mp4
+│  │  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  │  └─ barbell biceps curl_9.mp4
+│  │  │  ├─ bench press
+│  │  │  │  ├─ bench press_1.mp4
+│  │  │  │  ├─ bench press_10.mp4
+│  │  │  │  ├─ bench press_11.mp4
+│  │  │  │  ├─ bench press_12.mp4
+│  │  │  │  ├─ bench press_13.mp4
+│  │  │  │  ├─ bench press_14.mp4
+│  │  │  │  ├─ bench press_15.mp4
+│  │  │  │  ├─ bench press_16.mp4
+│  │  │  │  ├─ bench press_17.mp4
+│  │  │  │  ├─ bench press_18.mp4
+│  │  │  │  ├─ bench press_19.mp4
+│  │  │  │  ├─ bench press_2.mp4
+│  │  │  │  ├─ bench press_20.mp4
+│  │  │  │  ├─ bench press_21.mp4
+│  │  │  │  ├─ bench press_22.mp4
+│  │  │  │  ├─ bench press_23.mp4
+│  │  │  │  ├─ bench press_24.mp4
+│  │  │  │  ├─ bench press_25.mp4
+│  │  │  │  ├─ bench press_26.mp4
+│  │  │  │  ├─ bench press_27.mp4
+│  │  │  │  ├─ bench press_28.mp4
+│  │  │  │  ├─ bench press_29.mp4
+│  │  │  │  ├─ bench press_3.mp4
+│  │  │  │  ├─ bench press_30.mp4
+│  │  │  │  ├─ bench press_31.mp4
+│  │  │  │  ├─ bench press_32.mp4
+│  │  │  │  ├─ bench press_33.mp4
+│  │  │  │  ├─ bench press_34.mp4
+│  │  │  │  ├─ bench press_35.mp4
+│  │  │  │  ├─ bench press_36.mp4
+│  │  │  │  ├─ bench press_37.mp4
+│  │  │  │  ├─ bench press_38.mp4
+│  │  │  │  ├─ bench press_39.mp4
+│  │  │  │  ├─ bench press_4.mp4
+│  │  │  │  ├─ bench press_40.mp4
+│  │  │  │  ├─ bench press_41.mp4
+│  │  │  │  ├─ bench press_42.mp4
+│  │  │  │  ├─ bench press_43.mp4
+│  │  │  │  ├─ bench press_44.mp4
+│  │  │  │  ├─ bench press_45.mp4
+│  │  │  │  ├─ bench press_46.mp4
+│  │  │  │  ├─ bench press_47.mp4
+│  │  │  │  ├─ bench press_48.mp4
+│  │  │  │  ├─ bench press_49.mp4
+│  │  │  │  ├─ bench press_5.mp4
+│  │  │  │  ├─ bench press_50.mp4
+│  │  │  │  ├─ bench press_51.mp4
+│  │  │  │  ├─ bench press_52.mp4
+│  │  │  │  ├─ bench press_53.mp4
+│  │  │  │  ├─ bench press_54.mp4
+│  │  │  │  ├─ bench press_55.mp4
+│  │  │  │  ├─ bench press_56.mp4
+│  │  │  │  ├─ bench press_57.mp4
+│  │  │  │  ├─ bench press_58.mp4
+│  │  │  │  ├─ bench press_59.mp4
+│  │  │  │  ├─ bench press_6.mp4
+│  │  │  │  ├─ bench press_60.mp4
+│  │  │  │  ├─ bench press_61.mp4
+│  │  │  │  ├─ bench press_7.mp4
+│  │  │  │  ├─ bench press_8.mp4
+│  │  │  │  └─ bench press_9.mp4
+│  │  │  ├─ chest fly machine
+│  │  │  │  ├─ chest fly machine_1.mp4
+│  │  │  │  ├─ chest fly machine_10.mp4
+│  │  │  │  ├─ chest fly machine_11.mp4
+│  │  │  │  ├─ chest fly machine_12.mp4
+│  │  │  │  ├─ chest fly machine_13.mp4
+│  │  │  │  ├─ chest fly machine_14.mp4
+│  │  │  │  ├─ chest fly machine_15.mp4
+│  │  │  │  ├─ chest fly machine_16.mp4
+│  │  │  │  ├─ chest fly machine_17.mp4
+│  │  │  │  ├─ chest fly machine_18.mp4
+│  │  │  │  ├─ chest fly machine_19.mp4
+│  │  │  │  ├─ chest fly machine_2.mp4
+│  │  │  │  ├─ chest fly machine_20.mp4
+│  │  │  │  ├─ chest fly machine_21.mp4
+│  │  │  │  ├─ chest fly machine_22.mp4
+│  │  │  │  ├─ chest fly machine_23.mp4
+│  │  │  │  ├─ chest fly machine_24.mp4
+│  │  │  │  ├─ chest fly machine_25.mp4
+│  │  │  │  ├─ chest fly machine_26.mp4
+│  │  │  │  ├─ chest fly machine_27.mp4
+│  │  │  │  ├─ chest fly machine_28.mp4
+│  │  │  │  ├─ chest fly machine_3.mp4
+│  │  │  │  ├─ chest fly machine_4.mp4
+│  │  │  │  ├─ chest fly machine_5.mp4
+│  │  │  │  ├─ chest fly machine_6.mp4
+│  │  │  │  ├─ chest fly machine_7.mp4
+│  │  │  │  ├─ chest fly machine_8.mp4
+│  │  │  │  └─ chest fly machine_9.mp4
+│  │  │  ├─ deadlift
+│  │  │  │  ├─ deadlift_1.mp4
+│  │  │  │  ├─ deadlift_10.mp4
+│  │  │  │  ├─ deadlift_11.mp4
+│  │  │  │  ├─ deadlift_12.mp4
+│  │  │  │  ├─ deadlift_13.mp4
+│  │  │  │  ├─ deadlift_14.mp4
+│  │  │  │  ├─ deadlift_15.mp4
+│  │  │  │  ├─ deadlift_16.mp4
+│  │  │  │  ├─ deadlift_17.mp4
+│  │  │  │  ├─ deadlift_18.mp4
+│  │  │  │  ├─ deadlift_19.mp4
+│  │  │  │  ├─ deadlift_2.mp4
+│  │  │  │  ├─ deadlift_20.mp4
+│  │  │  │  ├─ deadlift_21.mp4
+│  │  │  │  ├─ deadlift_22.mp4
+│  │  │  │  ├─ deadlift_23.mp4
+│  │  │  │  ├─ deadlift_24.mp4
+│  │  │  │  ├─ deadlift_25.mp4
+│  │  │  │  ├─ deadlift_26.mp4
+│  │  │  │  ├─ deadlift_27.mp4
+│  │  │  │  ├─ deadlift_28.mp4
+│  │  │  │  ├─ deadlift_29.mp4
+│  │  │  │  ├─ deadlift_3.mp4
+│  │  │  │  ├─ deadlift_30.mp4
+│  │  │  │  ├─ deadlift_31.mp4
+│  │  │  │  ├─ deadlift_32.mp4
+│  │  │  │  ├─ deadlift_4.mp4
+│  │  │  │  ├─ deadlift_5.mp4
+│  │  │  │  ├─ deadlift_6.mp4
+│  │  │  │  ├─ deadlift_7.mp4
+│  │  │  │  ├─ deadlift_8.mp4
+│  │  │  │  └─ deadlift_9.mp4
+│  │  │  ├─ decline bench press
+│  │  │  │  ├─ dbp_1.mp4
+│  │  │  │  ├─ dbp_10.mp4
+│  │  │  │  ├─ dbp_11.mp4
+│  │  │  │  ├─ dbp_12.mp4
+│  │  │  │  ├─ dbp_2.MOV
+│  │  │  │  ├─ dbp_3.MOV
+│  │  │  │  ├─ dbp_4.MOV
+│  │  │  │  ├─ dbp_5.MOV
+│  │  │  │  ├─ dbp_6.MOV
+│  │  │  │  ├─ dbp_7.MOV
+│  │  │  │  ├─ dbp_8.mp4
+│  │  │  │  └─ dbp_9.mp4
+│  │  │  ├─ hammer curl
+│  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  ├─ hammer curl_11.mp4
+│  │  │  │  ├─ hammer curl_12.mp4
+│  │  │  │  ├─ hammer curl_13.mp4
+│  │  │  │  ├─ hammer curl_14.mp4
+│  │  │  │  ├─ hammer curl_15.mp4
+│  │  │  │  ├─ hammer curl_16.mp4
+│  │  │  │  ├─ hammer curl_17.mp4
+│  │  │  │  ├─ hammer curl_18.mp4
+│  │  │  │  ├─ hammer curl_19.mp4
+│  │  │  │  ├─ hammer curl_2.MOV
+│  │  │  │  ├─ hammer curl_3.MOV
+│  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  ├─ hammer curl_6.MOV
+│  │  │  │  ├─ hammer curl_7.MOV
+│  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  └─ hammer curl_9.mp4
+│  │  │  ├─ hip thrust
+│  │  │  │  ├─ Barbell_Hip_Thrust_Tutorial__gluteworkout_AdobeExpress.mp4
+│  │  │  │  ├─ hip thrust_1.MOV
+│  │  │  │  ├─ hip thrust_10.mp4
+│  │  │  │  ├─ hip thrust_11.mp4
+│  │  │  │  ├─ hip thrust_12.mp4
+│  │  │  │  ├─ hip thrust_13.mp4
+│  │  │  │  ├─ hip thrust_14.mp4
+│  │  │  │  ├─ hip thrust_15.mp4
+│  │  │  │  ├─ hip thrust_16.mp4
+│  │  │  │  ├─ hip thrust_17.mp4
+│  │  │  │  ├─ hip thrust_2.MOV
+│  │  │  │  ├─ hip thrust_3.MOV
+│  │  │  │  ├─ hip thrust_4.MOV
+│  │  │  │  ├─ hip thrust_5.mp4
+│  │  │  │  ├─ hip thrust_6.mp4
+│  │  │  │  ├─ hip thrust_7.mp4
+│  │  │  │  ├─ hip thrust_8.mp4
+│  │  │  │  └─ hip thrust_9.mp4
+│  │  │  ├─ incline bench press
+│  │  │  │  ├─ incline bench press_1.mp4
+│  │  │  │  ├─ incline bench press_10.mp4
+│  │  │  │  ├─ incline bench press_11.mp4
+│  │  │  │  ├─ incline bench press_12.mp4
+│  │  │  │  ├─ incline bench press_13.mp4
+│  │  │  │  ├─ incline bench press_14.mp4
+│  │  │  │  ├─ incline bench press_15.mp4
+│  │  │  │  ├─ incline bench press_16.mp4
+│  │  │  │  ├─ incline bench press_17.mp4
+│  │  │  │  ├─ incline bench press_18.mp4
+│  │  │  │  ├─ incline bench press_19.mp4
+│  │  │  │  ├─ incline bench press_2.mp4
+│  │  │  │  ├─ incline bench press_20.mp4
+│  │  │  │  ├─ incline bench press_21.mp4
+│  │  │  │  ├─ incline bench press_22.mp4
+│  │  │  │  ├─ incline bench press_23.mp4
+│  │  │  │  ├─ incline bench press_24.mp4
+│  │  │  │  ├─ incline bench press_25.mp4
+│  │  │  │  ├─ incline bench press_26.mp4
+│  │  │  │  ├─ incline bench press_27.mp4
+│  │  │  │  ├─ incline bench press_28.mp4
+│  │  │  │  ├─ incline bench press_29.mp4
+│  │  │  │  ├─ incline bench press_3.mp4
+│  │  │  │  ├─ incline bench press_30.mp4
+│  │  │  │  ├─ incline bench press_31.mp4
+│  │  │  │  ├─ incline bench press_32.mp4
+│  │  │  │  ├─ incline bench press_33.mp4
+│  │  │  │  ├─ incline bench press_4.mp4
+│  │  │  │  ├─ incline bench press_5.mp4
+│  │  │  │  ├─ incline bench press_6.mp4
+│  │  │  │  ├─ incline bench press_7.mp4
+│  │  │  │  ├─ incline bench press_8.mp4
+│  │  │  │  └─ incline bench press_9.mp4
+│  │  │  ├─ lat pulldown
+│  │  │  │  ├─ lat pulldown_1.mp4
+│  │  │  │  ├─ lat pulldown_10.mp4
+│  │  │  │  ├─ lat pulldown_11.mp4
+│  │  │  │  ├─ lat pulldown_12.mp4
+│  │  │  │  ├─ lat pulldown_13.mp4
+│  │  │  │  ├─ lat pulldown_14.mp4
+│  │  │  │  ├─ lat pulldown_15.mp4
+│  │  │  │  ├─ lat pulldown_16.mp4
+│  │  │  │  ├─ lat pulldown_17.mp4
+│  │  │  │  ├─ lat pulldown_18.mp4
+│  │  │  │  ├─ lat pulldown_19.mp4
+│  │  │  │  ├─ lat pulldown_2.mp4
+│  │  │  │  ├─ lat pulldown_20.mp4
+│  │  │  │  ├─ lat pulldown_21.mp4
+│  │  │  │  ├─ lat pulldown_22.mp4
+│  │  │  │  ├─ lat pulldown_23.mp4
+│  │  │  │  ├─ lat pulldown_24.mp4
+│  │  │  │  ├─ lat pulldown_25.mp4
+│  │  │  │  ├─ lat pulldown_26.mp4
+│  │  │  │  ├─ lat pulldown_27.mp4
+│  │  │  │  ├─ lat pulldown_28.mp4
+│  │  │  │  ├─ lat pulldown_29.mp4
+│  │  │  │  ├─ lat pulldown_3.mp4
+│  │  │  │  ├─ lat pulldown_30.mp4
+│  │  │  │  ├─ lat pulldown_31.mp4
+│  │  │  │  ├─ lat pulldown_32.mp4
+│  │  │  │  ├─ lat pulldown_33.mp4
+│  │  │  │  ├─ lat pulldown_34.mp4
+│  │  │  │  ├─ lat pulldown_35.mp4
+│  │  │  │  ├─ lat pulldown_36.mp4
+│  │  │  │  ├─ lat pulldown_37.mp4
+│  │  │  │  ├─ lat pulldown_38.mp4
+│  │  │  │  ├─ lat pulldown_39.mp4
+│  │  │  │  ├─ lat pulldown_4.mp4
+│  │  │  │  ├─ lat pulldown_40.mp4
+│  │  │  │  ├─ lat pulldown_41.mp4
+│  │  │  │  ├─ lat pulldown_42.mp4
+│  │  │  │  ├─ lat pulldown_43.mp4
+│  │  │  │  ├─ lat pulldown_44.mp4
+│  │  │  │  ├─ lat pulldown_45.mp4
+│  │  │  │  ├─ lat pulldown_46.mp4
+│  │  │  │  ├─ lat pulldown_47.mp4
+│  │  │  │  ├─ lat pulldown_48.mp4
+│  │  │  │  ├─ lat pulldown_49.mp4
+│  │  │  │  ├─ lat pulldown_5.mp4
+│  │  │  │  ├─ lat pulldown_50.mp4
+│  │  │  │  ├─ lat pulldown_51.mp4
+│  │  │  │  ├─ lat pulldown_6.mp4
+│  │  │  │  ├─ lat pulldown_7.mp4
+│  │  │  │  ├─ lat pulldown_8.mp4
+│  │  │  │  └─ lat pulldown_9.mp4
+│  │  │  ├─ lateral raise
+│  │  │  │  ├─ lateral raise_1.MOV
+│  │  │  │  ├─ lateral raise_10.mp4
+│  │  │  │  ├─ lateral raise_11.mp4
+│  │  │  │  ├─ lateral raise_12.mp4
+│  │  │  │  ├─ lateral raise_13.mp4
+│  │  │  │  ├─ lateral raise_14.mp4
+│  │  │  │  ├─ lateral raise_15.mp4
+│  │  │  │  ├─ lateral raise_16.mp4
+│  │  │  │  ├─ lateral raise_17.mp4
+│  │  │  │  ├─ lateral raise_18.mp4
+│  │  │  │  ├─ lateral raise_19.mp4
+│  │  │  │  ├─ lateral raise_2.MOV
+│  │  │  │  ├─ lateral raise_20.mp4
+│  │  │  │  ├─ lateral raise_21.mp4
+│  │  │  │  ├─ lateral raise_22.mp4
+│  │  │  │  ├─ lateral raise_23.mp4
+│  │  │  │  ├─ lateral raise_24.mp4
+│  │  │  │  ├─ lateral raise_25.mp4
+│  │  │  │  ├─ lateral raise_26.mp4
+│  │  │  │  ├─ lateral raise_27.mp4
+│  │  │  │  ├─ lateral raise_28.mp4
+│  │  │  │  ├─ lateral raise_29.mp4
+│  │  │  │  ├─ lateral raise_3.MOV
+│  │  │  │  ├─ lateral raise_30.mp4
+│  │  │  │  ├─ lateral raise_31.mp4
+│  │  │  │  ├─ lateral raise_32.mp4
+│  │  │  │  ├─ lateral raise_33.mp4
+│  │  │  │  ├─ lateral raise_34.mp4
+│  │  │  │  ├─ lateral raise_35.mp4
+│  │  │  │  ├─ lateral raise_36.mp4
+│  │  │  │  ├─ lateral raise_37.mp4
+│  │  │  │  ├─ lateral raise_4.MOV
+│  │  │  │  ├─ lateral raise_5.MOV
+│  │  │  │  ├─ lateral raise_6.MOV
+│  │  │  │  ├─ lateral raise_7.mp4
+│  │  │  │  ├─ lateral raise_8.mp4
+│  │  │  │  └─ lateral raise_9.mp4
+│  │  │  ├─ leg extension
+│  │  │  │  ├─ leg extension_1.MOV
+│  │  │  │  ├─ leg extension_10.mp4
+│  │  │  │  ├─ leg extension_11.mp4
+│  │  │  │  ├─ leg extension_12.mp4
+│  │  │  │  ├─ leg extension_13.mp4
+│  │  │  │  ├─ leg extension_14.mp4
+│  │  │  │  ├─ leg extension_15.mp4
+│  │  │  │  ├─ leg extension_16.mp4
+│  │  │  │  ├─ leg extension_17.mp4
+│  │  │  │  ├─ leg extension_18.mp4
+│  │  │  │  ├─ leg extension_19.mp4
+│  │  │  │  ├─ leg extension_2.MOV
+│  │  │  │  ├─ leg extension_20.mp4
+│  │  │  │  ├─ leg extension_21.mp4
+│  │  │  │  ├─ leg extension_22.mp4
+│  │  │  │  ├─ leg extension_23.mp4
+│  │  │  │  ├─ leg extension_24.mp4
+│  │  │  │  ├─ leg extension_25.mp4
+│  │  │  │  ├─ leg extension_3.MOV
+│  │  │  │  ├─ leg extension_4.MOV
+│  │  │  │  ├─ leg extension_5.MOV
+│  │  │  │  ├─ leg extension_6.MOV
+│  │  │  │  ├─ leg extension_7.mp4
+│  │  │  │  ├─ leg extension_8.mp4
+│  │  │  │  └─ leg extension_9.mp4
+│  │  │  ├─ leg raises
+│  │  │  │  ├─ leg raises_1.MOV
+│  │  │  │  ├─ leg raises_10.mp4
+│  │  │  │  ├─ leg raises_11.mp4
+│  │  │  │  ├─ leg raises_12.mp4
+│  │  │  │  ├─ leg raises_13.mp4
+│  │  │  │  ├─ leg raises_14.mp4
+│  │  │  │  ├─ leg raises_15.mp4
+│  │  │  │  ├─ leg raises_16.mp4
+│  │  │  │  ├─ leg raises_17.mp4
+│  │  │  │  ├─ leg raises_18.mp4
+│  │  │  │  ├─ leg raises_19.mp4
+│  │  │  │  ├─ leg raises_2.MOV
+│  │  │  │  ├─ leg raises_20.mp4
+│  │  │  │  ├─ leg raises_21.mp4
+│  │  │  │  ├─ leg raises_3.MOV
+│  │  │  │  ├─ leg raises_4.MOV
+│  │  │  │  ├─ leg raises_5.MOV
+│  │  │  │  ├─ leg raises_6.MOV
+│  │  │  │  ├─ leg raises_7.mp4
+│  │  │  │  ├─ leg raises_8.mp4
+│  │  │  │  └─ leg raises_9.mp4
+│  │  │  ├─ plank
+│  │  │  │  ├─ plank_1.MOV
+│  │  │  │  ├─ plank_2.mp4
+│  │  │  │  ├─ plank_3.mp4
+│  │  │  │  ├─ plank_4.mp4
+│  │  │  │  ├─ plank_5.mp4
+│  │  │  │  ├─ plank_6.mp4
+│  │  │  │  └─ plank_7.mp4
+│  │  │  ├─ pull Up
+│  │  │  │  ├─ pull up_1.mp4
+│  │  │  │  ├─ pull up_10.mp4
+│  │  │  │  ├─ pull up_11.mp4
+│  │  │  │  ├─ pull up_12.mp4
+│  │  │  │  ├─ pull up_13.mp4
+│  │  │  │  ├─ pull up_14.mp4
+│  │  │  │  ├─ pull up_15.mp4
+│  │  │  │  ├─ pull up_16.mp4
+│  │  │  │  ├─ pull up_17.mp4
+│  │  │  │  ├─ pull up_18.mp4
+│  │  │  │  ├─ pull up_19.mp4
+│  │  │  │  ├─ pull up_2.mp4
+│  │  │  │  ├─ pull up_20.mp4
+│  │  │  │  ├─ pull up_21.mp4
+│  │  │  │  ├─ pull up_22.mp4
+│  │  │  │  ├─ pull up_23.mp4
+│  │  │  │  ├─ pull up_24.mp4
+│  │  │  │  ├─ pull up_25.mp4
+│  │  │  │  ├─ pull up_26.mp4
+│  │  │  │  ├─ pull up_3.mp4
+│  │  │  │  ├─ pull up_4.mp4
+│  │  │  │  ├─ pull up_5.mp4
+│  │  │  │  ├─ pull up_6.mp4
+│  │  │  │  ├─ pull up_7.mp4
+│  │  │  │  ├─ pull up_8.mp4
+│  │  │  │  └─ pull up_9.mp4
+│  │  │  ├─ push-up
+│  │  │  │  ├─ push-up_1.mp4
+│  │  │  │  ├─ push-up_10.mp4
+│  │  │  │  ├─ push-up_11.mp4
+│  │  │  │  ├─ push-up_12.mp4
+│  │  │  │  ├─ push-up_13.mp4
+│  │  │  │  ├─ push-up_14.mp4
+│  │  │  │  ├─ push-up_15.mp4
+│  │  │  │  ├─ push-up_16.mp4
+│  │  │  │  ├─ push-up_17.mp4
+│  │  │  │  ├─ push-up_18.mp4
+│  │  │  │  ├─ push-up_19.mp4
+│  │  │  │  ├─ push-up_2.mp4
+│  │  │  │  ├─ push-up_20.mp4
+│  │  │  │  ├─ push-up_21.mp4
+│  │  │  │  ├─ push-up_22.mp4
+│  │  │  │  ├─ push-up_23.mp4
+│  │  │  │  ├─ push-up_24.mp4
+│  │  │  │  ├─ push-up_25.mp4
+│  │  │  │  ├─ push-up_26.mp4
+│  │  │  │  ├─ push-up_27.mp4
+│  │  │  │  ├─ push-up_28.mp4
+│  │  │  │  ├─ push-up_29.mp4
+│  │  │  │  ├─ push-up_3.mp4
+│  │  │  │  ├─ push-up_30.mp4
+│  │  │  │  ├─ push-up_31.mp4
+│  │  │  │  ├─ push-up_32.mp4
+│  │  │  │  ├─ push-up_33.mp4
+│  │  │  │  ├─ push-up_34.mp4
+│  │  │  │  ├─ push-up_35.mp4
+│  │  │  │  ├─ push-up_36.mp4
+│  │  │  │  ├─ push-up_37.mp4
+│  │  │  │  ├─ push-up_38.mp4
+│  │  │  │  ├─ push-up_39.mp4
+│  │  │  │  ├─ push-up_4.mp4
+│  │  │  │  ├─ push-up_40.mp4
+│  │  │  │  ├─ push-up_41.mp4
+│  │  │  │  ├─ push-up_42.mp4
+│  │  │  │  ├─ push-up_43.mp4
+│  │  │  │  ├─ push-up_44.mp4
+│  │  │  │  ├─ push-up_45.mp4
+│  │  │  │  ├─ push-up_46.mp4
+│  │  │  │  ├─ push-up_47.mp4
+│  │  │  │  ├─ push-up_48.mp4
+│  │  │  │  ├─ push-up_49.mp4
+│  │  │  │  ├─ push-up_5.mp4
+│  │  │  │  ├─ push-up_50.mp4
+│  │  │  │  ├─ push-up_51.mp4
+│  │  │  │  ├─ push-up_52.mp4
+│  │  │  │  ├─ push-up_53.mp4
+│  │  │  │  ├─ push-up_54.mp4
+│  │  │  │  ├─ push-up_55.mp4
+│  │  │  │  ├─ push-up_56.mp4
+│  │  │  │  ├─ push-up_6.mp4
+│  │  │  │  ├─ push-up_7.mp4
+│  │  │  │  ├─ push-up_8.mp4
+│  │  │  │  └─ push-up_9.mp4
+│  │  │  ├─ raw_data
+│  │  │  │  └─ raw_data
+│  │  │  │     ├─ data-btc
+│  │  │  │     └─ data-crawl
+│  │  │  ├─ romanian deadlift
+│  │  │  │  ├─ romanian deadlift_1.mov
+│  │  │  │  ├─ romanian deadlift_10.mp4
+│  │  │  │  ├─ romanian deadlift_11.mp4
+│  │  │  │  ├─ romanian deadlift_12.mp4
+│  │  │  │  ├─ romanian deadlift_13.mp4
+│  │  │  │  ├─ romanian deadlift_14.mp4
+│  │  │  │  ├─ romanian deadlift_2.MOV
+│  │  │  │  ├─ romanian deadlift_3.mov
+│  │  │  │  ├─ romanian deadlift_4.MOV
+│  │  │  │  ├─ romanian deadlift_5.mp4
+│  │  │  │  ├─ romanian deadlift_6.mp4
+│  │  │  │  ├─ romanian deadlift_7.mp4
+│  │  │  │  ├─ romanian deadlift_8.mp4
+│  │  │  │  └─ romanian deadlift_9.mp4
+│  │  │  ├─ russian twist
+│  │  │  │  ├─ russian twist_1.MOV
+│  │  │  │  ├─ russian twist_10.mp4
+│  │  │  │  ├─ russian twist_11.mp4
+│  │  │  │  ├─ russian twist_12.mp4
+│  │  │  │  ├─ russian twist_13.mp4
+│  │  │  │  ├─ russian twist_2.mp4
+│  │  │  │  ├─ russian twist_3.mp4
+│  │  │  │  ├─ russian twist_4.mp4
+│  │  │  │  ├─ russian twist_5.mp4
+│  │  │  │  ├─ russian twist_6.mp4
+│  │  │  │  ├─ russian twist_7.mp4
+│  │  │  │  ├─ russian twist_8.mp4
+│  │  │  │  └─ russian twist_9.mp4
+│  │  │  ├─ shoulder press
+│  │  │  │  ├─ shoulder press_1.MOV
+│  │  │  │  ├─ shoulder press_10.mp4
+│  │  │  │  ├─ shoulder press_11.mp4
+│  │  │  │  ├─ shoulder press_12.mp4
+│  │  │  │  ├─ shoulder press_13.mp4
+│  │  │  │  ├─ shoulder press_14.mp4
+│  │  │  │  ├─ shoulder press_15.mp4
+│  │  │  │  ├─ shoulder press_16.mp4
+│  │  │  │  ├─ shoulder press_17.mp4
+│  │  │  │  ├─ shoulder press_2.MOV
+│  │  │  │  ├─ shoulder press_3.MOV
+│  │  │  │  ├─ shoulder press_4.MOV
+│  │  │  │  ├─ shoulder press_5.mp4
+│  │  │  │  ├─ shoulder press_6.mp4
+│  │  │  │  ├─ shoulder press_7.mp4
+│  │  │  │  ├─ shoulder press_8.mp4
+│  │  │  │  └─ shoulder press_9.mp4
+│  │  │  ├─ squat
+│  │  │  │  ├─ squat_1.MOV
+│  │  │  │  ├─ squat_10.mp4
+│  │  │  │  ├─ squat_11.mp4
+│  │  │  │  ├─ squat_12.mp4
+│  │  │  │  ├─ squat_13.mp4
+│  │  │  │  ├─ squat_14.mp4
+│  │  │  │  ├─ squat_15.mp4
+│  │  │  │  ├─ squat_16.mp4
+│  │  │  │  ├─ squat_17.mp4
+│  │  │  │  ├─ squat_18.mp4
+│  │  │  │  ├─ squat_19.mp4
+│  │  │  │  ├─ squat_2.MOV
+│  │  │  │  ├─ squat_20.mp4
+│  │  │  │  ├─ squat_21.mp4
+│  │  │  │  ├─ squat_22.mp4
+│  │  │  │  ├─ squat_23.mp4
+│  │  │  │  ├─ squat_24.mp4
+│  │  │  │  ├─ squat_25.mp4
+│  │  │  │  ├─ squat_26.mp4
+│  │  │  │  ├─ squat_27.mp4
+│  │  │  │  ├─ squat_28.mp4
+│  │  │  │  ├─ squat_29.mp4
+│  │  │  │  ├─ squat_3.MOV
+│  │  │  │  ├─ squat_4.MOV
+│  │  │  │  ├─ squat_5.MOV
+│  │  │  │  ├─ squat_6.MOV
+│  │  │  │  ├─ squat_7.mp4
+│  │  │  │  ├─ squat_8.mp4
+│  │  │  │  └─ squat_9.mp4
+│  │  │  ├─ t bar row
+│  │  │  │  ├─ t bar row_1.MOV
+│  │  │  │  ├─ t bar row_10.mp4
+│  │  │  │  ├─ t bar row_11.mp4
+│  │  │  │  ├─ t bar row_12.mp4
+│  │  │  │  ├─ t bar row_13.mp4
+│  │  │  │  ├─ t bar row_14.mp4
+│  │  │  │  ├─ t bar row_15.mp4
+│  │  │  │  ├─ t bar row_16.mp4
+│  │  │  │  ├─ t bar row_17.mp4
+│  │  │  │  ├─ t bar row_18.mp4
+│  │  │  │  ├─ t bar row_19.mp4
+│  │  │  │  ├─ t bar row_2.MOV
+│  │  │  │  ├─ t bar row_20.mp4
+│  │  │  │  ├─ t bar row_21.mp4
+│  │  │  │  ├─ t bar row_3.MOV
+│  │  │  │  ├─ t bar row_4.MOV
+│  │  │  │  ├─ t bar row_5.MOV
+│  │  │  │  ├─ t bar row_6.MOV
+│  │  │  │  ├─ t bar row_7.MOV
+│  │  │  │  ├─ t bar row_8.mp4
+│  │  │  │  └─ t bar row_9.mp4
+│  │  │  ├─ test
+│  │  │  │  └─ test
+│  │  │  │     ├─ barbell biceps curl
+│  │  │  │     ├─ bench press
+│  │  │  │     ├─ chest fly machine
+│  │  │  │     ├─ deadlift
+│  │  │  │     ├─ decline bench press
+│  │  │  │     ├─ hammer curl
+│  │  │  │     ├─ hip thrust
+│  │  │  │     ├─ incline bench press
+│  │  │  │     ├─ lat pulldown
+│  │  │  │     ├─ lateral raise
+│  │  │  │     ├─ leg extension
+│  │  │  │     ├─ leg raises
+│  │  │  │     ├─ plank
+│  │  │  │     ├─ pull Up
+│  │  │  │     ├─ push-up
+│  │  │  │     ├─ romanian deadlift
+│  │  │  │     ├─ russian twist
+│  │  │  │     ├─ shoulder press
+│  │  │  │     ├─ squat
+│  │  │  │     ├─ t bar row
+│  │  │  │     ├─ tricep dips
+│  │  │  │     └─ tricep Pushdown
+│  │  │  ├─ tricep dips
+│  │  │  │  ├─ tricep dips_1.MOV
+│  │  │  │  ├─ tricep dips_10.mp4
+│  │  │  │  ├─ tricep dips_11.mp4
+│  │  │  │  ├─ tricep dips_12.mp4
+│  │  │  │  ├─ tricep dips_13.mp4
+│  │  │  │  ├─ tricep dips_14.mp4
+│  │  │  │  ├─ tricep dips_15.mp4
+│  │  │  │  ├─ tricep dips_16.mp4
+│  │  │  │  ├─ tricep dips_17.mp4
+│  │  │  │  ├─ tricep dips_18.mp4
+│  │  │  │  ├─ tricep dips_19.mp4
+│  │  │  │  ├─ tricep dips_2.MOV
+│  │  │  │  ├─ tricep dips_20.mp4
+│  │  │  │  ├─ tricep dips_3.MOV
+│  │  │  │  ├─ tricep dips_4.MOV
+│  │  │  │  ├─ tricep dips_5.mp4
+│  │  │  │  ├─ tricep dips_6.mp4
+│  │  │  │  ├─ tricep dips_7.mp4
+│  │  │  │  ├─ tricep dips_8.mp4
+│  │  │  │  └─ tricep dips_9.mp4
+│  │  │  ├─ tricep Pushdown
+│  │  │  │  ├─ tricep pushdown_1.mp4
+│  │  │  │  ├─ tricep pushdown_10.mp4
+│  │  │  │  ├─ tricep pushdown_11.mp4
+│  │  │  │  ├─ tricep pushdown_12.mp4
+│  │  │  │  ├─ tricep pushdown_13.mp4
+│  │  │  │  ├─ tricep pushdown_14.mp4
+│  │  │  │  ├─ tricep pushdown_15.mp4
+│  │  │  │  ├─ tricep pushdown_16.mp4
+│  │  │  │  ├─ tricep pushdown_17.mp4
+│  │  │  │  ├─ tricep pushdown_18.mp4
+│  │  │  │  ├─ tricep pushdown_19.mp4
+│  │  │  │  ├─ tricep pushdown_2.mp4
+│  │  │  │  ├─ tricep pushdown_20.mp4
+│  │  │  │  ├─ tricep pushdown_21.mp4
+│  │  │  │  ├─ tricep pushdown_22.mp4
+│  │  │  │  ├─ tricep pushdown_23.mp4
+│  │  │  │  ├─ tricep pushdown_24.mp4
+│  │  │  │  ├─ tricep pushdown_25.mp4
+│  │  │  │  ├─ tricep pushdown_26.mp4
+│  │  │  │  ├─ tricep pushdown_27.mp4
+│  │  │  │  ├─ tricep pushdown_28.mp4
+│  │  │  │  ├─ tricep pushdown_29.mp4
+│  │  │  │  ├─ tricep pushdown_3.mp4
+│  │  │  │  ├─ tricep pushdown_30.mp4
+│  │  │  │  ├─ tricep pushdown_31.mp4
+│  │  │  │  ├─ tricep pushdown_32.mp4
+│  │  │  │  ├─ tricep pushdown_33.mp4
+│  │  │  │  ├─ tricep pushdown_34.mp4
+│  │  │  │  ├─ tricep pushdown_35.mp4
+│  │  │  │  ├─ tricep pushdown_36.mp4
+│  │  │  │  ├─ tricep pushdown_37.mp4
+│  │  │  │  ├─ tricep pushdown_38.mp4
+│  │  │  │  ├─ tricep pushdown_39.mp4
+│  │  │  │  ├─ tricep pushdown_4.mp4
+│  │  │  │  ├─ tricep pushdown_40.mp4
+│  │  │  │  ├─ tricep pushdown_41.mp4
+│  │  │  │  ├─ tricep pushdown_42.mp4
+│  │  │  │  ├─ tricep pushdown_43.mp4
+│  │  │  │  ├─ tricep pushdown_44.mp4
+│  │  │  │  ├─ tricep pushdown_45.mp4
+│  │  │  │  ├─ tricep pushdown_46.mp4
+│  │  │  │  ├─ tricep pushdown_47.mp4
+│  │  │  │  ├─ tricep pushdown_48.mp4
+│  │  │  │  ├─ tricep pushdown_49.mp4
+│  │  │  │  ├─ tricep pushdown_5.mp4
+│  │  │  │  ├─ tricep pushdown_50.mp4
+│  │  │  │  ├─ tricep pushdown_6.mp4
+│  │  │  │  ├─ tricep pushdown_7.mp4
+│  │  │  │  ├─ tricep pushdown_8.mp4
+│  │  │  │  └─ tricep pushdown_9.mp4
+│  │  │  └─ verified_data
+│  │  │     └─ verified_data
+│  │  │        ├─ data_btc_10s
+│  │  │        └─ data_crawl_10s
+│  │  ├─ riccardo
+│  │  ├─ riccardo_realtime
+│  │  │  ├─ final_kaggle_with_additional_video
+│  │  │  │  ├─ barbell biceps curl
+│  │  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  │  │  └─ barbell biceps curl_9.mp4
+│  │  │  │  ├─ hammer curl
+│  │  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  │  ├─ hammer curl_11.mp4
+│  │  │  │  │  ├─ hammer curl_12.mp4
+│  │  │  │  │  ├─ hammer curl_13.mp4
+│  │  │  │  │  ├─ hammer curl_14.mp4
+│  │  │  │  │  ├─ hammer curl_15.mp4
+│  │  │  │  │  ├─ hammer curl_16.mp4
+│  │  │  │  │  ├─ hammer curl_17.mp4
+│  │  │  │  │  ├─ hammer curl_18.mp4
+│  │  │  │  │  ├─ hammer curl_19.mp4
+│  │  │  │  │  ├─ hammer curl_2.MOV
+│  │  │  │  │  ├─ hammer curl_3.MOV
+│  │  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  │  ├─ hammer curl_6.MOV
+│  │  │  │  │  ├─ hammer curl_7.MOV
+│  │  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  │  └─ hammer curl_9.mp4
+│  │  │  │  ├─ push-up
+│  │  │  │  │  ├─ push-up_1.mp4
+│  │  │  │  │  ├─ push-up_10.mp4
+│  │  │  │  │  ├─ push-up_11.mp4
+│  │  │  │  │  ├─ push-up_12.mp4
+│  │  │  │  │  ├─ push-up_13.mp4
+│  │  │  │  │  ├─ push-up_14.mp4
+│  │  │  │  │  ├─ push-up_15.mp4
+│  │  │  │  │  ├─ push-up_16.mp4
+│  │  │  │  │  ├─ push-up_17.mp4
+│  │  │  │  │  ├─ push-up_18.mp4
+│  │  │  │  │  ├─ push-up_19.mp4
+│  │  │  │  │  ├─ push-up_2.mp4
+│  │  │  │  │  ├─ push-up_20.mp4
+│  │  │  │  │  ├─ push-up_21.mp4
+│  │  │  │  │  ├─ push-up_22.mp4
+│  │  │  │  │  ├─ push-up_23.mp4
+│  │  │  │  │  ├─ push-up_24.mp4
+│  │  │  │  │  ├─ push-up_25.mp4
+│  │  │  │  │  ├─ push-up_3.mp4
+│  │  │  │  │  ├─ push-up_4.mp4
+│  │  │  │  │  ├─ push-up_5.mp4
+│  │  │  │  │  ├─ push-up_6.mp4
+│  │  │  │  │  ├─ push-up_7.mp4
+│  │  │  │  │  ├─ push-up_8.mp4
+│  │  │  │  │  └─ push-up_9.mp4
+│  │  │  │  ├─ shoulder press
+│  │  │  │  │  ├─ shoulder press_1.mp4
+│  │  │  │  │  ├─ shoulder press_10.mp4
+│  │  │  │  │  ├─ shoulder press_11.mp4
+│  │  │  │  │  ├─ shoulder press_12.mp4
+│  │  │  │  │  ├─ shoulder press_13.mp4
+│  │  │  │  │  ├─ shoulder press_14.mp4
+│  │  │  │  │  ├─ shoulder press_15.mp4
+│  │  │  │  │  ├─ shoulder press_16.mp4
+│  │  │  │  │  ├─ shoulder press_17.mp4
+│  │  │  │  │  ├─ shoulder press_18.mp4
+│  │  │  │  │  ├─ shoulder press_19.MOV
+│  │  │  │  │  ├─ shoulder press_2.mp4
+│  │  │  │  │  ├─ shoulder press_20.MOV
+│  │  │  │  │  ├─ shoulder press_21.mov
+│  │  │  │  │  ├─ shoulder press_22.mp4
+│  │  │  │  │  ├─ shoulder press_23.mp4
+│  │  │  │  │  ├─ shoulder press_24.mp4
+│  │  │  │  │  ├─ shoulder press_25.mp4
+│  │  │  │  │  ├─ shoulder press_3.MOV
+│  │  │  │  │  ├─ shoulder press_4.MOV
+│  │  │  │  │  ├─ shoulder press_5.mp4
+│  │  │  │  │  ├─ shoulder press_6.mp4
+│  │  │  │  │  ├─ shoulder press_7.mp4
+│  │  │  │  │  ├─ shoulder press_8.mp4
+│  │  │  │  │  └─ shoulder press_9.mp4
+│  │  │  │  └─ squat
+│  │  │  │     ├─ squat_1.MOV
+│  │  │  │     ├─ squat_10.mp4
+│  │  │  │     ├─ squat_11.mp4
+│  │  │  │     ├─ squat_12.mp4
+│  │  │  │     ├─ squat_13.mp4
+│  │  │  │     ├─ squat_14.mp4
+│  │  │  │     ├─ squat_15.mp4
+│  │  │  │     ├─ squat_16.mp4
+│  │  │  │     ├─ squat_17.mp4
+│  │  │  │     ├─ squat_18.mp4
+│  │  │  │     ├─ squat_19.mp4
+│  │  │  │     ├─ squat_2.MOV
+│  │  │  │     ├─ squat_20.mp4
+│  │  │  │     ├─ squat_21.mp4
+│  │  │  │     ├─ squat_22.mp4
+│  │  │  │     ├─ squat_23.mp4
+│  │  │  │     ├─ squat_24.mp4
+│  │  │  │     ├─ squat_25.mp4
+│  │  │  │     ├─ squat_3.MOV
+│  │  │  │     ├─ squat_4.MOV
+│  │  │  │     ├─ squat_5.MOV
+│  │  │  │     ├─ squat_6.MOV
+│  │  │  │     ├─ squat_7.mp4
+│  │  │  │     ├─ squat_8.mp4
+│  │  │  │     └─ squat_9.mp4
+│  │  │  ├─ my_test_video_1
+│  │  │  │  ├─ barbell biceps curl
+│  │  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  │  │  └─ barbell biceps curl_4.mp4
+│  │  │  │  ├─ push-up
+│  │  │  │  │  ├─ push-up_1.mp4
+│  │  │  │  │  ├─ push-up_2.mp4
+│  │  │  │  │  └─ push-up_3.mp4
+│  │  │  │  ├─ shoulder press
+│  │  │  │  │  ├─ shoulder press_1.mp4
+│  │  │  │  │  ├─ shoulder press_2.mp4
+│  │  │  │  │  ├─ shoulder press_3.mp4
+│  │  │  │  │  └─ shoulder press_4.mp4
+│  │  │  │  └─ squat
+│  │  │  │     ├─ squat_1.mp4
+│  │  │  │     ├─ squat_2.mp4
+│  │  │  │     ├─ squat_3.mp4
+│  │  │  │     └─ squat_4.mp4
+│  │  │  ├─ similar_dataset
+│  │  │  │  ├─ barbell biceps curl
+│  │  │  │  │  ├─ 0d402adf-578c-4c26-ba50-3b28a6f0e648.mp4
+│  │  │  │  │  ├─ 1a3e6f0d-fb99-4e4d-b80f-831c7f38aca9.mp4
+│  │  │  │  │  ├─ 27d82bac-ce83-4f91-a381-c11dd0bf6932.mp4
+│  │  │  │  │  ├─ 3f034ee8-792b-4646-8746-c0dbbf6e5b50.mp4
+│  │  │  │  │  ├─ 6933f339-2ee5-4e59-9031-8bfee0f6e900.mp4
+│  │  │  │  │  ├─ 72fb4cb4-ecad-44df-a0e1-5e4f4b581f9e.mp4
+│  │  │  │  │  ├─ 89b99b36-5491-4bc6-952c-53a67b889b62.mp4
+│  │  │  │  │  ├─ ac696ae8-e815-4f5f-bd32-864e2477e3ce.mp4
+│  │  │  │  │  ├─ f20150e2-f6e1-41e9-ab13-9d1e42599bba.mp4
+│  │  │  │  │  ├─ f32c33d2-e298-499a-a61e-7236d6f1ba64.mp4
+│  │  │  │  │  ├─ f9d9d0bb-7286-4074-8d3c-e73d4072ad79.mp4
+│  │  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  │  ├─ notsure (2).mp4
+│  │  │  │  │  └─ notsure.mp4
+│  │  │  │  ├─ push-up
+│  │  │  │  │  ├─ 01b09356-3985-474f-827f-20c79cfcda78.mp4
+│  │  │  │  │  ├─ 02dd7b9d-c7fe-41b8-993a-e250b07a5ceb.mp4
+│  │  │  │  │  ├─ 0b78db8e-3c32-4248-bbff-b483f9d910d3.mp4
+│  │  │  │  │  ├─ 10cad66c-a298-4de5-ac55-16ff825f8101.mp4
+│  │  │  │  │  ├─ 53f39e2a-4ca3-45d1-af84-6ddfde7ff818.mp4
+│  │  │  │  │  ├─ 57f76c55-838a-4184-9ad0-effced296b5c.mp4
+│  │  │  │  │  ├─ 5b596f14-2afd-45c1-a79b-f5b61bf050a7.mp4
+│  │  │  │  │  ├─ 5e507b14-eaeb-4b1a-9ff0-3de5883d0d22.mp4
+│  │  │  │  │  ├─ 64f7ef6d-5a82-48e1-b75f-cca64f151315.mp4
+│  │  │  │  │  ├─ 6e4f0e04-4dbd-476c-9884-a476bd7a2c33.mp4
+│  │  │  │  │  ├─ a31bfef9-b3ea-4fb9-8541-572fa62f15bb.mp4
+│  │  │  │  │  ├─ bd26f1c8-271f-45d2-a877-0deaa4f6e6f2.mp4
+│  │  │  │  │  ├─ v_PushUps_g01_c02.avi
+│  │  │  │  │  ├─ v_PushUps_g17_c02.avi
+│  │  │  │  │  ├─ v_PushUps_g17_c03.avi
+│  │  │  │  │  ├─ v_PushUps_g19_c03.avi
+│  │  │  │  │  ├─ v_PushUps_g25_c01.avi
+│  │  │  │  │  └─ v_PushUps_g25_c02.avi
+│  │  │  │  ├─ shoulder press
+│  │  │  │  │  ├─ 17496a37-c1f7-4105-9c07-e7cfbca06106.mp4
+│  │  │  │  │  ├─ 237de26b-2b1e-4f62-9844-b30fc9860c72.mp4
+│  │  │  │  │  ├─ 30fe126e-0985-48af-813f-65c30d49913d.mp4
+│  │  │  │  │  ├─ 51f72e68-ec28-4272-b15c-45586c244398.mp4
+│  │  │  │  │  ├─ 555859e7-8a16-4494-8dca-dff27cbdd9c8.mp4
+│  │  │  │  │  ├─ 6397dc79-5ba3-4244-a426-c24d6e7cfeb0.mp4
+│  │  │  │  │  ├─ a34f39ab-161f-41fe-853d-3eeea21073bd.mp4
+│  │  │  │  │  ├─ b066cbc1-931a-4af5-b668-36e98e7091b6.mp4
+│  │  │  │  │  ├─ b8a72e6b-f7ad-406a-9aa5-a3df903ec40e.mp4
+│  │  │  │  │  ├─ f44ec93a-ce42-46a4-97f4-015bea952a00.mp4
+│  │  │  │  │  ├─ fc319e88-4be0-467e-9dfd-cb7b3512f3ed.mp4
+│  │  │  │  │  ├─ shoulder press_12.mp4
+│  │  │  │  │  ├─ shoulder press_3.MOV
+│  │  │  │  │  ├─ shoulder press_4.MOV
+│  │  │  │  │  ├─ shoulder press_6.mp4
+│  │  │  │  │  ├─ shoulder press_7.mp4
+│  │  │  │  │  ├─ shoulder press_8.mp4
+│  │  │  │  │  └─ shoulder press_9.mp4
+│  │  │  │  └─ squat
+│  │  │  │     ├─ 1e2c254b-0d5a-4fd6-a6d4-2681333d927b.mp4
+│  │  │  │     ├─ 2a516b63-bccf-490e-807a-e6102303381f.mp4
+│  │  │  │     ├─ 385c01f2-e604-46d4-a84b-949b733395dd.mp4
+│  │  │  │     ├─ 6dddd176-2460-48cf-bd01-3eaaa0dc754f.mp4
+│  │  │  │     ├─ 71ef5d06-bfea-449b-8ff3-b428ae7dbaa7.mp4
+│  │  │  │     ├─ 7ddd38c8-0649-4092-8ddc-5ce2ba0bd4d1.mp4
+│  │  │  │     ├─ 897f5a21-f1a1-477e-aa8b-11b7ee9378d2.mp4
+│  │  │  │     ├─ v_BodyWeightSquats_g01_c01.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g01_c02.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g02_c02.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g02_c03.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g04_c03.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g04_c04.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g06_c01.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g06_c02.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g15_c03.avi
+│  │  │  │     ├─ v_BodyWeightSquats_g15_c04.avi
+│  │  │  │     └─ v_BodyWeightSquats_g22_c03.avi
+│  │  │  └─ synthetic_dataset
+│  │  │     └─ synthetic_dataset
+│  │  │        ├─ barbell biceps curl
+│  │  │        ├─ push-up
+│  │  │        ├─ shoulder press
+│  │  │        └─ squat
+│  │  └─ squat
+│  │     ├─ squat_1.MOV
+│  │     ├─ squat_10.mp4
+│  │     ├─ squat_11.mp4
+│  │     ├─ squat_12.mp4
+│  │     ├─ squat_13.mp4
+│  │     ├─ squat_14.mp4
+│  │     ├─ squat_15.mp4
+│  │     ├─ squat_16.mp4
+│  │     ├─ squat_17.mp4
+│  │     ├─ squat_18.mp4
+│  │     ├─ squat_19.mp4
+│  │     ├─ squat_2.MOV
+│  │     ├─ squat_20.mp4
+│  │     ├─ squat_21.mp4
+│  │     ├─ squat_22.mp4
+│  │     ├─ squat_23.mp4
+│  │     ├─ squat_24.mp4
+│  │     ├─ squat_25.mp4
+│  │     ├─ squat_26.mp4
+│  │     ├─ squat_27.mp4
+│  │     ├─ squat_28.mp4
+│  │     ├─ squat_29.mp4
+│  │     ├─ squat_3.MOV
+│  │     ├─ squat_4.MOV
+│  │     ├─ squat_5.MOV
+│  │     ├─ squat_6.MOV
+│  │     ├─ squat_7.mp4
+│  │     ├─ squat_8.mp4
+│  │     └─ squat_9.mp4
+│  ├─ reports
+│  │  ├─ reps
+│  │  │  ├─ bench
+│  │  │  │  ├─ bench press_0_reps.csv
+│  │  │  │  ├─ bench press_1_reps.csv
+│  │  │  │  ├─ bench press_10_reps.csv
+│  │  │  │  ├─ bench press_11_reps.csv
+│  │  │  │  ├─ bench press_12_reps.csv
+│  │  │  │  ├─ bench press_13_reps.csv
+│  │  │  │  ├─ bench press_14_reps.csv
+│  │  │  │  ├─ bench press_15_reps.csv
+│  │  │  │  ├─ bench press_16_reps.csv
+│  │  │  │  ├─ bench press_17_reps.csv
+│  │  │  │  ├─ bench press_18_reps.csv
+│  │  │  │  ├─ bench press_19_reps.csv
+│  │  │  │  ├─ bench press_2_reps.csv
+│  │  │  │  ├─ bench press_20_reps.csv
+│  │  │  │  ├─ bench press_21_reps.csv
+│  │  │  │  ├─ bench press_22_reps.csv
+│  │  │  │  ├─ bench press_23_reps.csv
+│  │  │  │  ├─ bench press_24_reps.csv
+│  │  │  │  ├─ bench press_25_reps.csv
+│  │  │  │  ├─ bench press_26_reps.csv
+│  │  │  │  ├─ bench press_27_reps.csv
+│  │  │  │  ├─ bench press_28_reps.csv
+│  │  │  │  ├─ bench press_29_reps.csv
+│  │  │  │  ├─ bench press_3_reps.csv
+│  │  │  │  ├─ bench press_30_reps.csv
+│  │  │  │  ├─ bench press_31_reps.csv
+│  │  │  │  ├─ bench press_32_reps.csv
+│  │  │  │  ├─ bench press_33_reps.csv
+│  │  │  │  ├─ bench press_34_reps.csv
+│  │  │  │  ├─ bench press_35_reps.csv
+│  │  │  │  ├─ bench press_36_reps.csv
+│  │  │  │  ├─ bench press_37_reps.csv
+│  │  │  │  ├─ bench press_38_reps.csv
+│  │  │  │  ├─ bench press_39_reps.csv
+│  │  │  │  ├─ bench press_4_reps.csv
+│  │  │  │  ├─ bench press_40_reps.csv
+│  │  │  │  ├─ bench press_41_reps.csv
+│  │  │  │  ├─ bench press_42_reps.csv
+│  │  │  │  ├─ bench press_43_reps.csv
+│  │  │  │  ├─ bench press_44_reps.csv
+│  │  │  │  ├─ bench press_45_reps.csv
+│  │  │  │  ├─ bench press_46_reps.csv
+│  │  │  │  ├─ bench press_47_reps.csv
+│  │  │  │  ├─ bench press_48_reps.csv
+│  │  │  │  ├─ bench press_49_reps.csv
+│  │  │  │  ├─ bench press_5_reps.csv
+│  │  │  │  ├─ bench press_50_reps.csv
+│  │  │  │  ├─ bench press_51_reps.csv
+│  │  │  │  ├─ bench press_52_reps.csv
+│  │  │  │  ├─ bench press_53_reps.csv
+│  │  │  │  ├─ bench press_54_reps.csv
+│  │  │  │  ├─ bench press_55_reps.csv
+│  │  │  │  ├─ bench press_56_reps.csv
+│  │  │  │  ├─ bench press_57_reps.csv
+│  │  │  │  ├─ bench press_58_reps.csv
+│  │  │  │  ├─ bench press_59_reps.csv
+│  │  │  │  ├─ bench press_6_reps.csv
+│  │  │  │  ├─ bench press_60_reps.csv
+│  │  │  │  ├─ bench press_61_reps.csv
+│  │  │  │  ├─ bench press_7_reps.csv
+│  │  │  │  ├─ bench press_8_reps.csv
+│  │  │  │  ├─ bench press_9_reps.csv
+│  │  │  │  ├─ declince bench press_1_reps.csv
+│  │  │  │  ├─ decline bench press_0_reps.csv
+│  │  │  │  ├─ decline bench press_1_reps.csv
+│  │  │  │  ├─ decline bench press_10_reps.csv
+│  │  │  │  ├─ decline bench press_11_reps.csv
+│  │  │  │  ├─ decline bench press_2_reps.csv
+│  │  │  │  ├─ decline bench press_3_reps.csv
+│  │  │  │  ├─ decline bench press_4_reps.csv
+│  │  │  │  ├─ decline bench press_5_reps.csv
+│  │  │  │  ├─ decline bench press_6_reps.csv
+│  │  │  │  ├─ decline bench press_7_reps.csv
+│  │  │  │  ├─ decline bench press_8_reps.csv
+│  │  │  │  ├─ decline bench press_9_reps.csv
+│  │  │  │  ├─ incline bench press_0_reps.csv
+│  │  │  │  ├─ incline bench press_1_reps.csv
+│  │  │  │  ├─ incline bench press_10_reps.csv
+│  │  │  │  ├─ incline bench press_11_reps.csv
+│  │  │  │  ├─ incline bench press_12_reps.csv
+│  │  │  │  ├─ incline bench press_13_reps.csv
+│  │  │  │  ├─ incline bench press_14_reps.csv
+│  │  │  │  ├─ incline bench press_15_reps.csv
+│  │  │  │  ├─ incline bench press_16_reps.csv
+│  │  │  │  ├─ incline bench press_17_reps.csv
+│  │  │  │  ├─ incline bench press_18_reps.csv
+│  │  │  │  ├─ incline bench press_19_reps.csv
+│  │  │  │  ├─ incline bench press_2_reps.csv
+│  │  │  │  ├─ incline bench press_20_reps.csv
+│  │  │  │  ├─ incline bench press_21_reps.csv
+│  │  │  │  ├─ incline bench press_22_reps.csv
+│  │  │  │  ├─ incline bench press_23_reps.csv
+│  │  │  │  ├─ incline bench press_24_reps.csv
+│  │  │  │  ├─ incline bench press_25_reps.csv
+│  │  │  │  ├─ incline bench press_26_reps.csv
+│  │  │  │  ├─ incline bench press_27_reps.csv
+│  │  │  │  ├─ incline bench press_28_reps.csv
+│  │  │  │  ├─ incline bench press_29_reps.csv
+│  │  │  │  ├─ incline bench press_3_reps.csv
+│  │  │  │  ├─ incline bench press_30_reps.csv
+│  │  │  │  ├─ incline bench press_31_reps.csv
+│  │  │  │  ├─ incline bench press_32_reps.csv
+│  │  │  │  ├─ incline bench press_33_reps.csv
+│  │  │  │  ├─ incline bench press_4_reps.csv
+│  │  │  │  ├─ incline bench press_5_reps.csv
+│  │  │  │  ├─ incline bench press_6_reps.csv
+│  │  │  │  ├─ incline bench press_7_reps.csv
+│  │  │  │  ├─ incline bench press_8_reps.csv
+│  │  │  │  └─ incline bench press_9_reps.csv
+│  │  │  ├─ curl
+│  │  │  │  ├─ barbell biceps curl_0_reps.csv
+│  │  │  │  ├─ barbell biceps curl_1_reps.csv
+│  │  │  │  ├─ barbell biceps curl_10_reps.csv
+│  │  │  │  ├─ barbell biceps curl_11_reps.csv
+│  │  │  │  ├─ barbell biceps curl_12_reps.csv
+│  │  │  │  ├─ barbell biceps curl_13_reps.csv
+│  │  │  │  ├─ barbell biceps curl_14_reps.csv
+│  │  │  │  ├─ barbell biceps curl_15_reps.csv
+│  │  │  │  ├─ barbell biceps curl_16_reps.csv
+│  │  │  │  ├─ barbell biceps curl_17_reps.csv
+│  │  │  │  ├─ barbell biceps curl_18_reps.csv
+│  │  │  │  ├─ barbell biceps curl_19_reps.csv
+│  │  │  │  ├─ barbell biceps curl_2_reps.csv
+│  │  │  │  ├─ barbell biceps curl_20_reps.csv
+│  │  │  │  ├─ barbell biceps curl_21_reps.csv
+│  │  │  │  ├─ barbell biceps curl_22_reps.csv
+│  │  │  │  ├─ barbell biceps curl_23_reps.csv
+│  │  │  │  ├─ barbell biceps curl_24_reps.csv
+│  │  │  │  ├─ barbell biceps curl_25_reps.csv
+│  │  │  │  ├─ barbell biceps curl_26_reps.csv
+│  │  │  │  ├─ barbell biceps curl_27_reps.csv
+│  │  │  │  ├─ barbell biceps curl_28_reps.csv
+│  │  │  │  ├─ barbell biceps curl_29_reps.csv
+│  │  │  │  ├─ barbell biceps curl_3_reps.csv
+│  │  │  │  ├─ barbell biceps curl_30_reps.csv
+│  │  │  │  ├─ barbell biceps curl_31_reps.csv
+│  │  │  │  ├─ barbell biceps curl_32_reps.csv
+│  │  │  │  ├─ barbell biceps curl_33_reps.csv
+│  │  │  │  ├─ barbell biceps curl_34_reps.csv
+│  │  │  │  ├─ barbell biceps curl_35_reps.csv
+│  │  │  │  ├─ barbell biceps curl_36_reps.csv
+│  │  │  │  ├─ barbell biceps curl_37_reps.csv
+│  │  │  │  ├─ barbell biceps curl_38_reps.csv
+│  │  │  │  ├─ barbell biceps curl_39_reps.csv
+│  │  │  │  ├─ barbell biceps curl_4_reps.csv
+│  │  │  │  ├─ barbell biceps curl_40_reps.csv
+│  │  │  │  ├─ barbell biceps curl_41_reps.csv
+│  │  │  │  ├─ barbell biceps curl_42_reps.csv
+│  │  │  │  ├─ barbell biceps curl_43_reps.csv
+│  │  │  │  ├─ barbell biceps curl_44_reps.csv
+│  │  │  │  ├─ barbell biceps curl_45_reps.csv
+│  │  │  │  ├─ barbell biceps curl_46_reps.csv
+│  │  │  │  ├─ barbell biceps curl_47_reps.csv
+│  │  │  │  ├─ barbell biceps curl_48_reps.csv
+│  │  │  │  ├─ barbell biceps curl_49_reps.csv
+│  │  │  │  ├─ barbell biceps curl_5_reps.csv
+│  │  │  │  ├─ barbell biceps curl_50_reps.csv
+│  │  │  │  ├─ barbell biceps curl_51_reps.csv
+│  │  │  │  ├─ barbell biceps curl_52_reps.csv
+│  │  │  │  ├─ barbell biceps curl_53_reps.csv
+│  │  │  │  ├─ barbell biceps curl_54_reps.csv
+│  │  │  │  ├─ barbell biceps curl_55_reps.csv
+│  │  │  │  ├─ barbell biceps curl_56_reps.csv
+│  │  │  │  ├─ barbell biceps curl_57_reps.csv
+│  │  │  │  ├─ barbell biceps curl_58_reps.csv
+│  │  │  │  ├─ barbell biceps curl_59_reps.csv
+│  │  │  │  ├─ barbell biceps curl_6_reps.csv
+│  │  │  │  ├─ barbell biceps curl_60_reps.csv
+│  │  │  │  ├─ barbell biceps curl_61_reps.csv
+│  │  │  │  ├─ barbell biceps curl_62_reps.csv
+│  │  │  │  ├─ barbell biceps curl_7_reps.csv
+│  │  │  │  ├─ barbell biceps curl_8_reps.csv
+│  │  │  │  ├─ barbell biceps curl_9_reps.csv
+│  │  │  │  ├─ hammer curl_0_reps.csv
+│  │  │  │  ├─ hammer curl_1_reps.csv
+│  │  │  │  ├─ hammer curl_10_reps.csv
+│  │  │  │  ├─ hammer curl_11_reps.csv
+│  │  │  │  ├─ hammer curl_12_reps.csv
+│  │  │  │  ├─ hammer curl_13_reps.csv
+│  │  │  │  ├─ hammer curl_14_reps.csv
+│  │  │  │  ├─ hammer curl_15_reps.csv
+│  │  │  │  ├─ hammer curl_16_reps.csv
+│  │  │  │  ├─ hammer curl_17_reps.csv
+│  │  │  │  ├─ hammer curl_18_reps.csv
+│  │  │  │  ├─ hammer curl_19_reps.csv
+│  │  │  │  ├─ hammer curl_2_reps.csv
+│  │  │  │  ├─ hammer curl_3_reps.csv
+│  │  │  │  ├─ hammer curl_4_reps.csv
+│  │  │  │  ├─ hammer curl_5_reps.csv
+│  │  │  │  ├─ hammer curl_6_reps.csv
+│  │  │  │  ├─ hammer curl_7_reps.csv
+│  │  │  │  ├─ hammer curl_8_reps.csv
+│  │  │  │  └─ hammer curl_9_reps.csv
+│  │  │  └─ squat
+│  │  │     ├─ squat_0_reps.csv
+│  │  │     ├─ squat_1_reps.csv
+│  │  │     ├─ squat_10_reps.csv
+│  │  │     ├─ squat_11_reps.csv
+│  │  │     ├─ squat_12_reps.csv
+│  │  │     ├─ squat_13_reps.csv
+│  │  │     ├─ squat_14_reps.csv
+│  │  │     ├─ squat_15_reps.csv
+│  │  │     ├─ squat_16_reps.csv
+│  │  │     ├─ squat_17_reps.csv
+│  │  │     ├─ squat_18_reps.csv
+│  │  │     ├─ squat_19_reps.csv
+│  │  │     ├─ squat_2_reps.csv
+│  │  │     ├─ squat_20_reps.csv
+│  │  │     ├─ squat_21_reps.csv
+│  │  │     ├─ squat_22_reps.csv
+│  │  │     ├─ squat_23_reps.csv
+│  │  │     ├─ squat_24_reps.csv
+│  │  │     ├─ squat_25_reps.csv
+│  │  │     ├─ squat_26_reps.csv
+│  │  │     ├─ squat_27_reps.csv
+│  │  │     ├─ squat_28_reps.csv
+│  │  │     ├─ squat_29_reps.csv
+│  │  │     ├─ squat_3_reps.csv
+│  │  │     ├─ squat_4_reps.csv
+│  │  │     ├─ squat_5_reps.csv
+│  │  │     ├─ squat_6_reps.csv
+│  │  │     ├─ squat_7_reps.csv
+│  │  │     ├─ squat_8_reps.csv
+│  │  │     └─ squat_9_reps.csv
+│  │  ├─ analysis_bench_bench press_1.json
+│  │  ├─ analysis_bench_bench press_10.json
+│  │  ├─ analysis_bench_bench press_12.json
+│  │  ├─ analysis_bench_bench press_2.json
+│  │  ├─ analysis_bench_bench press_28.json
+│  │  ├─ analysis_bench_bench press_3.json
+│  │  ├─ analysis_bench_bench press_31.json
+│  │  ├─ analysis_bench_bench press_32.json
+│  │  ├─ analysis_bench_bench press_34.json
+│  │  ├─ analysis_bench_bench press_36.json
+│  │  ├─ analysis_bench_bench press_37.json
+│  │  ├─ analysis_bench_bench press_40.json
+│  │  ├─ analysis_bench_bench press_42.json
+│  │  ├─ analysis_bench_bench press_45.json
+│  │  ├─ analysis_bench_bench press_48.json
+│  │  ├─ analysis_bench_bench press_54.json
+│  │  ├─ analysis_bench_bench press_56.json
+│  │  ├─ analysis_bench_bench press_57.json
+│  │  ├─ analysis_bench_bench press_59.json
+│  │  ├─ analysis_bench_bench press_6.json
+│  │  ├─ analysis_bench_bench press_60.json
+│  │  ├─ analysis_bench_bench press_9.json
+│  │  ├─ analysis_curl_barbell biceps curl_12.json
+│  │  ├─ analysis_curl_barbell biceps curl_40.json
+│  │  ├─ analysis_curl_barbell biceps curl_44.json
+│  │  ├─ analysis_curl_barbell biceps curl_45.json
+│  │  ├─ analysis_curl_barbell biceps curl_46.json
+│  │  ├─ analysis_curl_barbell biceps curl_50.json
+│  │  ├─ analysis_curl_barbell biceps curl_51.json
+│  │  ├─ analysis_curl_barbell biceps curl_54.json
+│  │  ├─ analysis_curl_barbell biceps curl_55.json
+│  │  ├─ analysis_curl_barbell biceps curl_56.json
+│  │  ├─ analysis_curl_barbell biceps curl_8.json
+│  │  ├─ analysis_curl_hammer curl_11.json
+│  │  ├─ analysis_curl_hammer curl_16.json
+│  │  ├─ analysis_curl_hammer curl_17.json
+│  │  ├─ analysis_curl_hammer curl_19.json
+│  │  ├─ analysis_curl_hammer curl_2.json
+│  │  ├─ analysis_curl_hammer curl_3.json
+│  │  ├─ analysis_curl_hammer curl_4.json
+│  │  ├─ analysis_curl_hammer curl_5.json
+│  │  ├─ analysis_curl_hammer curl_6.json
+│  │  ├─ analysis_curl_hammer curl_7.json
+│  │  ├─ analysis_deadlift_deadlift_1.json
+│  │  ├─ analysis_deadlift_deadlift_10.json
+│  │  ├─ analysis_deadlift_deadlift_21.json
+│  │  ├─ analysis_deadlift_deadlift_25.json
+│  │  ├─ analysis_deadlift_deadlift_26.json
+│  │  ├─ analysis_deadlift_deadlift_27.json
+│  │  ├─ analysis_deadlift_deadlift_28.json
+│  │  ├─ analysis_deadlift_deadlift_3.json
+│  │  ├─ analysis_deadlift_deadlift_30.json
+│  │  ├─ analysis_deadlift_deadlift_31.json
+│  │  ├─ analysis_deadlift_deadlift_6.json
+│  │  ├─ analysis_deadlift_deadlift_7.json
+│  │  ├─ analysis_squat_squat_1.json
+│  │  ├─ analysis_squat_squat_10.json
+│  │  ├─ analysis_squat_squat_11.json
+│  │  ├─ analysis_squat_squat_12.json
+│  │  ├─ analysis_squat_squat_13.json
+│  │  ├─ analysis_squat_squat_14.json
+│  │  ├─ analysis_squat_squat_15.json
+│  │  ├─ analysis_squat_squat_16.json
+│  │  ├─ analysis_squat_squat_17.json
+│  │  ├─ analysis_squat_squat_18.json
+│  │  ├─ analysis_squat_squat_19.json
+│  │  ├─ analysis_squat_squat_2.json
+│  │  ├─ analysis_squat_squat_20.json
+│  │  ├─ analysis_squat_squat_21.json
+│  │  ├─ analysis_squat_squat_22.json
+│  │  ├─ analysis_squat_squat_23.json
+│  │  ├─ analysis_squat_squat_24.json
+│  │  ├─ analysis_squat_squat_25.json
+│  │  ├─ analysis_squat_squat_26.json
+│  │  ├─ analysis_squat_squat_27.json
+│  │  ├─ analysis_squat_squat_28.json
+│  │  ├─ analysis_squat_squat_29.json
+│  │  ├─ analysis_squat_squat_3.json
+│  │  ├─ analysis_squat_squat_4.json
+│  │  ├─ analysis_squat_squat_5.json
+│  │  ├─ analysis_squat_squat_6.json
+│  │  ├─ analysis_squat_squat_7.json
+│  │  ├─ analysis_squat_squat_8.json
+│  │  ├─ analysis_squat_squat_9.json
+│  │  ├─ eval_summary.csv
+│  │  └─ sets_all.csv
+│  ├─ shortlist
+│  │  ├─ bench
+│  │  │  ├─ clean
+│  │  │  │  ├─ bench press_0.mp4
+│  │  │  │  ├─ bench press_1.mp4
+│  │  │  │  ├─ bench press_10.mp4
+│  │  │  │  ├─ bench press_11.mp4
+│  │  │  │  ├─ bench press_12.mp4
+│  │  │  │  ├─ bench press_13.mp4
+│  │  │  │  ├─ bench press_14.mp4
+│  │  │  │  ├─ bench press_15.mp4
+│  │  │  │  ├─ bench press_16.mp4
+│  │  │  │  ├─ bench press_17.mp4
+│  │  │  │  ├─ bench press_18.mp4
+│  │  │  │  ├─ bench press_19.mp4
+│  │  │  │  ├─ bench press_2.mp4
+│  │  │  │  ├─ bench press_20.mp4
+│  │  │  │  ├─ bench press_21.mp4
+│  │  │  │  ├─ bench press_22.mp4
+│  │  │  │  ├─ bench press_23.mp4
+│  │  │  │  ├─ bench press_24.mp4
+│  │  │  │  ├─ bench press_25.mp4
+│  │  │  │  ├─ bench press_26.mp4
+│  │  │  │  ├─ bench press_27.mp4
+│  │  │  │  ├─ bench press_28.mp4
+│  │  │  │  ├─ bench press_3.mp4
+│  │  │  │  ├─ bench press_32.mp4
+│  │  │  │  ├─ bench press_33.mp4
+│  │  │  │  ├─ bench press_34.mp4
+│  │  │  │  ├─ bench press_35.mp4
+│  │  │  │  ├─ bench press_36.mp4
+│  │  │  │  ├─ bench press_37.mp4
+│  │  │  │  ├─ bench press_38.mp4
+│  │  │  │  ├─ bench press_39.mp4
+│  │  │  │  ├─ bench press_4.mp4
+│  │  │  │  ├─ bench press_40.mp4
+│  │  │  │  ├─ bench press_41.mp4
+│  │  │  │  ├─ bench press_42.mp4
+│  │  │  │  ├─ bench press_43.mp4
+│  │  │  │  ├─ bench press_44.mp4
+│  │  │  │  ├─ bench press_45.mp4
+│  │  │  │  ├─ bench press_46.mp4
+│  │  │  │  ├─ bench press_47.mp4
+│  │  │  │  ├─ bench press_48.mp4
+│  │  │  │  ├─ bench press_49.mp4
+│  │  │  │  ├─ bench press_5.mp4
+│  │  │  │  ├─ bench press_50.mp4
+│  │  │  │  ├─ bench press_51.mp4
+│  │  │  │  ├─ bench press_52.mp4
+│  │  │  │  ├─ bench press_53.mp4
+│  │  │  │  ├─ bench press_54.mp4
+│  │  │  │  ├─ bench press_55.mp4
+│  │  │  │  ├─ bench press_56.mp4
+│  │  │  │  ├─ bench press_57.mp4
+│  │  │  │  ├─ bench press_58.mp4
+│  │  │  │  ├─ bench press_59.mp4
+│  │  │  │  ├─ bench press_6.mp4
+│  │  │  │  ├─ bench press_60.mp4
+│  │  │  │  ├─ bench press_61.mp4
+│  │  │  │  ├─ bench press_7.mp4
+│  │  │  │  ├─ bench press_8.mp4
+│  │  │  │  ├─ bench press_9.mp4
+│  │  │  │  ├─ decline bench press_1.mp4
+│  │  │  │  ├─ decline bench press_2.mp4
+│  │  │  │  ├─ decline bench press_3.mp4
+│  │  │  │  ├─ decline bench press_4.mp4
+│  │  │  │  ├─ decline bench press_5.mp4
+│  │  │  │  ├─ decline bench press_6.mp4
+│  │  │  │  ├─ decline bench press_7.mp4
+│  │  │  │  ├─ decline bench press_8.mp4
+│  │  │  │  ├─ decline bench press_9.mp4
+│  │  │  │  ├─ incline bench press_0.mp4
+│  │  │  │  ├─ incline bench press_1.mp4
+│  │  │  │  ├─ incline bench press_10.mp4
+│  │  │  │  ├─ incline bench press_11.mp4
+│  │  │  │  ├─ incline bench press_12.mp4
+│  │  │  │  ├─ incline bench press_13.mp4
+│  │  │  │  ├─ incline bench press_14.mp4
+│  │  │  │  ├─ incline bench press_15.mp4
+│  │  │  │  ├─ incline bench press_16.mp4
+│  │  │  │  ├─ incline bench press_17.mp4
+│  │  │  │  ├─ incline bench press_18.mp4
+│  │  │  │  ├─ incline bench press_19.mp4
+│  │  │  │  ├─ incline bench press_2.mp4
+│  │  │  │  ├─ incline bench press_20.mp4
+│  │  │  │  ├─ incline bench press_21.mp4
+│  │  │  │  ├─ incline bench press_22.mp4
+│  │  │  │  ├─ incline bench press_23.mp4
+│  │  │  │  ├─ incline bench press_24.mp4
+│  │  │  │  ├─ incline bench press_25.mp4
+│  │  │  │  ├─ incline bench press_26.mp4
+│  │  │  │  ├─ incline bench press_27.mp4
+│  │  │  │  ├─ incline bench press_28.mp4
+│  │  │  │  ├─ incline bench press_29.mp4
+│  │  │  │  ├─ incline bench press_3.mp4
+│  │  │  │  ├─ incline bench press_30.mp4
+│  │  │  │  ├─ incline bench press_31.mp4
+│  │  │  │  ├─ incline bench press_32.mp4
+│  │  │  │  ├─ incline bench press_4.mp4
+│  │  │  │  ├─ incline bench press_5.mp4
+│  │  │  │  ├─ incline bench press_6.mp4
+│  │  │  │  ├─ incline bench press_7.mp4
+│  │  │  │  ├─ incline bench press_8.mp4
+│  │  │  │  └─ incline bench press_9.mp4
+│  │  │  ├─ noisy
+│  │  │  │  ├─ bench press_1.mp4
+│  │  │  │  ├─ bench press_10.mp4
+│  │  │  │  ├─ bench press_16.mp4
+│  │  │  │  ├─ bench press_2.mp4
+│  │  │  │  ├─ bench press_21.mp4
+│  │  │  │  ├─ bench press_23.mp4
+│  │  │  │  ├─ bench press_24.mp4
+│  │  │  │  ├─ bench press_25.mp4
+│  │  │  │  ├─ bench press_26.mp4
+│  │  │  │  ├─ bench press_27.mp4
+│  │  │  │  ├─ bench press_28.mp4
+│  │  │  │  ├─ bench press_29.mp4
+│  │  │  │  ├─ bench press_30.mp4
+│  │  │  │  ├─ bench press_31.mp4
+│  │  │  │  ├─ bench press_32.mp4
+│  │  │  │  ├─ bench press_33.mp4
+│  │  │  │  ├─ bench press_34.mp4
+│  │  │  │  ├─ bench press_35.mp4
+│  │  │  │  ├─ bench press_36.mp4
+│  │  │  │  ├─ bench press_37.mp4
+│  │  │  │  ├─ bench press_38.mp4
+│  │  │  │  ├─ bench press_53.mp4
+│  │  │  │  ├─ bench press_58.mp4
+│  │  │  │  ├─ bench press_6.mp4
+│  │  │  │  ├─ declince bench press_1.mp4
+│  │  │  │  ├─ decline bench press_0.mp4
+│  │  │  │  ├─ decline bench press_1.mp4
+│  │  │  │  ├─ decline bench press_10.mp4
+│  │  │  │  ├─ decline bench press_11.mp4
+│  │  │  │  ├─ decline bench press_2.mp4
+│  │  │  │  ├─ decline bench press_3.mp4
+│  │  │  │  ├─ decline bench press_4.mp4
+│  │  │  │  ├─ decline bench press_6.mp4
+│  │  │  │  ├─ decline bench press_7.mp4
+│  │  │  │  ├─ incline bench press_1.mp4
+│  │  │  │  ├─ incline bench press_2.mp4
+│  │  │  │  ├─ incline bench press_26.mp4
+│  │  │  │  ├─ incline bench press_33.mp4
+│  │  │  │  ├─ incline bench press_5.mp4
+│  │  │  │  ├─ incline bench press_6.mp4
+│  │  │  │  └─ incline bench press_9.mp4
+│  │  │  └─ val
+│  │  ├─ curl
+│  │  │  ├─ clean
+│  │  │  │  ├─ barbell biceps curl_0.mp4
+│  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  ├─ barbell biceps curl_10.mp4
+│  │  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  │  ├─ barbell biceps curl_13.mp4
+│  │  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  │  ├─ barbell biceps curl_15.mp4
+│  │  │  │  ├─ barbell biceps curl_16.mp4
+│  │  │  │  ├─ barbell biceps curl_17.mp4
+│  │  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  │  ├─ barbell biceps curl_19.mp4
+│  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  │  ├─ barbell biceps curl_23.mp4
+│  │  │  │  ├─ barbell biceps curl_24.mp4
+│  │  │  │  ├─ barbell biceps curl_25.mp4
+│  │  │  │  ├─ barbell biceps curl_26.mp4
+│  │  │  │  ├─ barbell biceps curl_27.mp4
+│  │  │  │  ├─ barbell biceps curl_28.mp4
+│  │  │  │  ├─ barbell biceps curl_29.mp4
+│  │  │  │  ├─ barbell biceps curl_3.mp4
+│  │  │  │  ├─ barbell biceps curl_30.mp4
+│  │  │  │  ├─ barbell biceps curl_31.mp4
+│  │  │  │  ├─ barbell biceps curl_32.mp4
+│  │  │  │  ├─ barbell biceps curl_33.mp4
+│  │  │  │  ├─ barbell biceps curl_34.mp4
+│  │  │  │  ├─ barbell biceps curl_35.mp4
+│  │  │  │  ├─ barbell biceps curl_36.mp4
+│  │  │  │  ├─ barbell biceps curl_37.mp4
+│  │  │  │  ├─ barbell biceps curl_38.mp4
+│  │  │  │  ├─ barbell biceps curl_39.mp4
+│  │  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  │  ├─ barbell biceps curl_40.mp4
+│  │  │  │  ├─ barbell biceps curl_41.mp4
+│  │  │  │  ├─ barbell biceps curl_42.mp4
+│  │  │  │  ├─ barbell biceps curl_43.mp4
+│  │  │  │  ├─ barbell biceps curl_44.mp4
+│  │  │  │  ├─ barbell biceps curl_45.mp4
+│  │  │  │  ├─ barbell biceps curl_46.mp4
+│  │  │  │  ├─ barbell biceps curl_47.mp4
+│  │  │  │  ├─ barbell biceps curl_48.mp4
+│  │  │  │  ├─ barbell biceps curl_49.mp4
+│  │  │  │  ├─ barbell biceps curl_5.mp4
+│  │  │  │  ├─ barbell biceps curl_50.mp4
+│  │  │  │  ├─ barbell biceps curl_51.mp4
+│  │  │  │  ├─ barbell biceps curl_52.mp4
+│  │  │  │  ├─ barbell biceps curl_53.mp4
+│  │  │  │  ├─ barbell biceps curl_54.mp4
+│  │  │  │  ├─ barbell biceps curl_55.mp4
+│  │  │  │  ├─ barbell biceps curl_56.mp4
+│  │  │  │  ├─ barbell biceps curl_57.mp4
+│  │  │  │  ├─ barbell biceps curl_58.mp4
+│  │  │  │  ├─ barbell biceps curl_59.mp4
+│  │  │  │  ├─ barbell biceps curl_6.mp4
+│  │  │  │  ├─ barbell biceps curl_60.mp4
+│  │  │  │  ├─ barbell biceps curl_61.mp4
+│  │  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  │  ├─ barbell biceps curl_8.mp4
+│  │  │  │  ├─ barbell biceps curl_9.mp4
+│  │  │  │  ├─ hammer curl_0.mp4
+│  │  │  │  ├─ hammer curl_1.MOV
+│  │  │  │  ├─ hammer curl_1.mp4
+│  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  ├─ hammer curl_11.mp4
+│  │  │  │  ├─ hammer curl_12.mp4
+│  │  │  │  ├─ hammer curl_13.mp4
+│  │  │  │  ├─ hammer curl_14.mp4
+│  │  │  │  ├─ hammer curl_15.mp4
+│  │  │  │  ├─ hammer curl_16.mp4
+│  │  │  │  ├─ hammer curl_17.mp4
+│  │  │  │  ├─ hammer curl_18.mp4
+│  │  │  │  ├─ hammer curl_19.mp4
+│  │  │  │  ├─ hammer curl_2.MOV
+│  │  │  │  ├─ hammer curl_2.mp4
+│  │  │  │  ├─ hammer curl_3.MOV
+│  │  │  │  ├─ hammer curl_3.mp4
+│  │  │  │  ├─ hammer curl_4.MOV
+│  │  │  │  ├─ hammer curl_4.mp4
+│  │  │  │  ├─ hammer curl_5.MOV
+│  │  │  │  ├─ hammer curl_5.mp4
+│  │  │  │  ├─ hammer curl_6.MOV
+│  │  │  │  ├─ hammer curl_6.mp4
+│  │  │  │  ├─ hammer curl_7.MOV
+│  │  │  │  ├─ hammer curl_7.mp4
+│  │  │  │  ├─ hammer curl_8.mp4
+│  │  │  │  └─ hammer curl_9.mp4
+│  │  │  ├─ noisy
+│  │  │  │  ├─ barbell biceps curl_1.mp4
+│  │  │  │  ├─ barbell biceps curl_11.mp4
+│  │  │  │  ├─ barbell biceps curl_12.mp4
+│  │  │  │  ├─ barbell biceps curl_14.mp4
+│  │  │  │  ├─ barbell biceps curl_18.mp4
+│  │  │  │  ├─ barbell biceps curl_2.mp4
+│  │  │  │  ├─ barbell biceps curl_20.mp4
+│  │  │  │  ├─ barbell biceps curl_21.mp4
+│  │  │  │  ├─ barbell biceps curl_22.mp4
+│  │  │  │  ├─ barbell biceps curl_4.mp4
+│  │  │  │  ├─ barbell biceps curl_40.mp4
+│  │  │  │  ├─ barbell biceps curl_41.mp4
+│  │  │  │  ├─ barbell biceps curl_42.mp4
+│  │  │  │  ├─ barbell biceps curl_46.mp4
+│  │  │  │  ├─ barbell biceps curl_47.mp4
+│  │  │  │  ├─ barbell biceps curl_48.mp4
+│  │  │  │  ├─ barbell biceps curl_57.mp4
+│  │  │  │  ├─ barbell biceps curl_58.mp4
+│  │  │  │  ├─ barbell biceps curl_61.mp4
+│  │  │  │  ├─ barbell biceps curl_62.mp4
+│  │  │  │  ├─ barbell biceps curl_7.mp4
+│  │  │  │  ├─ barbell biceps curl_9.mp4
+│  │  │  │  ├─ hammer curl_1.mp4
+│  │  │  │  ├─ hammer curl_10.mp4
+│  │  │  │  ├─ hammer curl_2.mp4
+│  │  │  │  ├─ hammer curl_4.mp4
+│  │  │  │  ├─ hammer curl_6.mp4
+│  │  │  │  └─ hammer curl_9.mp4
+│  │  │  └─ val
+│  │  └─ squat
+│  │     ├─ clean
+│  │     │  ├─ squat_0.mp4
+│  │     │  ├─ squat_1.MOV
+│  │     │  ├─ squat_1.mp4
+│  │     │  ├─ squat_10.mp4
+│  │     │  ├─ squat_11.mp4
+│  │     │  ├─ squat_12.mp4
+│  │     │  ├─ squat_13.mp4
+│  │     │  ├─ squat_14.mp4
+│  │     │  ├─ squat_15.mp4
+│  │     │  ├─ squat_16.mp4
+│  │     │  ├─ squat_17.mp4
+│  │     │  ├─ squat_18.mp4
+│  │     │  ├─ squat_19.mp4
+│  │     │  ├─ squat_2.MOV
+│  │     │  ├─ squat_2.mp4
+│  │     │  ├─ squat_20.mp4
+│  │     │  ├─ squat_21.mp4
+│  │     │  ├─ squat_22.mp4
+│  │     │  ├─ squat_23.mp4
+│  │     │  ├─ squat_24.mp4
+│  │     │  ├─ squat_25.mp4
+│  │     │  ├─ squat_26.mp4
+│  │     │  ├─ squat_27.mp4
+│  │     │  ├─ squat_28.mp4
+│  │     │  ├─ squat_3.MOV
+│  │     │  ├─ squat_3.mp4
+│  │     │  ├─ squat_4.MOV
+│  │     │  ├─ squat_4.mp4
+│  │     │  ├─ squat_5.MOV
+│  │     │  ├─ squat_6.MOV
+│  │     │  ├─ squat_6.mp4
+│  │     │  ├─ squat_7.mp4
+│  │     │  ├─ squat_8.mp4
+│  │     │  └─ squat_9.mp4
+│  │     ├─ noisy
+│  │     │  ├─ squat_0.mp4
+│  │     │  ├─ squat_1.mp4
+│  │     │  ├─ squat_10.mp4
+│  │     │  ├─ squat_11.mp4
+│  │     │  ├─ squat_12.mp4
+│  │     │  ├─ squat_13.mp4
+│  │     │  ├─ squat_14.mp4
+│  │     │  ├─ squat_15.mp4
+│  │     │  ├─ squat_16.mp4
+│  │     │  ├─ squat_2.mp4
+│  │     │  ├─ squat_21.mp4
+│  │     │  ├─ squat_27.mp4
+│  │     │  ├─ squat_28.mp4
+│  │     │  ├─ squat_29.mp4
+│  │     │  ├─ squat_3.mp4
+│  │     │  ├─ squat_4.mp4
+│  │     │  ├─ squat_5.mp4
+│  │     │  ├─ squat_6.mp4
+│  │     │  ├─ squat_7.mp4
+│  │     │  ├─ squat_8.mp4
+│  │     │  └─ squat_9.mp4
+│  │     └─ val
+│  └─ .gitkeep
+├─ form_baseline
+├─ form_feedback
+├─ motion_analysis
+├─ pose_tracking
+├─ repright
+│  ├─ __init__.py
+│  ├─ analyzer.py
+│  ├─ analyzer.py.bak_20260218_190451
+│  ├─ analyzer.py.bak_20260218_212241
+│  ├─ analyzer.py.bak_20260218_212531
+│  ├─ analyzer.py.bak_20260218_212740
+│  ├─ analyzer.py.bak_20260218_214113
+│  ├─ analyzer.py.bak_20260218_214456
+│  └─ pose_extract.py
+├─ scripts
+│  ├─ analyze_video.py
+│  ├─ compute_rep_metrics.py
+│  ├─ compute_rep_metrics.py.bak_20260216_184125
+│  ├─ compute_rep_metrics.py.bak_before_deadlift_fix
+│  ├─ compute_rep_metrics.py.bak_before_hysteresis
+│  ├─ compute_rep_metrics.py.bak_hysteresis_20260216_122403
+│  ├─ compute_rep_metrics.py.bak_signal_fix_20260216_122836
+│  ├─ compute_rep_metrics.py.BROKEN.bak
+│  ├─ compute_rep_metrics.py.SYNTAXERR.bak
+│  ├─ compute_tempo_tut.py
+│  ├─ debug_signal.py
+│  ├─ engine.py
+│  ├─ evaluate.py
+│  ├─ evaluate.py.bak
+│  ├─ extract_all.py
+│  ├─ extract_poses.py
+│  ├─ labels.py
+│  ├─ make_overlay_from_npz.py
+│  ├─ make_overlay_from_npz.py.bak_20260218_213118
+│  ├─ make_overlay_from_npz.py.bak_20260218_214451
+│  ├─ prepare_dataset.py
+│  ├─ render_overlay.py
+│  ├─ rules_bench.py
+│  ├─ rules_deadlift.py
+│  ├─ run_cli.py
+│  ├─ run_cli.py.bak
+│  └─ upgrade_metrics_and_build_index.py
+├─ storage
+├─ tools
+│  └─ debug_pipeline.ps1
+├─ ui
+│  ├─ streamlit_app.py
+│  ├─ streamlit_app.py.bak_20251209_020633
+│  ├─ streamlit_app.py.bak_20260218_192525
+│  ├─ streamlit_app.py.bak_20260218_194253
+│  ├─ streamlit_app.py.bak_20260218_200525
+│  ├─ streamlit_app.py.bak_20260218_202333
+│  ├─ streamlit_app.py.bak_20260218_213332
+│  ├─ streamlit_app.py.bak_20260218_213345
+│  ├─ streamlit_app.py.bak_20260218_213752
+│  ├─ streamlit_app.py.bak_20260218_213838
+│  └─ streamlit_app.py.bak_20260218_214120
+├─ data_raw_deadlift_candidates.txt
+├─ data_raw_filelist.txt
+├─ data_raw_kaggle_files.txt
+├─ data_raw_riccardo_files.txt
+└─ data_raw_summary.txt

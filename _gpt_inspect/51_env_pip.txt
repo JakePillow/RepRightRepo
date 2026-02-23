@@ -1,0 +1,3 @@
+﻿pip 25.3 from C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\RepRight\.venv\lib\site-packages\pip (python 3.10)
+
+

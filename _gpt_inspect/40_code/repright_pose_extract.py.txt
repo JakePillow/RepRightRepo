@@ -1,0 +1,102 @@
+﻿   1: from __future__ import annotations
+   2: 
+   3: import json
+   4: from pathlib import Path
+   5: from typing import Optional, Tuple
+   6: 
+   7: import numpy as np
+   8: 
+   9: 
+  10: def extract_pose_npz(
+  11:     video_path: Path,
+  12:     exercise: str,
+  13:     processed_root: Path = Path("data/processed"),
+  14:     *,
+  15:     model_complexity: int = 1,
+  16:     min_detection_confidence: float = 0.5,
+  17:     min_tracking_confidence: float = 0.5,
+  18:     max_frames: Optional[int] = None,
+  19: ) -> Tuple[Path, Path]:
+  20:     """
+  21:     Extract MediaPipe pose landmarks to NPZ expected by compute_rep_metrics.py.
+  22: 
+  23:     Output:
+  24:       data/processed/pose/<exercise>/<stem>.npz
+  25:       data/processed/pose/<exercise>/<stem>_meta.json
+  26:     """
+  27: 
+  28:     video_path = Path(video_path)
+  29:     processed_root = Path(processed_root)
+  30:     ex = (exercise or "").strip().lower()
+  31: 
+  32:     out_dir = processed_root / "pose" / ex
+  33:     out_dir.mkdir(parents=True, exist_ok=True)
+  34: 
+  35:     npz_path = out_dir / f"{video_path.stem}.npz"
+  36:     meta_path = out_dir / f"{video_path.stem}_meta.json"
+  37: 
+  38:     import cv2
+  39:     import mediapipe as mp
+  40: 
+  41:     cap = cv2.VideoCapture(str(video_path))
+  42:     if not cap.isOpened():
+  43:         raise FileNotFoundError(f"Could not open video: {video_path}")
+  44: 
+  45:     fps = float(cap.get(cv2.CAP_PROP_FPS) or 30.0)
+  46: 
+  47:     mp_pose = mp.solutions.pose
+  48:     pose = mp_pose.Pose(
+  49:         model_complexity=model_complexity,
+  50:         enable_segmentation=False,
+  51:         min_detection_confidence=min_detection_confidence,
+  52:         min_tracking_confidence=min_tracking_confidence,
+  53:     )
+  54: 
+  55:     frames = []
+  56:     n = 0
+  57: 
+  58:     while True:
+  59:         ok, frame = cap.read()
+  60:         if not ok:
+  61:             break
+  62: 
+  63:         n += 1
+  64:         if max_frames is not None and n > max_frames:
+  65:             break
+  66: 
+  67:         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+  68:         res = pose.process(rgb)
+  69: 
+  70:         arr = np.full((33, 4), np.nan, dtype=np.float32)
+  71: 
+  72:         if res.pose_landmarks:
+  73:             lm = res.pose_landmarks.landmark
+  74:             for i in range(min(33, len(lm))):
+  75:                 arr[i, 0] = lm[i].x
+  76:                 arr[i, 1] = lm[i].y
+  77:                 arr[i, 2] = getattr(lm[i], "z", np.nan)
+  78:                 arr[i, 3] = getattr(lm[i], "visibility", np.nan)
+  79: 
+  80:         frames.append(arr)
+  81: 
+  82:     cap.release()
+  83:     pose.close()
+  84: 
+  85:     pose_arr = (
+  86:         np.stack(frames, axis=0)
+  87:         if frames
+  88:         else np.zeros((0, 33, 4), dtype=np.float32)
+  89:     )
+  90: 
+  91:     np.savez_compressed(npz_path, pose=pose_arr)
+  92: 
+  93:     meta = {
+  94:         "fps": fps,
+  95:         "n_frames": int(pose_arr.shape[0]),
+  96:         "source_video": str(video_path).replace("\\", "/"),
+  97:         "exercise": ex,
+  98:     }
+  99: 
+ 100:     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+ 101: 
+ 102:     return npz_path, meta_path

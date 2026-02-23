@@ -1,4 +1,55 @@
-﻿# ============================
+﻿# ================================================================
+# SCHEMA CONTRACT: analysis_v1  (LOCKED)
+#
+# compute_rep_metrics(...) RETURNS:
+#
+# {
+#   "reps": [
+#       {
+#           # REQUIRED CORE
+#           "rep_index": int
+#           "start_frame": int
+#           "peak_frame": int
+#           "end_frame": int
+#           "rom": float
+#           "duration_sec": float
+#           "tempo_up_sec": float
+#           "tempo_down_sec": float
+#
+#           # INFERENCE FLAGS
+#           "tempo_down_inferred": bool
+#           "tempo_down_sec_inferred": float
+#           "end_frame_source": str
+#
+#           # CONFIDENCE
+#           "confidence_v1": {
+#               "level": "high" | "medium" | "low"
+#               "reasons": List[str]
+#           }
+#
+#           # BIOMECHANICS
+#           "biomech_v1": Dict
+#
+#           # FAULTS
+#           "faults_v1": List[Dict]
+#       }
+#   ],
+#
+#   "set_summary_v1": {
+#       "n_reps": int
+#       "avg_rom": float
+#       "avg_duration_sec": float
+#   }
+# }
+#
+# RULES:
+# - New fields must be additive.
+# - No renaming of existing keys.
+# - No removal of existing keys.
+# - confidence_v1 must always exist.
+# - faults_v1 must always exist (empty list if none).
+# ================================================================
+# ============================
 # RepRight - compute_rep_metrics.py
 # Phase 2: biomechanical intelligence scaffolding
 # - eccentric inference (no LOW re-hit)
@@ -37,6 +88,7 @@ class ExerciseParams:
     max_elbow_rom_asym_deg: float = 18.0
 
 
+    max_trunk_angle_deg: float = 65.0  # placeholder; tune later
 def per_exercise_params(exercise: str) -> Tuple[float, float, float]:
     """
     Returns low/high thresholds for hysteresis and min rep duration.
@@ -74,21 +126,23 @@ def _fault(code: str, severity: str, value: float, threshold: float, evidence: s
 def choose_best_signal(pose: np.ndarray, exercise: str) -> Tuple[np.ndarray, str]:
     """
     Returns (signal, driver_label).
-    The signal is expected to be normalized-ish in [0,1] or similar.
-    Your analyzer already uses this.
+    Must be exercise-aware to prevent elbow-derived metrics leaking into deadlift/squat.
     """
-    # Minimal compatibility: if caller already passed a signal, this isn't used.
-    # If you have a richer implementation elsewhere, keep it here.
-    # For now, fall back to an elbow-angle-derived signal if possible.
-    # NOTE: This is a placeholder only if your project already had a choose_best_signal;
-    # in your repo it's already working, so keep behavior consistent by using elbow angle.
+    ex = (exercise or "").lower().strip()
+
+    if pose is None or not isinstance(pose, np.ndarray) or pose.ndim != 3:
+        return np.zeros((0,), dtype=float), "none"
+
+    if ex in ("bench", "curl"):
+        sig = _driver_signal_from_elbow(pose, side="L")
+        return sig, "elbow_L"
+
+    if ex in ("deadlift", "squat"):
+        sig = _driver_signal_from_hip_y(pose)
+        return sig, "hip_y"
+
     sig = _driver_signal_from_elbow(pose, side="L")
     return sig, "elbow_L"
-
-
-# ----------------------------
-# Rep detection (existing API)
-# ----------------------------
 
 def detect_reps_low_to_high(
     sig: np.ndarray,
@@ -169,6 +223,9 @@ L_ELBOW, R_ELBOW = 13, 14
 L_WRIST, R_WRIST = 15, 16
 
 
+L_HIP, R_HIP = 23, 24
+L_KNEE, R_KNEE = 25, 26
+
 def _angle_2d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
     """
     Angle ABC in degrees using 2D vectors.
@@ -245,6 +302,63 @@ def _driver_signal_from_elbow(pose: np.ndarray, side: str) -> np.ndarray:
 # Eccentric inference + metrics
 # ----------------------------
 
+
+def _nanfill_median(x: np.ndarray) -> np.ndarray:
+    x = np.asarray(x, dtype=float)
+    med = float(np.nanmedian(x)) if np.isfinite(x).any() else 0.0
+    y = x.copy()
+    y[~np.isfinite(y)] = med
+    return y
+
+
+def _normalize_robust_01(x: np.ndarray) -> np.ndarray:
+    x = _nanfill_median(x)
+    lo = float(np.percentile(x, 5))
+    hi = float(np.percentile(x, 95))
+    denom = max(1e-6, (hi - lo))
+    z = (x - lo) / denom
+    return np.clip(z, 0.0, 1.0).astype(float)
+
+
+def _hip_y_series(pose: np.ndarray) -> np.ndarray:
+    # mean hip y (2D). In most image coords y increases downward.
+    l_xy, _lv = _get_xyv(pose, L_HIP)
+    r_xy, _rv = _get_xyv(pose, R_HIP)
+    y = 0.5 * (l_xy[:, 1] + r_xy[:, 1])
+    return y.astype(float)
+
+
+def _driver_signal_from_hip_y(pose: np.ndarray) -> np.ndarray:
+    # higher signal = higher hip (smaller y) -> invert normalized y
+    y = _hip_y_series(pose)
+    z = _normalize_robust_01(y)
+    sig = 1.0 - z
+    return sig.astype(float)
+
+
+def _trunk_angle_deg_series(pose: np.ndarray) -> np.ndarray:
+    # torso vector: hip_mid -> shoulder_mid, angle to vertical axis
+    ls, _lv1 = _get_xyv(pose, L_SHOULDER)
+    rs, _rv1 = _get_xyv(pose, R_SHOULDER)
+    lh, _lv2 = _get_xyv(pose, L_HIP)
+    rh, _rv2 = _get_xyv(pose, R_HIP)
+
+    sh = 0.5 * (ls + rs)
+    hip = 0.5 * (lh + rh)
+
+    v = sh - hip
+    vert = np.array([0.0, -1.0], dtype=float)
+
+    ang = np.empty((pose.shape[0],), dtype=float)
+    ang[:] = np.nan
+    for t in range(pose.shape[0]):
+        vt = v[t]
+        nvt = np.linalg.norm(vt)
+        if nvt < 1e-9:
+            continue
+        cosang = float(np.clip(np.dot(vt / nvt, vert), -1.0, 1.0))
+        ang[t] = float(np.degrees(np.arccos(cosang)))
+    return ang
 def _infer_end_frame_no_low_rehit(
     sig: np.ndarray,
     peak: int,
@@ -377,53 +491,62 @@ def compute_rep_metrics(
             end_frame_source = "low_hold_after_min_ecc" if (end + 2 < sig.shape[0] and float(sig[end]) <= float(low) and float(sig[end + 1]) <= float(low) ) else "low_rehit"
             tempo_down_sec_inferred = tempo_down_sec  # identical
 
-        # Phase2 biomech_v1: angle ROM per rep (curl uses elbow)
+        # Phase2 biomech_v1: exercise-aware biomechanics + faults
         biomech_v1: Dict[str, Any] = {"angles": {}}
         faults_v1: List[Dict[str, Any]] = []
 
-        if elbow_L is not None and elbow_R is not None:
-            aL = elbow_L[start : end + 1]
-            aR = elbow_R[start : end + 1]
+        # --- Bench/Curl: elbow ROM + asym only
+        if ex in ("bench", "curl"):
+            if elbow_L is not None and elbow_R is not None:
+                aL = elbow_L[start : end + 1]
+                aR = elbow_R[start : end + 1]
 
-            # compute rom degrees
-            minL = float(np.nanmin(aL)) if np.isfinite(aL).any() else float("nan")
-            maxL = float(np.nanmax(aL)) if np.isfinite(aL).any() else float("nan")
-            romL = float(maxL - minL) if np.isfinite(minL) and np.isfinite(maxL) else float("nan")
+                minL = float(np.nanmin(aL)) if np.isfinite(aL).any() else float("nan")
+                maxL = float(np.nanmax(aL)) if np.isfinite(aL).any() else float("nan")
+                romL = float(maxL - minL) if np.isfinite(minL) and np.isfinite(maxL) else float("nan")
 
-            minR = float(np.nanmin(aR)) if np.isfinite(aR).any() else float("nan")
-            maxR = float(np.nanmax(aR)) if np.isfinite(aR).any() else float("nan")
-            romR = float(maxR - minR) if np.isfinite(minR) and np.isfinite(maxR) else float("nan")
+                minR = float(np.nanmin(aR)) if np.isfinite(aR).any() else float("nan")
+                maxR = float(np.nanmax(aR)) if np.isfinite(aR).any() else float("nan")
+                romR = float(maxR - minR) if np.isfinite(minR) and np.isfinite(maxR) else float("nan")
 
-            # pick dominant side (larger ROM) for reporting
-            side = "L" if (np.isfinite(romL) and (not np.isfinite(romR) or romL >= romR)) else "R"
-            if side == "L":
-                biomech_v1["angles"]["elbow"] = {"side": "L", "min_deg": minL, "max_deg": maxL, "rom_deg": romL, "valid_frac": 1.0}
-                dom_rom = romL
-            else:
-                biomech_v1["angles"]["elbow"] = {"side": "R", "min_deg": minR, "max_deg": maxR, "rom_deg": romR, "valid_frac": 1.0}
-                dom_rom = romR
+                side = "L" if (np.isfinite(romL) and (not np.isfinite(romR) or romL >= romR)) else "R"
+                if side == "L":
+                    biomech_v1["angles"]["elbow"] = {"side": "L", "min_deg": minL, "max_deg": maxL, "rom_deg": romL, "valid_frac": 1.0}
+                    dom_rom = romL
+                else:
+                    biomech_v1["angles"]["elbow"] = {"side": "R", "min_deg": minR, "max_deg": maxR, "rom_deg": romR, "valid_frac": 1.0}
+                    dom_rom = romR
 
-            # Faults (curl scaffolding)
-            if np.isfinite(dom_rom) and dom_rom < params.min_elbow_rom_deg:
-                faults_v1.append(_fault(
-                    "PARTIAL_ROM_ELBOW",
-                    "warn",
-                    dom_rom,
-                    params.min_elbow_rom_deg,
-                    f"elbow_rom_deg<{params.min_elbow_rom_deg}",
-                ))
-
-            if np.isfinite(romL) and np.isfinite(romR):
-                asym = float(abs(romL - romR))
-                if asym > params.max_elbow_rom_asym_deg:
+                if np.isfinite(dom_rom) and dom_rom < params.min_elbow_rom_deg:
                     faults_v1.append(_fault(
-                        "ASYM_ROM_ELBOW",
-                        "info",
-                        asym,
-                        params.max_elbow_rom_asym_deg,
-                        f"|rom_L-rom_R|>{params.max_elbow_rom_asym_deg}",
+                        "PARTIAL_ROM_ELBOW", "warn",
+                        dom_rom, params.min_elbow_rom_deg,
+                        f"elbow_rom_deg<{params.min_elbow_rom_deg}",
                     ))
 
+                if np.isfinite(romL) and np.isfinite(romR):
+                    asym = float(abs(romL - romR))
+                    if asym > params.max_elbow_rom_asym_deg:
+                        faults_v1.append(_fault(
+                            "ASYM_ROM_ELBOW", "info",
+                            asym, params.max_elbow_rom_asym_deg,
+                            f"|rom_L-rom_R|>{params.max_elbow_rom_asym_deg}",
+                        ))
+
+        # --- Deadlift/Squat: trunk angle proxy only (no elbow faults)
+        if ex in ("deadlift", "squat"):
+            if pose is not None and isinstance(pose, np.ndarray) and pose.ndim == 3 and pose.shape[1] >= 25:
+                trunk = _trunk_angle_deg_series(pose)
+                tseg = trunk[start : end + 1]
+                tmax = float(np.nanmax(tseg)) if np.isfinite(tseg).any() else float("nan")
+                biomech_v1["angles"]["trunk"] = {"max_deg": tmax}
+
+                if np.isfinite(tmax) and tmax > params.max_trunk_angle_deg:
+                    faults_v1.append(_fault(
+                        "LUMBAR_FLEXION", "warn",
+                        tmax, params.max_trunk_angle_deg,
+                        f"trunk_angle_deg_max>{params.max_trunk_angle_deg}",
+                    ))
         # Tempo faults (use inferred eccentric if inference happened)
         if tempo_up_sec > 1e-6 and tempo_up_sec < params.min_concentric_sec:
             faults_v1.append(_fault(
@@ -474,4 +597,6 @@ def compute_rep_metrics(
         })
 
     return {"reps": out_reps, "set_summary_v1": set_summary_v1}
+
+
 

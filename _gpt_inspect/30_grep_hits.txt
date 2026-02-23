@@ -1,0 +1,332 @@
+﻿===== PATTERN: detect_reps =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:19:     detect_reps_low_to_high,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:69:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:189: def detect_reps_low_to_high(
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:318:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:44: def detect_reps(frames, angles_smooth, fps, label):
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:201:             reps = detect_reps(frames, angles_smooth, fps, label)
+
+===== PATTERN: hysteresis =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:197:     Count reps on LOW -> HIGH transitions (hysteresis).
+
+===== PATTERN: LOW =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:19:     detect_reps_low_to_high,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:38:         ex = (exercise or "").strip().lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:52:         ex = (exercise or "").strip().lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:58:         ex = (exercise or "").strip().lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:68:         low, high, min_rep_sec = per_exercise_params(ex)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:69:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:145:         ex = (exercise or "").strip().lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:30:     ex = (exercise or "").strip().lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:175:     Returns (low, high, min_rep_sec).
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:176:     low/high are in normalized [0,1] space.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:189: def detect_reps_low_to_high(
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:192:     low: float,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:197:     Count reps on LOW -> HIGH transitions (hysteresis).
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:198:     This fixes the "hit LOW only before first HIGH" / "clip ends before returning LOW" problem.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:201:       start_idx = last frame at/below LOW before the ascent
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:203:       end_idx   = next LOW if found, else = peak_idx (partial cycle)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:217:     # track whether we've been at/below low since last count
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:218:     in_low = bool(s[0] <= low)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:219:     last_low_i = 0 if in_low else None
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:225:         if v <= low:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:226:             in_low = True
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:227:             last_low_i = i
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:229:         # count when we climb from a confirmed low into high
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:230:         if in_low and v >= high and (i - last_count_i) >= min_frames and last_low_i is not None:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:231:             start = int(last_low_i)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:234:             # try to find next return to low for end_idx (for duration/tempo)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:236:             while j < n and s[j] > low:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:242:             in_low = False  # must return to low before next rep
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:293:     low, high, min_rep_sec = per_exercise_params(exercise)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:318:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:349:         ex = args.exercise.lower().strip()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:98:         msgs.append("Rep is rushed; slow down the movement.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:121:     # Longer sets or very slow reps → harder
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\evaluate.py:39:         exercise = (r.get("exercise", "") or "").lower().strip()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:16:     s = name.lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:230:     vids = [p for p in in_root.rglob("*") if p.is_file() and p.suffix.lower() in VIDEO_EXTS]
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:26:         if path.is_file() and path.suffix.lower() in exts:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:177:         ex = args.exercise.lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\labels.py:24:             if exercise is None or (r.get("exercise","").lower() == exercise.lower()):
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:15:     s = name.lower()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:45:         if not p.is_file() or p.suffix.lower() not in VIDEO_EXTS: 
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:31:         notes.append("ROM slightly short; try lowering the bar a bit deeper.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:38:             notes.append("Rep is rushed; slow the eccentric and control the bar.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:40:             notes.append("Very slow grind; weight may be slightly heavy.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:27:         notes.append("ROM is very shallow; focus on fully locking out and returning to the floor with control.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:36:             notes.append("Rep is quite fast; slow down the eccentric and avoid bouncing the bar.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:38:             notes.append("Very slow grind; if many reps feel like this, consider a small weight reduction.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:39:     exercise = args.exercise.lower()
+
+===== PATTERN: HIGH =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:19:     detect_reps_low_to_high,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:68:         low, high, min_rep_sec = per_exercise_params(ex)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:69:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:91:     Signals are oriented so TOP is higher than BOTTOM for counting.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:108:     # Vertical proxies (inverted image Y so UP is higher)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:175:     Returns (low, high, min_rep_sec).
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:176:     low/high are in normalized [0,1] space.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:189: def detect_reps_low_to_high(
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:193:     high: float,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:197:     Count reps on LOW -> HIGH transitions (hysteresis).
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:198:     This fixes the "hit LOW only before first HIGH" / "clip ends before returning LOW" problem.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:202:       peak_idx  = first frame at/above HIGH (rep counted here)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:229:         # count when we climb from a confirmed low into high
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:230:         if in_low and v >= high and (i - last_count_i) >= min_frames and last_low_i is not None:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:293:     low, high, min_rep_sec = per_exercise_params(exercise)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:318:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:87:     # High-level summary
+
+===== PATTERN: tempo_up =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:273:             "tempo_up_sec": float(up_frames / fps),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:22:     tempo_up_sec: Optional[float]
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:82:         tempo_up_sec=rep_raw.get("tempo_up_sec"),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:161:                     "tempo_up_sec": rwa.metrics.tempo_up_sec,
+
+===== PATTERN: tempo_down =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:274:             "tempo_down_sec": float(down_frames / fps),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:23:     tempo_down_sec: Optional[float]
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:83:         tempo_down_sec=rep_raw.get("tempo_down_sec"),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:162:                     "tempo_down_sec": rwa.metrics.tempo_down_sec,
+
+===== PATTERN: eccentric =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:83:             # Look for return to "down" (eccentric back to start)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:35:     # --- Tempo (eccentric control) ---
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:38:             notes.append("Rep is rushed; slow the eccentric and control the bar.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:36:             notes.append("Rep is quite fast; slow down the eccentric and avoid bouncing the bar.")
+
+===== PATTERN: rom =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:1: from __future__ import annotations
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:7: from dataclasses import dataclass
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:8: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:9: from typing import Any, Dict, Optional, Tuple
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:13: from repright.pose_extract import extract_pose_npz
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:15: # Reuse proven rep logic from scripts/compute_rep_metrics.py (single-video, in-process)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:16: from scripts.compute_rep_metrics import (
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:105:         # Generate tmp overlay (mp4v) from NPZ
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:109:                 "scripts/make_overlay_from_npz.py",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:121:         # Transcode to H.264 using ffmpeg if available (best for Streamlit/Chrome)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:1: from __future__ import annotations
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:4: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:5: from typing import Optional, Tuple
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\analyze_video.py:3: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\analyze_video.py:6: # Make sure we can import engine from scripts/
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\analyze_video.py:10: from engine import analyze_video  # type: ignore
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:3: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:4: from typing import Dict, List, Tuple, Optional
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:229:         # count when we climb from a confirmed low into high
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:260:         rom = float(np.nanmax(seg) - np.nanmin(seg)) if len(seg) else 0.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:271:             "rom": rom,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:2: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:3: from statistics import mean
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:47:       - Use dynamic thresholds based on per-video ROM.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:55:     rom_total = a_max - a_min
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:58:     if rom_total < 20.0:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:62:     down_thr = a_max - 0.25 * rom_total
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:63:     up_thr   = a_min + 0.25 * rom_total
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:96:                     seg_rom = seg_max - seg_min
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:98:                     # Require the rep to use at least 30% of that person's ROM
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:99:                     if seg_rom >= 0.30 * rom_total:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:104:                             "rom_deg": float(seg_rom),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:117:     rom = rep.get("rom_deg", 0.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:121:         rom_ok = rom >= 60.0      # big elbow flexion
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:124:         rom_ok = rom >= 40.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:127:         rom_ok = rom >= 50.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:130:         rom_ok = rom >= 30.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:133:     return rom_ok and dur_ok
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:151:         "reps", "avg_tut_s", "avg_rom_deg", "good_rep_pct"
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:177:                     "avg_rom_deg": 0.0,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:194:                     "avg_rom_deg": 0.0,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:219:                 avg_rom = mean(r["rom_deg"] for r in reps)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:223:                 avg_rom = 0.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_tempo_tut.py:234:                 "avg_rom_deg": round(avg_rom, 1),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\debug_signal.py:2: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:1: from __future__ import annotations
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:4: from dataclasses import dataclass
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:5: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:6: from typing import Any, Dict, List, Optional
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:20:     rom: Optional[float]
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:72:     Turn a raw per-rep metrics dict from compute_rep_metrics into
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:80:         rom=rep_raw.get("rom"),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:89:     rom = rm.rom
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:93:     if rom is not None and rom < 0.05:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:94:         msgs.append("ROM is very small; try to perform a fuller range rep.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:111:     avg_rom: float,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:125:     # Very short ROM on average suggests technique / warmup → easy
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:126:     if avg_rom < 0.08 and n_reps <= 5:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:159:                     "rom": rwa.metrics.rom,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:171:     # IMPORTANT: for now we *always* count all detected reps from compute_rep_metrics.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:172:     # No ROM/tempo filtering here – that comes later as a refinement.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:178:     avg_rom = float(m.get("avg_rom", 0.0) or 0.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:181:     # Angle ROM is a dict like {"elbow": deg, ...}; keep it if present.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:182:     avg_angle_rom = m.get("avg_angle_rom", None)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:184:     difficulty = _estimate_difficulty(exercise, n_reps, avg_rom, avg_dur)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:193:         "avg_rom": avg_rom,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\engine.py:195:         "avg_angle_rom": avg_angle_rom,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\evaluate.py:1: from __future__ import annotations
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\evaluate.py:4: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\evaluate.py:5: from typing import Any, Dict, List
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\evaluate.py:7: from repright.analyzer import RepRightAnalyzer
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\evaluate.py:8: from labels import load_all_labels
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:2: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:61:       - When direction flips and swing >= min_rom and min_phase_frames satisfied -> +1 rep.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:68:             self.min_rom = 35.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:70:             self.min_rom = 40.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:72:             self.min_rom = 30.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:81:         self.rep_times = []  # (start_f,end_f,rom)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:85:         self._rom_acc = 0.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:110:             if swing >= self.min_rom:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:117:                 event = {"type":"rep", "frame": frame_idx, "reps": self.reps, "rom": float(swing)}
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:201:     # and compute naive average ROM & tempo (time per rep).
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:206:     avg_rom = float(np.mean([e.get("rom", 0.0) for e in rep_events])) if rep_events else 0.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:216:         "avg_rom_deg": round(avg_rom, 1),
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:4: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:10:     from tqdm import tqdm
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:30: def extract_pose_from_video(video_path: Path, out_npz: Path, out_meta: Path):
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:137:             extract_pose_from_video(vid, out_npz, out_meta)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:143:     parser = argparse.ArgumentParser(description="Extract MediaPipe pose from raw RepRight videos.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\labels.py:1: from __future__ import annotations
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\labels.py:3: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\labels.py:4: from typing import Dict, List, Optional
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\make_overlay_from_npz.py:1: from __future__ import annotations
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\make_overlay_from_npz.py:3: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:2: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:10:     "deadlift": ["deadlift","romanian deadlift","romanian_deadlift","rdl"],
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:3: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:18:     Load landmarks and visibility from the NPZ file.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:89:         description="Render skeleton overlay video from pose NPZ + raw video."
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:1: from typing import Dict, Any
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:5:     """Safely extract a float from rep dict."""
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:16:                 avg_rom: float, avg_duration: float) -> Dict[str, Any]:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:19:     Uses ROM + duration + top/bottom consistency heuristics.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:22:     rom = _f(rep, "rom", "amplitude")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:27:     # --- ROM (depth + lockout) ---
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:28:     if rom < 0.02:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:29:         notes.append("ROM is very short; aim for a full chest touch and full lockout.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:30:     elif rom < 0.035:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:31:         notes.append("ROM slightly short; try lowering the bar a bit deeper.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:33:         notes.append("Good ROM on this rep.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:45:     if rom >= 0.035 and 0.7 <= dur <= 2.5:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:47:     elif rom >= 0.025:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:1: from typing import Dict, Any
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:15:                 avg_rom: float, avg_duration: float) -> Dict[str, Any]:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:18:     Uses only ROM + duration for now (no angles/bar path yet).
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:20:     rom = _get_float(rep, "rom", "amplitude", default=0.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:25:     # ROM cues
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:26:     if rom < 0.02:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:27:         notes.append("ROM is very shallow; focus on fully locking out and returning to the floor with control.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:28:     elif rom < 0.04:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:29:         notes.append("ROM is slightly short; try to finish each rep with full hip extension and stand tall.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:31:         notes.append("Good overall ROM on this rep.")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:43:     if rom >= 0.04 and 0.8 <= dur <= 2.5:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:45:     elif rom >= 0.03:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:5: from engine import analyze_video
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:48:     avg_rom = result.get("avg_rom", float("nan"))
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:51:     # Angle ROM (per-joint) if present
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:52:     angle_rom = result.get("avg_angle_rom", {})
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:55:     if isinstance(angle_rom, dict) and joint_key in angle_rom:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:56:         val = angle_rom.get(joint_key)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:73:     if isinstance(avg_rom, (int, float)) and not math.isnan(avg_rom):
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:74:         print(f"Avg ROM:    {avg_rom:.3f}")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:76:         print("Avg ROM:    n/a")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:84:         # e.g. "Avg elbow ROM: 56.7°"
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\run_cli.py:85:         print(f"Avg {joint_key} ROM: {joint_angle:.1f}°")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:4: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:5: from typing import Dict, Any, List, Tuple
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:23:     rom_threshold: float,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:27:     Derive n_reps, avg_rom, avg_duration_sec and a simple 'valid' flag
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:28:     from an existing metrics JSON dict.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:40:     roms: List[float] = []
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:45:         rom_val = rep.get("rom", None)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:46:         if rom_val is None:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:47:             rom_val = rep.get("amplitude", 0.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:49:             roms.append(float(rom_val))
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:63:     avg_rom = float(sum(roms) / len(roms)) if roms else 0.0
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:68:     # - ROM not tiny (pose is doing basically nothing)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:70:     amplitude_ok = avg_rom >= rom_threshold
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:74:     return n_reps, avg_rom, avg_duration, valid
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:80:     rom_threshold: float,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:98:         n_reps, avg_rom, avg_duration, valid = compute_summary_and_qc(
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:99:             data, rom_threshold=rom_threshold, min_reps=min_reps
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:103:         data["avg_rom"] = avg_rom
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:110:         # Remove trailing '_metrics' from the stem if present
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:122:             "avg_rom": avg_rom,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:146:         "--rom-threshold",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:149:         help="Minimum average ROM to consider a set valid.",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:170:             rom_threshold=args.rom_threshold,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:187:                     "avg_rom",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\ui\streamlit_app.py:2: from pathlib import Path
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\ui\streamlit_app.py:4: from repright.analyzer import RepRightAnalyzer
+
+===== PATTERN: range of motion =====
+(no hits)
+
+===== PATTERN: analysis_v1 =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:170:             "schema_version": "analysis_v1",
+
+===== PATTERN: schema =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:168:         # Stable schema return for UI + demo
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\analyzer.py:170:             "schema_version": "analysis_v1",
+
+===== PATTERN: return.*json =====
+(no hits)
+
+===== PATTERN: rules_ =====
+(no hits)
+
+===== PATTERN: analyze_rep =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:15: def analyze_rep(rep_index: int, rep: Dict[str, Any],
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:14: def analyze_rep(rep_index: int, rep: Dict[str, Any],
+
+===== PATTERN: fault =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:338:     ap.add_argument("--exercise", type=str, default="all")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:339:     ap.add_argument("--processed-root", type=str, default="data/processed")
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:340:     ap.add_argument("--max-videos", type=int, default=None)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:44:         # elbow flexion: shoulder-elbow-wrist (use right side by default)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:71:         else: # bench default
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:174:                 landmark_drawing_spec=style.get_default_pose_landmarks_style()
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:147:         default="all",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:148:         help="One of bench,squat,curl,deadlift,all (default: all)",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:153:         default="data/raw",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:159:         default="data/processed",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:165:         default=None,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:36:     ap.add_argument("--minw", type=int, default=960)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:37:     ap.add_argument("--minh", type=int, default=540)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\prepare_dataset.py:38:     ap.add_argument("--minfps", type=float, default=25.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:39:     # Visibility (or default to all 1s)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:4: def _f(rep: Dict[str, Any], *keys, default: float = 0.0) -> float:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_bench.py:12:     return float(default)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:4: def _get_float(rep: Dict[str, Any], *keys, default: float = 0.0) -> float:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:11:     return float(default)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:20:     rom = _get_float(rep, "rom", "amplitude", default=0.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\rules_deadlift.py:21:     dur = _get_float(rep, "duration_sec", "duration", default=0.0)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:137:         default="data/processed",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:142:         default="data/processed/metrics_index.csv",
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:148:         default=0.01,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\upgrade_metrics_and_build_index.py:154:         default=1,
+
+===== PATTERN: confidence =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:16:     min_detection_confidence: float = 0.5,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:17:     min_tracking_confidence: float = 0.5,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:51:         min_detection_confidence=min_detection_confidence,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:52:         min_tracking_confidence=min_tracking_confidence,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:145:                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:57:         min_detection_confidence=0.5,
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:58:         min_tracking_confidence=0.5,
+
+===== PATTERN: visibility =====
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\repright\pose_extract.py:78:                 arr[i, 3] = getattr(lm[i], "visibility", np.nan)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\compute_rep_metrics.py:82: def pick_side_by_visibility(pose: np.ndarray, idx_l: int, idx_r: int) -> str:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_all.py:37:     get = lambda idx: (lm[idx].x, lm[idx].y, lm[idx].visibility)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:46:     # Pre-allocate: (frames, 33 landmarks, 4 values: x, y, z, visibility)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\extract_poses.py:76:                     data[frame_idx, i, 3] = lm.visibility
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:18:     Load landmarks and visibility from the NPZ file.
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:39:     # Visibility (or default to all 1s)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:40:     if "visibility" in data:
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:41:         visibility = data["visibility"]
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:45:         visibility = np.ones(vis_shape, dtype=np.float32)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:47:     return landmarks, visibility
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:54:     landmarks, visibility = load_pose(npz_path)
+C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\scripts\render_overlay.py:70:         vis = visibility[frame_idx]
+

@@ -1,0 +1,359 @@
+﻿   1: import argparse
+   2: import json
+   3: from pathlib import Path
+   4: from typing import Dict, List, Tuple, Optional
+   5: 
+   6: import numpy as np
+   7: 
+   8: VALID_EXERCISES = ["bench", "squat", "curl", "deadlift"]
+   9: 
+  10: # MediaPipe landmark indices
+  11: L_SHOULDER, R_SHOULDER = 11, 12
+  12: L_ELBOW,    R_ELBOW    = 13, 14
+  13: L_WRIST,    R_WRIST    = 15, 16
+  14: L_HIP,      R_HIP      = 23, 24
+  15: L_KNEE,     R_KNEE     = 25, 26
+  16: L_ANKLE,    R_ANKLE    = 27, 28
+  17: 
+  18: 
+  19: def moving_average(x: np.ndarray, window: int = 9) -> np.ndarray:
+  20:     x = np.asarray(x, dtype=float)
+  21:     if window <= 1 or len(x) < 3:
+  22:         return x
+  23:     window = int(window)
+  24:     if window > len(x):
+  25:         window = max(3, (len(x) // 2) | 1)
+  26:     kernel = np.ones(window, dtype=float) / window
+  27:     return np.convolve(x, kernel, mode="same")
+  28: 
+  29: 
+  30: def ema(x: np.ndarray, alpha: float = 0.25) -> np.ndarray:
+  31:     x = np.asarray(x, dtype=float)
+  32:     if len(x) == 0:
+  33:         return x
+  34:     y = np.empty_like(x)
+  35:     y[0] = x[0]
+  36:     for i in range(1, len(x)):
+  37:         y[i] = alpha * x[i] + (1 - alpha) * y[i - 1]
+  38:     return y
+  39: 
+  40: 
+  41: def interp_nans(y: np.ndarray) -> np.ndarray:
+  42:     y = np.asarray(y, dtype=float)
+  43:     valid = ~np.isnan(y)
+  44:     if valid.sum() < 5:
+  45:         return y
+  46:     if not valid.all():
+  47:         idx = np.arange(len(y))
+  48:         y[~valid] = np.interp(idx[~valid], idx[valid], y[valid])
+  49:     return y
+  50: 
+  51: 
+  52: def angle_2d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
+  53:     """Angle ABC in degrees per frame, using x,y only."""
+  54:     ba = a - b
+  55:     bc = c - b
+  56:     ba_n = np.linalg.norm(ba, axis=1) + 1e-9
+  57:     bc_n = np.linalg.norm(bc, axis=1) + 1e-9
+  58:     cosang = np.sum(ba * bc, axis=1) / (ba_n * bc_n)
+  59:     cosang = np.clip(cosang, -1.0, 1.0)
+  60:     return np.degrees(np.arccos(cosang))
+  61: 
+  62: 
+  63: def robust_normalize(x: np.ndarray, lo: float = 5.0, hi: float = 95.0) -> np.ndarray:
+  64:     """Normalize ~[0,1] using robust percentiles."""
+  65:     x = np.asarray(x, dtype=float)
+  66:     if len(x) < 5:
+  67:         return np.zeros_like(x)
+  68:     p_lo = np.percentile(x, lo)
+  69:     p_hi = np.percentile(x, hi)
+  70:     denom = (p_hi - p_lo) if (p_hi - p_lo) != 0 else 1.0
+  71:     z = (x - p_lo) / denom
+  72:     return np.clip(z, 0.0, 1.0)
+  73: 
+  74: 
+  75: def robust_amp(x: np.ndarray, lo: float = 5.0, hi: float = 95.0) -> float:
+  76:     x = np.asarray(x, dtype=float)
+  77:     if len(x) < 5:
+  78:         return 0.0
+  79:     return float(np.percentile(x, hi) - np.percentile(x, lo))
+  80: 
+  81: 
+  82: def pick_side_by_visibility(pose: np.ndarray, idx_l: int, idx_r: int) -> str:
+  83:     v_l = np.nanmedian(pose[:, idx_l, 3])
+  84:     v_r = np.nanmedian(pose[:, idx_r, 3])
+  85:     return "L" if v_l >= v_r else "R"
+  86: 
+  87: 
+  88: def build_candidate_signals(pose: np.ndarray, exercise: str) -> Dict[str, np.ndarray]:
+  89:     """
+  90:     Returns dict: name -> signal (raw, not normalized).
+  91:     Signals are oriented so TOP is higher than BOTTOM for counting.
+  92:     """
+  93:     xy = pose[:, :, 0:2].astype(float)
+  94: 
+  95:     cands: Dict[str, np.ndarray] = {}
+  96: 
+  97:     # Angles
+  98:     elbow_L = angle_2d(xy[:, L_SHOULDER], xy[:, L_ELBOW], xy[:, L_WRIST])
+  99:     elbow_R = angle_2d(xy[:, R_SHOULDER], xy[:, R_ELBOW], xy[:, R_WRIST])
+ 100:     knee_L  = angle_2d(xy[:, L_HIP], xy[:, L_KNEE], xy[:, L_ANKLE])
+ 101:     knee_R  = angle_2d(xy[:, R_HIP], xy[:, R_KNEE], xy[:, R_ANKLE])
+ 102: 
+ 103:     cands["elbow_angle_L"] = interp_nans(elbow_L)
+ 104:     cands["elbow_angle_R"] = interp_nans(elbow_R)
+ 105:     cands["knee_angle_L"]  = interp_nans(knee_L)
+ 106:     cands["knee_angle_R"]  = interp_nans(knee_R)
+ 107: 
+ 108:     # Vertical proxies (inverted image Y so UP is higher)
+ 109:     with np.errstate(all="ignore"):
+ 110:         wrists_y = np.nanmean(pose[:, [L_WRIST, R_WRIST], 1], axis=1)
+ 111:         hips_y   = np.nanmean(pose[:, [L_HIP, R_HIP], 1], axis=1)
+ 112: 
+ 113:     wrist_L = -interp_nans(pose[:, L_WRIST, 1])
+ 114:     wrist_R = -interp_nans(pose[:, R_WRIST, 1])
+ 115:     wrist_M = -interp_nans(wrists_y)
+ 116: 
+ 117:     hip_L = -interp_nans(pose[:, L_HIP, 1])
+ 118:     hip_R = -interp_nans(pose[:, R_HIP, 1])
+ 119:     hip_M = -interp_nans(hips_y)
+ 120: 
+ 121:     cands["wrist_y_inverted_L"]    = wrist_L
+ 122:     cands["wrist_y_inverted_R"]    = wrist_R
+ 123:     cands["wrist_y_inverted_mean"] = wrist_M
+ 124: 
+ 125:     cands["hip_y_inverted_L"]      = hip_L
+ 126:     cands["hip_y_inverted_R"]      = hip_R
+ 127:     cands["hip_y_inverted_mean"]   = hip_M
+ 128: 
+ 129:     # Filter per exercise (keep relevant)
+ 130:     if exercise in ("bench", "curl"):
+ 131:         keep = ["elbow_angle_L", "elbow_angle_R", "wrist_y_inverted_L", "wrist_y_inverted_R", "wrist_y_inverted_mean"]
+ 132:     elif exercise == "squat":
+ 133:         keep = ["knee_angle_L", "knee_angle_R", "hip_y_inverted_L", "hip_y_inverted_R", "hip_y_inverted_mean"]
+ 134:     elif exercise == "deadlift":
+ 135:         keep = ["hip_y_inverted_L", "hip_y_inverted_R", "hip_y_inverted_mean"]
+ 136:     else:
+ 137:         keep = list(cands.keys())
+ 138: 
+ 139:     return {k: cands[k] for k in keep if k in cands}
+ 140: 
+ 141: 
+ 142: def choose_best_signal(pose: np.ndarray, exercise: str) -> Tuple[np.ndarray, str]:
+ 143:     """
+ 144:     Choose the candidate with the largest robust amplitude after smoothing.
+ 145:     """
+ 146:     cands = build_candidate_signals(pose, exercise)
+ 147:     best_name = None
+ 148:     best_sig = None
+ 149:     best_amp = -1.0
+ 150: 
+ 151:     for name, sig in cands.items():
+ 152:         if sig is None or len(sig) < 10:
+ 153:             continue
+ 154:         sig = np.asarray(sig, float)
+ 155:         nan_pct = float(np.mean(np.isnan(sig)) * 100.0)
+ 156:         if nan_pct > 60.0:
+ 157:             continue
+ 158: 
+ 159:         sm = ema(moving_average(sig, 9), 0.25)
+ 160:         amp = robust_amp(sm)
+ 161:         if amp > best_amp:
+ 162:             best_amp = amp
+ 163:             best_name = name
+ 164:             best_sig = sig
+ 165: 
+ 166:     if best_sig is None:
+ 167:         # fallback to something deterministic
+ 168:         return cands[list(cands.keys())[0]], list(cands.keys())[0]
+ 169: 
+ 170:     return best_sig, best_name
+ 171: 
+ 172: 
+ 173: def per_exercise_params(ex: str) -> Tuple[float, float, float]:
+ 174:     """
+ 175:     Returns (low, high, min_rep_sec).
+ 176:     low/high are in normalized [0,1] space.
+ 177:     """
+ 178:     if ex == "curl":
+ 179:         return 0.25, 0.70, 0.50
+ 180:     if ex == "bench":
+ 181:         return 0.25, 0.75, 0.70
+ 182:     if ex == "squat":
+ 183:         return 0.25, 0.75, 0.80
+ 184:     if ex == "deadlift":
+ 185:         return 0.25, 0.75, 1.00
+ 186:     return 0.25, 0.75, 0.80
+ 187: 
+ 188: 
+ 189: def detect_reps_low_to_high(
+ 190:     signal: np.ndarray,
+ 191:     fps: float,
+ 192:     low: float,
+ 193:     high: float,
+ 194:     min_rep_sec: float,
+ 195: ) -> List[Tuple[int, int, int]]:
+ 196:     """
+ 197:     Count reps on LOW -> HIGH transitions (hysteresis).
+ 198:     This fixes the "hit LOW only before first HIGH" / "clip ends before returning LOW" problem.
+ 199: 
+ 200:     Returns list of (start_idx, peak_idx, end_idx)
+ 201:       start_idx = last frame at/below LOW before the ascent
+ 202:       peak_idx  = first frame at/above HIGH (rep counted here)
+ 203:       end_idx   = next LOW if found, else = peak_idx (partial cycle)
+ 204:     """
+ 205:     if len(signal) < 10 or fps <= 0:
+ 206:         return []
+ 207: 
+ 208:     s_raw = np.asarray(signal, float)
+ 209:     s_sm = ema(moving_average(s_raw, 9), 0.25)
+ 210:     s = robust_normalize(s_sm)
+ 211: 
+ 212:     min_frames = max(1, int(min_rep_sec * fps))
+ 213: 
+ 214:     reps: List[Tuple[int, int, int]] = []
+ 215:     last_count_i = -10**9
+ 216: 
+ 217:     # track whether we've been at/below low since last count
+ 218:     in_low = bool(s[0] <= low)
+ 219:     last_low_i = 0 if in_low else None
+ 220: 
+ 221:     n = len(s)
+ 222:     for i in range(n):
+ 223:         v = s[i]
+ 224: 
+ 225:         if v <= low:
+ 226:             in_low = True
+ 227:             last_low_i = i
+ 228: 
+ 229:         # count when we climb from a confirmed low into high
+ 230:         if in_low and v >= high and (i - last_count_i) >= min_frames and last_low_i is not None:
+ 231:             start = int(last_low_i)
+ 232:             peak = int(i)
+ 233: 
+ 234:             # try to find next return to low for end_idx (for duration/tempo)
+ 235:             j = i
+ 236:             while j < n and s[j] > low:
+ 237:                 j += 1
+ 238:             end = int(j) if j < n else peak
+ 239: 
+ 240:             reps.append((start, peak, end))
+ 241:             last_count_i = i
+ 242:             in_low = False  # must return to low before next rep
+ 243: 
+ 244:     return reps
+ 245: 
+ 246: 
+ 247: def compute_rep_metrics(signal: np.ndarray, reps: List[Tuple[int, int, int]], fps: float) -> List[Dict]:
+ 248:     if fps <= 0:
+ 249:         fps = 30.0
+ 250: 
+ 251:     metrics: List[Dict] = []
+ 252:     for idx, (start, peak, end) in enumerate(reps, start=1):
+ 253:         start = int(start); peak = int(peak); end = int(end)
+ 254:         if peak < start:
+ 255:             continue
+ 256:         if end < peak:
+ 257:             end = peak
+ 258: 
+ 259:         seg = np.asarray(signal[start:end + 1], float)
+ 260:         rom = float(np.nanmax(seg) - np.nanmin(seg)) if len(seg) else 0.0
+ 261: 
+ 262:         duration_frames = (end - start + 1)
+ 263:         up_frames = max(0, peak - start)
+ 264:         down_frames = max(0, end - peak)
+ 265: 
+ 266:         metrics.append({
+ 267:             "rep_index": idx,
+ 268:             "start_frame": start,
+ 269:             "peak_frame": peak,
+ 270:             "end_frame": end,
+ 271:             "rom": rom,
+ 272:             "duration_sec": float(duration_frames / fps),
+ 273:             "tempo_up_sec": float(up_frames / fps),
+ 274:             "tempo_down_sec": float(down_frames / fps),
+ 275:         })
+ 276: 
+ 277:     return metrics
+ 278: 
+ 279: 
+ 280: def process_exercise(exercise: str, processed_root: Path, max_videos: Optional[int], force: bool):
+ 281:     pose_dir = processed_root / "pose" / exercise
+ 282:     metrics_dir = processed_root / "metrics" / exercise
+ 283:     metrics_dir.mkdir(parents=True, exist_ok=True)
+ 284: 
+ 285:     npz_files = sorted(pose_dir.glob("*.npz"))
+ 286:     if not npz_files:
+ 287:         print(f"[WARN] No NPZ pose files for {exercise} under {pose_dir}")
+ 288:         return
+ 289: 
+ 290:     if max_videos is not None:
+ 291:         npz_files = npz_files[:max_videos]
+ 292: 
+ 293:     low, high, min_rep_sec = per_exercise_params(exercise)
+ 294: 
+ 295:     for npz_path in npz_files:
+ 296:         stem = npz_path.stem
+ 297:         meta_path = pose_dir / f"{stem}_meta.json"
+ 298:         out_path = metrics_dir / f"{stem}_metrics.json"
+ 299: 
+ 300:         if out_path.exists() and not force:
+ 301:             continue
+ 302: 
+ 303:         pose = np.load(npz_path)["pose"]
+ 304: 
+ 305:         if meta_path.exists():
+ 306:             meta = json.loads(meta_path.read_text(encoding="utf-8"))
+ 307:             fps = float(meta.get("fps", 30.0) or 30.0)
+ 308:         else:
+ 309:             fps = 30.0
+ 310: 
+ 311:         sig, driver = choose_best_signal(pose, exercise)
+ 312:         sig = np.asarray(sig, float)
+ 313: 
+ 314:         if len(sig) < 10 or np.all(np.isnan(sig)):
+ 315:             print(f"[WARN] Bad signal for {exercise} {npz_path.name}")
+ 316:             continue
+ 317: 
+ 318:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+ 319:         rep_metrics = compute_rep_metrics(sig, reps, fps)
+ 320: 
+ 321:         summary = {
+ 322:             "exercise": exercise,
+ 323:             "driver": driver,
+ 324:             "source_npz": str(npz_path),
+ 325:             "source_meta": str(meta_path) if meta_path.exists() else None,
+ 326:             "fps": fps,
+ 327:             "n_frames": int(pose.shape[0]),
+ 328:             "n_reps": len(rep_metrics),
+ 329:             "reps": rep_metrics,
+ 330:         }
+ 331: 
+ 332:         out_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+ 333:         print(f"[OK] {exercise}: {stem} \u2192 {len(rep_metrics)} reps (driver={driver})")
+ 334: 
+ 335: 
+ 336: def main():
+ 337:     ap = argparse.ArgumentParser()
+ 338:     ap.add_argument("--exercise", type=str, default="all")
+ 339:     ap.add_argument("--processed-root", type=str, default="data/processed")
+ 340:     ap.add_argument("--max-videos", type=int, default=None)
+ 341:     ap.add_argument("--force", action="store_true", help="Overwrite existing metrics JSONs")
+ 342:     args = ap.parse_args()
+ 343: 
+ 344:     processed_root = Path(args.processed_root)
+ 345: 
+ 346:     if args.exercise == "all":
+ 347:         exercises = VALID_EXERCISES
+ 348:     else:
+ 349:         ex = args.exercise.lower().strip()
+ 350:         if ex not in VALID_EXERCISES:
+ 351:             raise SystemExit(f"Invalid exercise {args.exercise}. Must be one of {VALID_EXERCISES} or 'all'.")
+ 352:         exercises = [ex]
+ 353: 
+ 354:     for ex in exercises:
+ 355:         process_exercise(ex, processed_root, args.max_videos, args.force)
+ 356: 
+ 357: 
+ 358: if __name__ == "__main__":
+ 359:     main()

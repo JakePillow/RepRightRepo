@@ -1,0 +1,393 @@
+﻿import json
+import math
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+import numpy as np
+
+
+# -----------------------------
+# Exercise parameters
+# -----------------------------
+
+def per_exercise_params(exercise: str) -> Tuple[float, float, float]:
+    """
+    Returns (low, high, min_rep_sec) for LOW->HIGH hysteresis rep detection.
+    Keep coarse defaults; tuning later.
+    """
+    ex = (exercise or "").strip().lower()
+
+    low = 0.35
+    high = 0.65
+    min_rep_sec = 0.35
+
+    if ex in ("curl", "biceps_curl", "barbell_curl", "dumbbell_curl"):
+        low, high, min_rep_sec = 0.30, 0.70, 0.30
+    elif ex in ("bench", "bench_press"):
+        low, high, min_rep_sec = 0.30, 0.70, 0.35
+    elif ex in ("squat",):
+        low, high, min_rep_sec = 0.30, 0.70, 0.45
+    elif ex in ("deadlift",):
+        low, high, min_rep_sec = 0.30, 0.70, 0.55
+
+    return float(low), float(high), float(min_rep_sec)
+
+
+# -----------------------------
+# Signal selection
+# -----------------------------
+
+def choose_best_signal(pose: np.ndarray, exercise: str) -> Tuple[np.ndarray, str]:
+    """
+    Returns (signal, driver_name). signal is 1D float array length T, ~0..1.
+    """
+    ex = (exercise or "").strip().lower()
+    T = int(pose.shape[0])
+
+    def _safe_col(j: int, c: int) -> np.ndarray:
+        if pose.ndim != 3 or pose.shape[1] <= j or pose.shape[2] <= c:
+            return np.zeros((T,), dtype=float)
+        return pose[:, j, c].astype(float)
+
+    # BlazePose indices
+    LS, RS, LE, RE, LW, RW = 11, 12, 13, 14, 15, 16
+    LH, RH, LK, RK, LA, RA = 23, 24, 25, 26, 27, 28
+
+    y_lw = _safe_col(LW, 1)
+    y_rw = _safe_col(RW, 1)
+    y_ls = _safe_col(LS, 1)
+    y_rs = _safe_col(RS, 1)
+
+    y_lk = _safe_col(LK, 1)
+    y_rk = _safe_col(RK, 1)
+    y_lh = _safe_col(LH, 1)
+    y_rh = _safe_col(RH, 1)
+    y_la = _safe_col(LA, 1)
+    y_ra = _safe_col(RA, 1)
+
+    if ex in ("curl", "biceps_curl", "barbell_curl", "dumbbell_curl", "bench", "bench_press"):
+        sL = (y_lw - y_ls)
+        sR = (y_rw - y_rs)
+        sig = 0.5 * (sL + sR)
+        driver = "wrist_minus_shoulder_y"
+    else:
+        sL = (y_lh - y_lk) + 0.5 * (y_lk - y_la)
+        sR = (y_rh - y_rk) + 0.5 * (y_rk - y_ra)
+        sig = 0.5 * (sL + sR)
+        driver = "hip_knee_ankle_y_combo"
+
+    lo = np.percentile(sig, 5)
+    hi = np.percentile(sig, 95)
+    denom = (hi - lo) if (hi - lo) > 1e-9 else 1.0
+    sig_n = (sig - lo) / denom
+    sig_n = np.clip(sig_n, 0.0, 1.0).astype(float)
+
+    return sig_n, driver
+
+
+# -----------------------------
+# Rep detection (LOW -> HIGH)
+# -----------------------------
+
+def detect_reps_low_to_high(
+    signal: np.ndarray,
+    fps: float,
+    low: float,
+    high: float,
+    min_rep_sec: float,
+) -> List[Tuple[int, int, int]]:
+    """
+    Returns list of reps as (start_frame, peak_frame, end_frame).
+    End frame here is "first frame <= low after being above high".
+    (We will validate/repair end in compute_rep_metrics when needed.)
+    """
+    sig = np.asarray(signal, dtype=float)
+    T = int(sig.shape[0])
+    if T < 3:
+        return []
+
+    min_rep_frames = max(1, int(round(float(min_rep_sec) * float(fps))))
+
+    reps: List[Tuple[int, int, int]] = []
+    state = "WAIT_LOW"
+    start = None
+    peak = None
+    peak_val = None
+    above_high = False
+
+    for i in range(T):
+        v = float(sig[i])
+
+        if state == "WAIT_LOW":
+            if v <= low:
+                state = "READY"
+
+        elif state == "READY":
+            if v > low:
+                start = i
+                peak = i
+                peak_val = v
+                above_high = (v >= high)
+                state = "IN_REP"
+
+        elif state == "IN_REP":
+            if peak_val is None or v > peak_val:
+                peak_val = v
+                peak = i
+            if v >= high:
+                above_high = True
+
+            if above_high and v <= low:
+                end = i
+                if start is not None and peak is not None and (end - start) >= min_rep_frames:
+                    reps.append((int(start), int(peak), int(end)))
+                state = "WAIT_LOW"
+                start = peak = None
+                peak_val = None
+                above_high = False
+
+    if state == "IN_REP" and start is not None and peak is not None:
+        end = T - 1
+        if (end - start) >= min_rep_frames:
+            reps.append((int(start), int(peak), int(end)))
+
+    return reps
+
+
+# -----------------------------
+# Angle helpers
+# -----------------------------
+
+def _angle_2d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
+    ba = a - b
+    bc = c - b
+    nba = float(np.linalg.norm(ba))
+    nbc = float(np.linalg.norm(bc))
+    if nba < 1e-9 or nbc < 1e-9:
+        return float("nan")
+    cosang = float(np.clip(np.dot(ba, bc) / (nba * nbc), -1.0, 1.0))
+    return float(np.degrees(np.arccos(cosang)))
+
+
+def _compute_elbow_angles(pose: np.ndarray) -> Dict[str, np.ndarray]:
+    T = int(pose.shape[0])
+    LS, RS, LE, RE, LW, RW = 11, 12, 13, 14, 15, 16
+
+    def pt(j: int) -> np.ndarray:
+        return pose[:, j, :2].astype(float)
+
+    aL = pt(LS); bL = pt(LE); cL = pt(LW)
+    aR = pt(RS); bR = pt(RE); cR = pt(RW)
+
+    outL = np.full((T,), np.nan, dtype=float)
+    outR = np.full((T,), np.nan, dtype=float)
+    for i in range(T):
+        outL[i] = _angle_2d(aL[i], bL[i], cL[i])
+        outR[i] = _angle_2d(aR[i], bR[i], cR[i])
+    return {"L": outL, "R": outR}
+
+
+# -----------------------------
+# Phase 2: compute_rep_metrics
+# -----------------------------
+
+def compute_rep_metrics(
+    signal: np.ndarray,
+    reps: List[Tuple[int, int, int]],
+    fps: float,
+    pose: Optional[np.ndarray] = None,
+    exercise: Optional[str] = None,
+    low: Optional[float] = None,
+    high: Optional[float] = None,
+) -> Dict[str, Any]:
+    """
+    Returns {"reps":[...], "set_summary_v1":{...}}
+    Includes Phase2 fields: confidence_v1, biomech_v1, faults_v1, tempo_down_inferred, end_frame_source.
+    """
+    sig = np.asarray(signal, dtype=float)
+    T = int(sig.shape[0])
+    fps_f = float(fps) if float(fps) > 1e-6 else 30.0
+
+    ex = (exercise or "").strip().lower()
+
+    # If low/high not provided, derive from exercise defaults.
+    if low is None or high is None:
+        _low, _high, _ = per_exercise_params(ex)
+        low_v = float(_low)
+        high_v = float(_high)
+    else:
+        low_v = float(low)
+        high_v = float(high)
+
+    elbow = None
+    if pose is not None and isinstance(pose, np.ndarray) and pose.ndim == 3 and pose.shape[0] == T:
+        try:
+            elbow = _compute_elbow_angles(pose)
+        except Exception:
+            elbow = None
+
+    rep_out: List[Dict[str, Any]] = []
+
+    # ---- end validation + eccentric inference knobs ----
+    # how many consecutive frames must be <= LOW to count as "real re-hit"
+    hold_low_frames = max(2, int(round(0.08 * fps_f)))  # ~80ms
+    # if eccentric is smaller than this, it is suspicious
+    min_ecc_frames = max(2, int(round(0.20 * fps_f)))   # ~200ms
+    # if we infer, aim to extend eccentric by this much (cap to video end)
+    infer_ecc_frames = max(min_ecc_frames, int(round(0.60 * fps_f)))  # ~600ms
+    # signal margin above low that indicates "didn't really return"
+    low_margin = 0.03
+
+    def _find_low_hold(start_idx: int) -> Optional[int]:
+        """
+        Find first index i >= start_idx such that sig[i:i+hold_low_frames] all <= low_v.
+        Return i if found else None.
+        """
+        if hold_low_frames <= 1:
+            # trivial
+            for i in range(start_idx, T):
+                if float(sig[i]) <= low_v:
+                    return i
+            return None
+
+        last_start = T - hold_low_frames
+        for i in range(start_idx, max(start_idx, last_start) + 1):
+            window = sig[i:i + hold_low_frames]
+            if window.size == hold_low_frames and np.all(window <= low_v):
+                return i
+        return None
+
+    for idx, (s, p, e) in enumerate(reps):
+        s = int(max(0, min(T - 1, s)))
+        p = int(max(0, min(T - 1, p)))
+        e = int(max(0, min(T - 1, e)))
+
+        tempo_down_inferred = False
+        end_frame_source = "detector_end"
+
+        # Validate that we *actually* re-hit LOW and held it.
+        # Look for a stable low hold at/after detector end (and also after peak).
+        low_hold_idx = _find_low_hold(max(p, e))
+
+        if low_hold_idx is not None:
+            # Prefer the stable low-hold position as end (it may be slightly later than detector end)
+            e_valid = int(low_hold_idx)
+            if e_valid != e:
+                e = e_valid
+            end_frame_source = "low_hold"
+        else:
+            # No stable low-hold. If eccentric is suspiciously short, infer.
+            ecc_frames = int(e - p)
+            end_sig = float(sig[e]) if 0 <= e < T else 1.0
+
+            if ecc_frames < min_ecc_frames and end_sig > (low_v + low_margin):
+                # infer: extend end forward, capped by video end
+                e_inf = min(T - 1, p + infer_ecc_frames)
+                if e_inf > e:
+                    e = int(e_inf)
+                    tempo_down_inferred = True
+                    end_frame_source = "inferred_no_low_rehit"
+
+        # Signal-based ROM within rep window
+        lo_sig = float(np.min(sig[s:e + 1])) if e >= s else float(sig[s])
+        hi_sig = float(np.max(sig[s:e + 1])) if e >= s else float(sig[s])
+        rom = float(hi_sig - lo_sig)
+
+        tempo_up_sec = float(max(0, p - s) / fps_f)
+        tempo_down_sec = float(max(0, e - p) / fps_f)
+        duration_sec = float(max(0, e - s) / fps_f)
+
+        conf = {"level": "high", "reasons": []}
+
+        biomech_v1: Optional[Dict[str, Any]] = None
+        faults_v1: List[Dict[str, Any]] = []
+
+        if elbow is not None and ex in ("curl", "biceps_curl", "barbell_curl", "dumbbell_curl", "bench", "bench_press"):
+            angL = elbow["L"][s:e + 1]
+            angR = elbow["R"][s:e + 1]
+
+            def stats(arr: np.ndarray) -> Tuple[float, float, float, float]:
+                valid = np.isfinite(arr)
+                frac = float(np.mean(valid)) if arr.size else 0.0
+                if np.any(valid):
+                    mn = float(np.nanmin(arr))
+                    mx = float(np.nanmax(arr))
+                    return mn, mx, float(mx - mn), frac
+                return float("nan"), float("nan"), float("nan"), frac
+
+            mnL, mxL, romL, fracL = stats(angL)
+            mnR, mxR, romR, fracR = stats(angR)
+
+            side = "L" if fracL >= fracR else "R"
+            mn, mx, romA, frac = (mnL, mxL, romL, fracL) if side == "L" else (mnR, mxR, romR, fracR)
+
+            biomech_v1 = {
+                "angles": {
+                    "elbow": {
+                        "side": side,
+                        "min_deg": mn,
+                        "max_deg": mx,
+                        "rom_deg": romA,
+                        "valid_frac": frac,
+                    }
+                }
+            }
+
+            if np.isfinite(romL) and np.isfinite(romR):
+                diff = abs(float(romL) - float(romR))
+                thr = 18.0
+                if diff > thr:
+                    faults_v1.append({
+                        "code": "ASYM_ROM_ELBOW",
+                        "severity": "info",
+                        "value": diff,
+                        "threshold": thr,
+                        "evidence": f"|rom_L-rom_R|>{thr}",
+                    })
+
+        rep_out.append({
+            "rep_index": int(idx),
+            "start_frame": int(s),
+            "peak_frame": int(p),
+            "end_frame": int(e),
+            "rom": float(rom),
+            "duration_sec": float(duration_sec),
+            "tempo_up_sec": float(tempo_up_sec),
+            "tempo_down_sec": float(tempo_down_sec),
+            "tempo_down_inferred": bool(tempo_down_inferred),
+            "end_frame_source": str(end_frame_source),
+            "confidence_v1": conf,
+            "biomech_v1": biomech_v1,
+            "faults_v1": faults_v1,
+        })
+
+    # Set summary (deterministic)
+    roms = [float(r.get("rom", 0.0) or 0.0) for r in rep_out]
+    eccs = [float(r.get("tempo_down_sec", 0.0) or 0.0) for r in rep_out]
+
+    def mean(xs: Sequence[float]) -> float:
+        return float(sum(xs) / len(xs)) if xs else 0.0
+
+    def std(xs: Sequence[float], mu: float) -> float:
+        if len(xs) < 2:
+            return 0.0
+        var = sum((x - mu) * (x - mu) for x in xs) / (len(xs) - 1)
+        return float(math.sqrt(max(0.0, var)))
+
+    avg_rom = mean(roms)
+    rom_cv = (std(roms, avg_rom) / avg_rom) if avg_rom > 1e-9 else 0.0
+    avg_ecc = mean(eccs)
+    ecc_cv = (std(eccs, avg_ecc) / avg_ecc) if avg_ecc > 1e-9 else 0.0
+    pen = min(1.0, rom_cv + ecc_cv)
+    quality = max(0.0, 100.0 * (1.0 - pen))
+
+    set_summary_v1 = {
+        "n_reps": int(len(rep_out)),
+        "avg_rom": float(avg_rom),
+        "rom_cv": float(rom_cv),
+        "avg_ecc_sec": float(avg_ecc),
+        "ecc_cv": float(ecc_cv),
+        "quality_score": float(quality),
+    }
+
+    return {"reps": rep_out, "set_summary_v1": set_summary_v1}

@@ -1,0 +1,118 @@
+﻿   1: from __future__ import annotations
+   2: import argparse
+   3: from pathlib import Path
+   4: 
+   5: import cv2
+   6: import numpy as np
+   7: 
+   8: 
+   9: # MediaPipe Pose landmark indices (33)
+  10: # We'll draw a basic but clear skeleton:
+  11: EDGES = [
+  12:     (11,12), (11,13), (13,15), (12,14), (14,16),         # arms
+  13:     (11,23), (12,24), (23,24),                             # torso
+  14:     (23,25), (25,27), (24,26), (26,28),                    # legs
+  15:     (27,31), (28,32),                                      # feet
+  16:     (0,1), (1,2), (2,3), (3,7), (0,4), (4,5), (5,6), (6,8) # face-ish
+  17: ]
+  18: 
+  19: 
+  20: def to_pixels(xy: np.ndarray, w: int, h: int) -> np.ndarray:
+  21:     """
+  22:     xy: (N,2). If it looks normalized (max <= ~2), clamp to [0,1] and scale to pixels.
+  23:     If it looks like pixel coords already (max > ~10), keep as-is.
+  24:     """
+  25:     xy = xy.astype(np.float32)
+  26:     mx = np.nanmax(xy)
+  27:     if mx <= 2.5:  # normalized-ish (your y goes to ~1.7)
+  28:         xy[:, 0] = np.clip(xy[:, 0], 0.0, 1.0) * float(w)
+  29:         xy[:, 1] = np.clip(xy[:, 1], 0.0, 1.0) * float(h)
+  30:     return xy
+  31: 
+  32: 
+  33: def main():
+  34:     ap = argparse.ArgumentParser()
+  35:     ap.add_argument("--video", required=True)
+  36:     ap.add_argument("--npz", required=True)
+  37:     ap.add_argument("--out", required=True)
+  38:     args = ap.parse_args()
+  39: 
+  40:     video_path = Path(args.video)
+  41:     npz_path   = Path(args.npz)
+  42:     out_path   = Path(args.out)
+  43: 
+  44:     cap = cv2.VideoCapture(str(video_path))
+  45:     if not cap.isOpened():
+  46:         raise RuntimeError(f"Could not open video: {video_path}")
+  47: 
+  48:     fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+  49:     w   = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 640
+  50:     h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 480
+  51: 
+  52:     d = np.load(str(npz_path))
+  53:     pose = d["pose"]  # (T,33,4) expected; use [:,:,:2]
+  54:     T = int(pose.shape[0])
+  55: 
+  56:     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+  57:     tmp_out = out_path.with_name(out_path.stem + ".tmp_mp4v.mp4")
+  58:     tmp_out.parent.mkdir(parents=True, exist_ok=True)
+  59:     writer = cv2.VideoWriter(str(tmp_out), fourcc, fps, (w, h))
+  60:     if not writer.isOpened():
+  61:         raise RuntimeError("VideoWriter failed to open (mp4v).")
+  62: 
+  63:     t = 0
+  64:     while True:
+  65:         ok, frame = cap.read()
+  66:         if not ok:
+  67:             break
+  68: 
+  69:         if t < T:
+  70:             xy = pose[t, :, :2]
+  71:             xy = to_pixels(xy, w, h)
+  72: 
+  73:             # draw edges
+  74:             for a, b in EDGES:
+  75:                 xa, ya = xy[a]
+  76:                 xb, yb = xy[b]
+  77:                 if np.isfinite(xa) and np.isfinite(ya) and np.isfinite(xb) and np.isfinite(yb):
+  78:                     cv2.line(frame, (int(xa), int(ya)), (int(xb), int(yb)), (0,255,0), 2)
+  79: 
+  80:             # draw joints
+  81:             for j in range(min(33, xy.shape[0])):
+  82:                 xj, yj = xy[j]
+  83:                 if np.isfinite(xj) and np.isfinite(yj):
+  84:                     cv2.circle(frame, (int(xj), int(yj)), 4, (0,0,255), -1)
+  85: 
+  86:         writer.write(frame)
+  87:         t += 1
+  88: 
+  89:     cap.release()
+  90:     writer.release()
+  91: 
+  92:     # Transcode to H.264 for browser/Streamlit reliability
+  93:     # (use ffmpeg if available; if not, keep tmp mp4v)
+  94:     import shutil, subprocess
+  95:     ff = shutil.which("ffmpeg")
+  96:     if ff:
+  97:         out_path.parent.mkdir(parents=True, exist_ok=True)
+  98:         cmd = [
+  99:             ff, "-y",
+ 100:             "-i", str(tmp_out),
+ 101:             "-c:v", "libx264",
+ 102:             "-pix_fmt", "yuv420p",
+ 103:             "-movflags", "+faststart",
+ 104:             str(out_path),
+ 105:         ]
+ 106:         subprocess.run(cmd, check=True)
+ 107:         try:
+ 108:             tmp_out.unlink(missing_ok=True)
+ 109:         except Exception:
+ 110:             pass
+ 111:     else:
+ 112:         tmp_out.replace(out_path)
+ 113: 
+ 114:     print(str(out_path).replace("\\","/"))
+ 115: 
+ 116: 
+ 117: if __name__ == "__main__":
+ 118:     main()

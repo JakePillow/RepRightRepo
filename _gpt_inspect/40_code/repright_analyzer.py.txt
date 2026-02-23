@@ -1,0 +1,183 @@
+﻿   1: from __future__ import annotations
+   2: 
+   3: import json
+   4: import time
+   5: import subprocess
+   6: import shutil
+   7: from dataclasses import dataclass
+   8: from pathlib import Path
+   9: from typing import Any, Dict, Optional, Tuple
+  10: 
+  11: import numpy as np
+  12: 
+  13: from repright.pose_extract import extract_pose_npz
+  14: 
+  15: # Reuse proven rep logic from scripts/compute_rep_metrics.py (single-video, in-process)
+  16: from scripts.compute_rep_metrics import (
+  17:     choose_best_signal,
+  18:     per_exercise_params,
+  19:     detect_reps_low_to_high,
+  20:     compute_rep_metrics,
+  21: )
+  22: 
+  23: 
+  24: @dataclass
+  25: class RepRightAnalyzer:
+  26:     processed_root: Path = Path("data/processed")
+  27:     uploads_root: Path = Path("data/uploads")
+  28:     python_exe: Optional[str] = None  # if None, uses current interpreter
+  29: 
+  30:     def _py(self) -> str:
+  31:         return self.python_exe or shutil.which("python") or "python"
+  32: 
+  33:     def _stage_upload(self, video_path: Path, exercise: str) -> Path:
+  34:         """
+  35:         Copy to uploads/ with an exercise-tagged filename so downstream inference is stable.
+  36:         """
+  37:         video_path = Path(video_path)
+  38:         ex = (exercise or "").strip().lower()
+  39:         self.uploads_root.mkdir(parents=True, exist_ok=True)
+  40: 
+  41:         stamp = time.strftime("%Y%m%d_%H%M%S")
+  42:         safe_stem = video_path.stem.replace(" ", "_")
+  43:         out_name = f"{stamp}_{ex}_{safe_stem}{video_path.suffix}"
+  44:         out_path = self.uploads_root / out_name
+  45: 
+  46:         if video_path.resolve() != out_path.resolve():
+  47:             out_path.write_bytes(video_path.read_bytes())
+  48: 
+  49:         return out_path
+  50: 
+  51:     def _metrics_path(self, stem: str, exercise: str) -> Path:
+  52:         ex = (exercise or "").strip().lower()
+  53:         out_dir = self.processed_root / "metrics" / ex
+  54:         out_dir.mkdir(parents=True, exist_ok=True)
+  55:         return out_dir / f"{stem}_metrics.json"
+  56: 
+  57:     def _compute_metrics_single(self, npz_path: Path, meta_path: Path, exercise: str, stem_for_metrics: str) -> Path:
+  58:         ex = (exercise or "").strip().lower()
+  59:         metrics_path = self._metrics_path(stem_for_metrics, ex)
+  60: 
+  61:         pose = np.load(npz_path)["pose"]
+  62:         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+  63:         fps = float(meta.get("fps", 30.0) or 30.0)
+  64: 
+  65:         sig, driver = choose_best_signal(pose, ex)
+  66:         sig = np.asarray(sig, float)
+  67: 
+  68:         low, high, min_rep_sec = per_exercise_params(ex)
+  69:         reps = detect_reps_low_to_high(sig, fps=fps, low=low, high=high, min_rep_sec=min_rep_sec)
+  70:         rep_metrics = compute_rep_metrics(sig, reps, fps)
+  71: 
+  72:         summary = {
+  73:             "exercise": ex,
+  74:             "driver": driver,
+  75:             "source_npz": str(npz_path).replace("\\", "/"),
+  76:             "source_meta": str(meta_path).replace("\\", "/"),
+  77:             "fps": fps,
+  78:             "n_frames": int(pose.shape[0]),
+  79:             "n_reps": len(rep_metrics),
+  80:             "reps": rep_metrics,
+  81:         }
+  82: 
+  83:         metrics_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+  84:         return metrics_path
+  85: 
+  86:     def _overlay_paths_for_npz(self, npz_path: Path) -> Tuple[Path, Path]:
+  87:         """
+  88:         We generate tmp (mp4v) then transcode to final (h264) for browser reliability.
+  89:         """
+  90:         base = Path(npz_path).with_suffix("")  # remove .npz
+  91:         tmp_mp4v = Path(str(base) + "_overlay_tmp.mp4")
+  92:         final_mp4 = Path(str(base) + "_overlay.mp4")
+  93:         return tmp_mp4v, final_mp4
+  94: 
+  95:     def _ensure_overlay(self, video_path: Path, npz_path: Path) -> str:
+  96:         """
+  97:         Ensure overlay exists and is non-empty. Returns '' if generation fails.
+  98:         """
+  99:         tmp_mp4v, final_mp4 = self._overlay_paths_for_npz(npz_path)
+ 100: 
+ 101:         # If final already exists and non-empty, trust it
+ 102:         if final_mp4.exists() and final_mp4.stat().st_size > 0:
+ 103:             return str(final_mp4).replace("\\", "/")
+ 104: 
+ 105:         # Generate tmp overlay (mp4v) from NPZ
+ 106:         try:
+ 107:             cmd = [
+ 108:                 self._py(),
+ 109:                 "scripts/make_overlay_from_npz.py",
+ 110:                 "--video", str(video_path),
+ 111:                 "--npz", str(npz_path),
+ 112:                 "--out", str(tmp_mp4v),
+ 113:             ]
+ 114:             subprocess.run(cmd, check=True)
+ 115:         except Exception:
+ 116:             return ""
+ 117: 
+ 118:         if (not tmp_mp4v.exists()) or tmp_mp4v.stat().st_size == 0:
+ 119:             return ""
+ 120: 
+ 121:         # Transcode to H.264 using ffmpeg if available (best for Streamlit/Chrome)
+ 122:         ff = shutil.which("ffmpeg")
+ 123:         if ff:
+ 124:             try:
+ 125:                 cmd2 = [
+ 126:                     ff, "-y",
+ 127:                     "-i", str(tmp_mp4v),
+ 128:                     "-c:v", "libx264",
+ 129:                     "-pix_fmt", "yuv420p",
+ 130:                     "-movflags", "+faststart",
+ 131:                     str(final_mp4),
+ 132:                 ]
+ 133:                 subprocess.run(cmd2, check=True)
+ 134:             except Exception:
+ 135:                 # fallback: if transcode fails, at least return tmp_mp4v
+ 136:                 return str(tmp_mp4v).replace("\\", "/")
+ 137: 
+ 138:             if final_mp4.exists() and final_mp4.stat().st_size > 0:
+ 139:                 return str(final_mp4).replace("\\", "/")
+ 140: 
+ 141:         # If no ffmpeg, return tmp_mp4v
+ 142:         return str(tmp_mp4v).replace("\\", "/") if tmp_mp4v.exists() and tmp_mp4v.stat().st_size > 0 else ""
+ 143: 
+ 144:     def analyze(self, video_path: str, exercise: str) -> Dict[str, Any]:
+ 145:         ex = (exercise or "").strip().lower()
+ 146:         vp = Path(video_path)
+ 147: 
+ 148:         # Stage upload to stable name
+ 149:         staged = self._stage_upload(vp, ex)
+ 150:         stem = staged.stem
+ 151: 
+ 152:         metrics_path = self._metrics_path(stem, ex)
+ 153: 
+ 154:         # If metrics missing, extract pose + compute metrics
+ 155:         if not metrics_path.exists():
+ 156:             npz_path, meta_path = extract_pose_npz(staged, ex, processed_root=self.processed_root)
+ 157:             metrics_path = self._compute_metrics_single(npz_path, meta_path, ex, stem_for_metrics=stem)
+ 158: 
+ 159:         # Load metrics (even cached) so we can locate source_npz and ensure overlay
+ 160:         data = json.loads(metrics_path.read_text(encoding="utf-8"))
+ 161:         src_npz = (data.get("source_npz") or "").replace("\\", "/")
+ 162:         npz_path2 = Path(src_npz) if src_npz else None
+ 163: 
+ 164:         overlay_path = ""
+ 165:         if npz_path2 and npz_path2.exists():
+ 166:             overlay_path = self._ensure_overlay(staged, npz_path2)
+ 167: 
+ 168:         # Stable schema return for UI + demo
+ 169:         out: Dict[str, Any] = {
+ 170:             "schema_version": "analysis_v1",
+ 171:             "exercise": ex,
+ 172:             "video_path": str(staged).replace("\\", "/"),
+ 173:             "driver": data.get("driver", ""),
+ 174:             "fps": float(data.get("fps", 30.0) or 30.0),
+ 175:             "n_frames": int(data.get("n_frames", 0) or 0),
+ 176:             "n_reps": int(data.get("n_reps", 0) or 0),
+ 177:             "metrics_path": str(metrics_path).replace("\\", "/"),
+ 178:             "overlay_path": overlay_path,
+ 179:             "reps": data.get("reps", []),
+ 180:             "raw": data,
+ 181:         }
+ 182:         return out
+ 183: 
