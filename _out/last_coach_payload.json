@@ -1,6 +1,6 @@
 {
   "schema_version": "coach_payload_v1",
-  "user_message": "Goal: strength. Keep feedback short and specific. No cues unless faults exist.",
+  "user_message": "Strength focus.",
   "exercise": "deadlift",
   "load_kg": null,
   "analysis_v1": {
