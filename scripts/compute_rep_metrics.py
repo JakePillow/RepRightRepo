@@ -1,602 +1,251 @@
-﻿# ================================================================
-# SCHEMA CONTRACT: analysis_v1  (LOCKED)
-#
-# compute_rep_metrics(...) RETURNS:
-#
-# {
-#   "reps": [
-#       {
-#           # REQUIRED CORE
-#           "rep_index": int
-#           "start_frame": int
-#           "peak_frame": int
-#           "end_frame": int
-#           "rom": float
-#           "duration_sec": float
-#           "tempo_up_sec": float
-#           "tempo_down_sec": float
-#
-#           # INFERENCE FLAGS
-#           "tempo_down_inferred": bool
-#           "tempo_down_sec_inferred": float
-#           "end_frame_source": str
-#
-#           # CONFIDENCE
-#           "confidence_v1": {
-#               "level": "high" | "medium" | "low"
-#               "reasons": List[str]
-#           }
-#
-#           # BIOMECHANICS
-#           "biomech_v1": Dict
-#
-#           # FAULTS
-#           "faults_v1": List[Dict]
-#       }
-#   ],
-#
-#   "set_summary_v1": {
-#       "n_reps": int
-#       "avg_rom": float
-#       "avg_duration_sec": float
-#   }
-# }
-#
-# RULES:
-# - New fields must be additive.
-# - No renaming of existing keys.
-# - No removal of existing keys.
-# - confidence_v1 must always exist.
-# - faults_v1 must always exist (empty list if none).
-# ================================================================
-# ============================
-# RepRight - compute_rep_metrics.py
-# Phase 2: biomechanical intelligence scaffolding
-# - eccentric inference (no LOW re-hit)
-# - angle-based ROM metrics
-# - faults_v1 classification scaffolding
-# NOTE: Keep analyzer pipeline unchanged. Schema: analysis_v1.
-# ============================
-
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
-
-import numpy as np
-
-
-# ----------------------------
-# Config / thresholds (tune later)
-# ----------------------------
-
-@dataclass(frozen=True)
-class ExerciseParams:
-    low: float
-    high: float
-    min_rep_sec: float
-
-    # Fault thresholds (Phase 2 scaffolding)
-    # Angle ROM minimums (degrees)
-    min_elbow_rom_deg: float = 90.0
-
-    # Tempo thresholds (seconds)
-    min_concentric_sec: float = 0.35
-    min_eccentric_sec: float = 0.35
-
-    # Asymmetry thresholds (degrees)
-    max_elbow_rom_asym_deg: float = 18.0
+import argparse
+import json
+from pathlib import Path
+from statistics import mean
+from typing import Any
 
 
-    max_trunk_angle_deg: float = 65.0  # placeholder; tune later
-def per_exercise_params(exercise: str) -> Tuple[float, float, float]:
-    """
-    Returns low/high thresholds for hysteresis and min rep duration.
-    These should already match your existing pipeline expectations.
-    """
-    ex = (exercise or "").lower().strip()
+def read_driver_angle(jsonl_path: Path) -> tuple[list[int], list[float]]:
+    frames: list[int] = []
+    angles: list[float] = []
+    with jsonl_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            ang = (row.get("angles") or {}).get("driver")
+            if ang is None:
+                continue
+            try:
+                frames.append(int(row.get("frame", 0)))
+                angles.append(float(ang))
+            except (TypeError, ValueError):
+                continue
+    return frames, angles
 
-    # Defaults
-    if ex == "curl":
-        return 0.25, 0.75, 0.35
-    if ex == "bench":
-        return 0.30, 0.70, 0.40
-    if ex == "squat":
-        return 0.30, 0.70, 0.50
-    if ex == "deadlift":
-        return 0.30, 0.70, 0.50
 
-    return 0.30, 0.70, 0.45
+def smooth(x: list[float], win: int = 5) -> list[float]:
+    if not x:
+        return []
+    out: list[float] = []
+    h = win // 2
+    for i in range(len(x)):
+        lo = max(0, i - h)
+        hi = min(len(x), i + h + 1)
+        out.append(sum(x[lo:hi]) / (hi - lo))
+    return out
 
 
-def _fault(code: str, severity: str, value: float, threshold: float, evidence: str) -> Dict[str, Any]:
+def detect_reps(
+    frames: list[int],
+    a: list[float],
+    fps: float,
+    min_rom_deg: float = 10.0,
+    min_gap_sec: float = 0.2,
+    hyst_frac: float = 0.08,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if len(a) < 10:
+        return [], {"reason": "too_short", "len": len(a)}
+
+    amin, amax = min(a), max(a)
+    rom_total = amax - amin
+    if rom_total <= 0:
+        return [], {"reason": "flat_signal", "len": len(a)}
+
+    low = amin + 0.25 * rom_total
+    high = amax - 0.25 * rom_total
+    h = hyst_frac * rom_total
+    high_enter = high
+    high_exit = high + h
+    low_enter = low
+
+    reps: list[dict[str, Any]] = []
+    state = "top"
+    start_i: int | None = None
+    peak_i: int | None = None
+    last_start_frame: int | None = None
+
+    for i in range(1, len(a)):
+        prev, cur = a[i - 1], a[i]
+
+        if state == "top":
+            if prev > high_enter and cur <= high_enter:
+                f0cand = frames[i]
+                if last_start_frame is not None and (f0cand - last_start_frame) / fps < min_gap_sec:
+                    continue
+                state = "down"
+                start_i = i
+                peak_i = None
+                last_start_frame = frames[i]
+
+        elif state == "down":
+            if peak_i is None or cur < a[peak_i]:
+                peak_i = i
+            if prev < low_enter and cur >= low_enter:
+                state = "up"
+
+        elif state == "up":
+            if prev < high_exit and cur >= high_exit and start_i is not None and peak_i is not None:
+                end_i = i
+                f0, fp, f1 = frames[start_i], frames[peak_i], frames[end_i]
+                dur = (f1 - f0) / fps
+                seg = a[start_i : end_i + 1]
+                rom_deg = float(max(seg) - min(seg))
+                if dur >= 0.30 and rom_deg >= min_rom_deg:
+                    tempo_down = max(0.0, (fp - f0) / fps)
+                    tempo_up = max(0.0, (f1 - fp) / fps)
+                    reps.append(
+                        {
+                            "start_frame": int(f0),
+                            "peak_frame": int(fp),
+                            "end_frame": int(f1),
+                            "duration_sec": float(dur),
+                            "tempo_down_sec": float(tempo_down),
+                            "tempo_up_sec": float(tempo_up),
+                            "rom_deg": float(rom_deg),
+                        }
+                    )
+                state = "top"
+                start_i = None
+                peak_i = None
+
+    debug = {
+        "signal_min": float(amin),
+        "signal_max": float(amax),
+        "rom_total": float(rom_total),
+        "threshold_low": float(low),
+        "threshold_high": float(high),
+        "fps": float(fps),
+    }
+    return reps, debug
+
+
+def _make_fault(code: str, severity: str, value: float, threshold: float, evidence: str) -> dict[str, Any]:
     return {
         "code": code,
         "severity": severity,
         "value": float(value),
         "threshold": float(threshold),
-        "evidence": str(evidence),
+        "evidence": evidence,
     }
 
 
-# ----------------------------
-# Signal selection (existing API)
-# ----------------------------
-
-def choose_best_signal(pose: np.ndarray, exercise: str) -> Tuple[np.ndarray, str]:
-    """
-    Returns (signal, driver_label).
-    Must be exercise-aware to prevent elbow-derived metrics leaking into deadlift/squat.
-    """
-    ex = (exercise or "").lower().strip()
-
-    if pose is None or not isinstance(pose, np.ndarray) or pose.ndim != 3:
-        return np.zeros((0,), dtype=float), "none"
-
-    if ex in ("bench", "curl"):
-        sig = _driver_signal_from_elbow(pose, side="L")
-        return sig, "elbow_L"
-
-    if ex in ("deadlift", "squat"):
-        sig = _driver_signal_from_hip_y(pose)
-        return sig, "hip_y"
-
-    sig = _driver_signal_from_elbow(pose, side="L")
-    return sig, "elbow_L"
-
-def detect_reps_low_to_high(
-    sig: np.ndarray,
-    fps: float,
-    low: float,
-    high: float,
-    min_rep_sec: float,
-) -> List[Tuple[int, int, int]]:
-    """
-    LOW -> HIGH hysteresis.
-    Returns list of (start_frame, peak_frame, end_frame).
-    Existing design: end_frame can be peak_frame if LOW not re-hit (legacy limitation).
-    """
-    if sig is None or len(sig) == 0:
-        return []
-
-    sig = np.asarray(sig, dtype=float)
-    n = sig.shape[0]
-    min_rep_frames = int(max(1, round(min_rep_sec * fps)))
-
-    reps: List[Tuple[int, int, int]] = []
-
-    i = 0
-    while i < n:
-        # find start: crossing up through low from below
-        while i < n and sig[i] > low:
-            i += 1
-        if i >= n:
-            break
-        start = i
-
-        # find peak region: must cross high
-        crossed_high = False
-        peak = start
-        peak_val = sig[start]
-
-        while i < n:
-            v = sig[i]
-            if v >= high:
-                crossed_high = True
-            if v > peak_val:
-                peak_val = v
-                peak = i
-
-            # end condition: after crossing high, re-hit low
-            if crossed_high and v <= low:
-                end = i
-                # duration check (start->end)
-                if (end - start) >= min_rep_frames:
-                    reps.append((start, peak, end))
-                break
-
-            i += 1
-
-        if i >= n:
-            # legacy behavior: if never re-hit low, end at peak
-            if crossed_high:
-                end = peak
-                if (end - start) >= min_rep_frames:
-                    reps.append((start, peak, end))
-            break
-
-        # move forward a bit to avoid double counting
-        i = end + 1
-
-    return reps
-
-
-# ----------------------------
-# Pose / angles helpers
-# ----------------------------
-
-# MediaPipe landmark indices you likely use already (BlazePose 33):
-# 11 L shoulder, 13 L elbow, 15 L wrist
-# 12 R shoulder, 14 R elbow, 16 R wrist
-L_SHOULDER, R_SHOULDER = 11, 12
-L_ELBOW, R_ELBOW = 13, 14
-L_WRIST, R_WRIST = 15, 16
-
-
-L_HIP, R_HIP = 23, 24
-L_KNEE, R_KNEE = 25, 26
-
-def _angle_2d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
-    """
-    Angle ABC in degrees using 2D vectors.
-    """
-    ba = a - b
-    bc = c - b
-    nba = np.linalg.norm(ba)
-    nbc = np.linalg.norm(bc)
-    if nba < 1e-9 or nbc < 1e-9:
-        return float("nan")
-    cosang = float(np.clip(np.dot(ba, bc) / (nba * nbc), -1.0, 1.0))
-    return float(np.degrees(np.arccos(cosang)))
-
-
-def _get_xyv(pose: np.ndarray, idx: int) -> Tuple[np.ndarray, float]:
-    """
-    pose shape: (T,33,4) with (x,y,z?,visibility) or (x,y,?,vis)
-    We'll use x,y and visibility at [:, idx, 3].
-    """
-    xy = pose[:, idx, :2].astype(float)
-    vis = pose[:, idx, 3].astype(float)
-    return xy, vis
-
-
-def _elbow_angle_series(pose: np.ndarray, side: str) -> Tuple[np.ndarray, np.ndarray]:
-    if side.upper() == "L":
-        s, e, w = L_SHOULDER, L_ELBOW, L_WRIST
-    else:
-        s, e, w = R_SHOULDER, R_ELBOW, R_WRIST
-
-    a_xy, a_v = _get_xyv(pose, s)
-    b_xy, b_v = _get_xyv(pose, e)
-    c_xy, c_v = _get_xyv(pose, w)
-
-    angles = np.empty((pose.shape[0],), dtype=float)
-    angles[:] = np.nan
-
-    for t in range(pose.shape[0]):
-        angles[t] = _angle_2d(a_xy[t], b_xy[t], c_xy[t])
-
-    valid = (a_v > 0.5) & (b_v > 0.5) & (c_v > 0.5) & np.isfinite(angles)
-    return angles, valid.astype(float)
-
-
-def _driver_signal_from_elbow(pose: np.ndarray, side: str) -> np.ndarray:
-    """
-    Converts elbow angle (deg) to a normalized-ish signal.
-    We invert so that flexion (smaller angle) corresponds to "high" movement,
-    or keep as-is depending on your earlier conventions.
-    Here: map angle to [0,1] via robust min/max per clip.
-    """
-    ang, valid = _elbow_angle_series(pose, side=side)
-    # fill NaNs with median for stability
-    finite = np.isfinite(ang)
-    if not finite.any():
-        return np.zeros((pose.shape[0],), dtype=float)
-
-    med = float(np.nanmedian(ang))
-    ang_f = ang.copy()
-    ang_f[~finite] = med
-
-    lo = float(np.percentile(ang_f, 5))
-    hi = float(np.percentile(ang_f, 95))
-    denom = max(1e-6, (hi - lo))
-    z = (ang_f - lo) / denom
-    z = np.clip(z, 0.0, 1.0)
-
-    # Make "up" correspond to flexion (smaller angle => higher signal)
-    sig = 1.0 - z
-    return sig.astype(float)
-
-
-# ----------------------------
-# Eccentric inference + metrics
-# ----------------------------
-
-
-def _nanfill_median(x: np.ndarray) -> np.ndarray:
-    x = np.asarray(x, dtype=float)
-    med = float(np.nanmedian(x)) if np.isfinite(x).any() else 0.0
-    y = x.copy()
-    y[~np.isfinite(y)] = med
-    return y
-
-
-def _normalize_robust_01(x: np.ndarray) -> np.ndarray:
-    x = _nanfill_median(x)
-    lo = float(np.percentile(x, 5))
-    hi = float(np.percentile(x, 95))
-    denom = max(1e-6, (hi - lo))
-    z = (x - lo) / denom
-    return np.clip(z, 0.0, 1.0).astype(float)
-
-
-def _hip_y_series(pose: np.ndarray) -> np.ndarray:
-    # mean hip y (2D). In most image coords y increases downward.
-    l_xy, _lv = _get_xyv(pose, L_HIP)
-    r_xy, _rv = _get_xyv(pose, R_HIP)
-    y = 0.5 * (l_xy[:, 1] + r_xy[:, 1])
-    return y.astype(float)
-
-
-def _driver_signal_from_hip_y(pose: np.ndarray) -> np.ndarray:
-    # higher signal = higher hip (smaller y) -> invert normalized y
-    y = _hip_y_series(pose)
-    z = _normalize_robust_01(y)
-    sig = 1.0 - z
-    return sig.astype(float)
-
-
-def _trunk_angle_deg_series(pose: np.ndarray) -> np.ndarray:
-    # torso vector: hip_mid -> shoulder_mid, angle to vertical axis
-    ls, _lv1 = _get_xyv(pose, L_SHOULDER)
-    rs, _rv1 = _get_xyv(pose, R_SHOULDER)
-    lh, _lv2 = _get_xyv(pose, L_HIP)
-    rh, _rv2 = _get_xyv(pose, R_HIP)
-
-    sh = 0.5 * (ls + rs)
-    hip = 0.5 * (lh + rh)
-
-    v = sh - hip
-    vert = np.array([0.0, -1.0], dtype=float)
-
-    ang = np.empty((pose.shape[0],), dtype=float)
-    ang[:] = np.nan
-    for t in range(pose.shape[0]):
-        vt = v[t]
-        nvt = np.linalg.norm(vt)
-        if nvt < 1e-9:
-            continue
-        cosang = float(np.clip(np.dot(vt / nvt, vert), -1.0, 1.0))
-        ang[t] = float(np.degrees(np.arccos(cosang)))
-    return ang
-def _infer_end_frame_no_low_rehit(
-    sig: np.ndarray,
-    peak: int,
-    fps: float,
-    low: float,
-    min_ecc_sec: float,
-) -> Tuple[int, str]:
-    """
-    If LOW isn't re-hit, infer an end frame:
-    - aim for at least min_ecc_sec after peak
-    - choose a plausible frame where signal has clearly dropped from peak
-    """
-    n = int(sig.shape[0])
-    if peak >= n - 1:
-        return peak, "inferred_peak_at_end"
-
-    min_ecc_frames = int(max(1, round(min_ecc_sec * fps)))
-    start_search = peak + 1
-    target_min_end = min(n - 1, peak + min_ecc_frames)
-
-    # Find first frame after target_min_end where signal is "low-ish"
-    # Without a low re-hit, we accept: sig <= (low + 0.10) as a heuristic.
-    lowish = float(low + 0.10)
-
-    for i in range(target_min_end, n):
-        if float(sig[i]) <= lowish:
-            return i, "inferred_lowish_after_min_ecc"
-
-    # Otherwise, just use last frame
-    return n - 1, "inferred_video_end"
-
-
-def compute_rep_metrics(
-    sig: np.ndarray,
-    reps: List[Tuple[int, int, int]],
-    fps: float,
-    *,
-    pose: Optional[np.ndarray] = None,
-    exercise: Optional[str] = None,
-    low: Optional[float] = None,
-    high: Optional[float] = None,
-) -> Dict[str, Any]:
-    """
-    Returns dict:
-      {
-        "reps": [ per-rep dicts ],
-        "set_summary_v1": { optional stats }
-      }
-
-    Keeps analyzer stable while enabling Phase2 fields in each rep:
-      - confidence_v1
-      - biomech_v1
-      - faults_v1
-      - tempo_down_inferred
-      - tempo_down_sec_inferred
-      - end_frame_source
-    """
-    sig = np.asarray(sig, dtype=float)
-    ex = (exercise or "").lower().strip() if exercise else ""
-
-    # Pull low/high defaults if not provided
-    if low is None or high is None:
-        low2, high2, _minrep = per_exercise_params(ex or "curl")
-        if low is None:
-            low = low2
-        if high is None:
-            high = high2
-
-    # exercise params for fault scaffolding
-    low3, high3, minrep3 = per_exercise_params(ex or "curl")
-    params = ExerciseParams(low=low3, high=high3, min_rep_sec=minrep3)
-
-    out_reps: List[Dict[str, Any]] = []
-
-    # Precompute angles if pose provided
-    elbow_L = elbow_R = None
-    valid_L = valid_R = None
-    if pose is not None and isinstance(pose, np.ndarray) and pose.ndim == 3 and pose.shape[1] >= 17:
-        elbow_L, valid_L = _elbow_angle_series(pose, "L")
-        elbow_R, valid_R = _elbow_angle_series(pose, "R")
-
-    for idx, (start, peak, end) in enumerate(reps):
-        start = int(start)
-        peak = int(peak)
-        end = int(end)
-
-        # tempos (observed)
-        tempo_up_frames = max(0, peak - start)
-        tempo_down_frames_obs = max(0, end - peak)
-
-        tempo_up_sec = float(tempo_up_frames / fps) if fps > 0 else 0.0
-        tempo_down_sec = float(tempo_down_frames_obs / fps) if fps > 0 else 0.0
-
-        duration_sec = float((max(0, end - start)) / fps) if fps > 0 else 0.0
-
-        # ROM from driver signal (legacy field)
-        seg = sig[start : end + 1] if end >= start else sig[start : start + 1]
-        rom = float(np.max(seg) - np.min(seg)) if seg.size > 0 else 0.0
-
-        confidence_level = "high"
-        confidence_reasons: List[str] = []
-
-        # Eccentric inference path if end==peak OR if end is too close to peak and we never got LOW
-        tempo_down_inferred = False
-        tempo_down_sec_inferred = tempo_down_sec
-        end_frame_source = "low_rehit"
-
-        if end <= peak:
-            # legacy detector couldn't close rep -> infer end
-            end_inf, src = _infer_end_frame_no_low_rehit(sig, peak=peak, fps=float(fps), low=float(low), min_ecc_sec=params.min_eccentric_sec)
-            end = int(end_inf)
-            end_frame_source = src
-            tempo_down_inferred = True
-            confidence_level = "medium"
-            confidence_reasons.append("eccentric_inferred_no_low_rehit")
-
-            tempo_down_frames_obs = max(0, end - peak)
-            tempo_down_sec = float(tempo_down_frames_obs / fps) if fps > 0 else 0.0
-            tempo_down_sec_inferred = max(float(tempo_down_sec), float(params.min_eccentric_sec))
-            if float(tempo_down_sec) < float(params.min_eccentric_sec):
-                confidence_reasons.append("eccentric_truncated_before_min_ecc")
-            duration_sec = float((max(0, end - start)) / fps) if fps > 0 else 0.0
-            seg = sig[start : end + 1] if end >= start else sig[start : start + 1]
-            rom = float(np.max(seg) - np.min(seg)) if seg.size > 0 else 0.0
-
-        # If we have a full rep (LOW rehit) we can assign an end source
-        # We try to distinguish "held low" vs "immediate low" lightly.
-        if not tempo_down_inferred:
-            # if end is at/near low and stays low-ish for a few frames, mark hold
-            end_frame_source = "low_hold_after_min_ecc" if (end + 2 < sig.shape[0] and float(sig[end]) <= float(low) and float(sig[end + 1]) <= float(low) ) else "low_rehit"
-            tempo_down_sec_inferred = tempo_down_sec  # identical
-
-        # Phase2 biomech_v1: exercise-aware biomechanics + faults
-        biomech_v1: Dict[str, Any] = {"angles": {}}
-        faults_v1: List[Dict[str, Any]] = []
-
-        # --- Bench/Curl: elbow ROM + asym only
-        if ex in ("bench", "curl"):
-            if elbow_L is not None and elbow_R is not None:
-                aL = elbow_L[start : end + 1]
-                aR = elbow_R[start : end + 1]
-
-                minL = float(np.nanmin(aL)) if np.isfinite(aL).any() else float("nan")
-                maxL = float(np.nanmax(aL)) if np.isfinite(aL).any() else float("nan")
-                romL = float(maxL - minL) if np.isfinite(minL) and np.isfinite(maxL) else float("nan")
-
-                minR = float(np.nanmin(aR)) if np.isfinite(aR).any() else float("nan")
-                maxR = float(np.nanmax(aR)) if np.isfinite(aR).any() else float("nan")
-                romR = float(maxR - minR) if np.isfinite(minR) and np.isfinite(maxR) else float("nan")
-
-                side = "L" if (np.isfinite(romL) and (not np.isfinite(romR) or romL >= romR)) else "R"
-                if side == "L":
-                    biomech_v1["angles"]["elbow"] = {"side": "L", "min_deg": minL, "max_deg": maxL, "rom_deg": romL, "valid_frac": 1.0}
-                    dom_rom = romL
-                else:
-                    biomech_v1["angles"]["elbow"] = {"side": "R", "min_deg": minR, "max_deg": maxR, "rom_deg": romR, "valid_frac": 1.0}
-                    dom_rom = romR
-
-                if np.isfinite(dom_rom) and dom_rom < params.min_elbow_rom_deg:
-                    faults_v1.append(_fault(
-                        "PARTIAL_ROM_ELBOW", "warn",
-                        dom_rom, params.min_elbow_rom_deg,
-                        f"elbow_rom_deg<{params.min_elbow_rom_deg}",
-                    ))
-
-                if np.isfinite(romL) and np.isfinite(romR):
-                    asym = float(abs(romL - romR))
-                    if asym > params.max_elbow_rom_asym_deg:
-                        faults_v1.append(_fault(
-                            "ASYM_ROM_ELBOW", "info",
-                            asym, params.max_elbow_rom_asym_deg,
-                            f"|rom_L-rom_R|>{params.max_elbow_rom_asym_deg}",
-                        ))
-
-        # --- Deadlift/Squat: trunk angle proxy only (no elbow faults)
-        if ex in ("deadlift", "squat"):
-            if pose is not None and isinstance(pose, np.ndarray) and pose.ndim == 3 and pose.shape[1] >= 25:
-                trunk = _trunk_angle_deg_series(pose)
-                tseg = trunk[start : end + 1]
-                tmax = float(np.nanmax(tseg)) if np.isfinite(tseg).any() else float("nan")
-                biomech_v1["angles"]["trunk"] = {"max_deg": tmax}
-
-                if np.isfinite(tmax) and tmax > params.max_trunk_angle_deg:
-                    faults_v1.append(_fault(
-                        "LUMBAR_FLEXION", "warn",
-                        tmax, params.max_trunk_angle_deg,
-                        f"trunk_angle_deg_max>{params.max_trunk_angle_deg}",
-                    ))
-        # Tempo faults (use inferred eccentric if inference happened)
-        if tempo_up_sec > 1e-6 and tempo_up_sec < params.min_concentric_sec:
-            faults_v1.append(_fault(
-                "TEMPO_FAST_CONCENTRIC",
-                "info",
-                tempo_up_sec,
-                params.min_concentric_sec,
-                f"tempo_up_sec<{params.min_concentric_sec}",
-            ))
-
-        ecc_for_check = float(tempo_down_sec_inferred if tempo_down_inferred else tempo_down_sec)
-        if ecc_for_check > 1e-6 and ecc_for_check < params.min_eccentric_sec:
-            faults_v1.append(_fault(
-                "TEMPO_FAST_ECCENTRIC",
-                "info",
-                ecc_for_check,
-                params.min_eccentric_sec,
-                f"tempo_down_sec<{params.min_eccentric_sec}",
-            ))
-
-        rep_dict: Dict[str, Any] = {
-            "rep_index": int(idx),
-            "start_frame": int(start),
-            "peak_frame": int(peak),
-            "end_frame": int(end),
-            "rom": float(rom),
-            "duration_sec": float(duration_sec),
-            "tempo_up_sec": float(tempo_up_sec),
-            "tempo_down_sec": float(tempo_down_sec),
-            "confidence_v1": {"level": confidence_level, "reasons": confidence_reasons},
-            "biomech_v1": biomech_v1,
-            "faults_v1": faults_v1,
-            "tempo_down_inferred": bool(tempo_down_inferred),
-            "tempo_down_sec_inferred": float(tempo_down_sec_inferred),
-            "end_frame_source": str(end_frame_source),
+def _rep_confidence(rep: dict[str, Any]) -> dict[str, Any]:
+    reasons: list[str] = []
+    level = "high"
+    if rep["rom"] < 0.18:
+        level = "low"
+        reasons.append("shallow_rom")
+    if rep["duration_sec"] < 0.5:
+        level = "medium" if level == "high" else level
+        reasons.append("very_fast_rep")
+    if not reasons:
+        reasons = ["stable_driver_signal"]
+    return {"level": level, "reasons": reasons}
+
+
+def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
+    faults: list[dict[str, Any]] = []
+    if rep["rom"] < 0.2:
+        faults.append(
+            _make_fault(
+                code="LOW_ROM",
+                severity="medium" if rep["rom"] >= 0.14 else "high",
+                value=rep["rom"],
+                threshold=0.2,
+                evidence="Normalized ROM below threshold.",
+            )
+        )
+
+    if rep["tempo_up_sec"] < 0.25:
+        faults.append(
+            _make_fault(
+                code="RUSHED_CONCENTRIC",
+                severity="medium",
+                value=rep["tempo_up_sec"],
+                threshold=0.25,
+                evidence="Concentric phase completed faster than threshold.",
+            )
+        )
+
+    if exercise in {"deadlift", "squat"} and rep["tempo_down_sec"] < 0.20:
+        faults.append(
+            _make_fault(
+                code="LUMBAR_FLEXION",
+                severity="medium",
+                value=rep["tempo_down_sec"],
+                threshold=0.20,
+                evidence="Trunk-angle proxy transition was abrupt during lowering phase.",
+            )
+        )
+    return faults
+
+
+def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]], rep_debug: dict[str, Any]) -> dict[str, Any]:
+    reps: list[dict[str, Any]] = []
+    for idx, r in enumerate(reps_raw, start=1):
+        driver = "elbow" if exercise in {"bench", "curl"} else "trunk_proxy"
+        elbow_rom_deg = float(r["rom_deg"]) if exercise in {"bench", "curl"} else None
+        rep = {
+            "rep_index": idx,
+            "start_frame": int(r["start_frame"]),
+            "peak_frame": int(r["peak_frame"]),
+            "end_frame": int(r["end_frame"]),
+            "rom": float(r["rom_deg"] / 180.0),
+            "duration_sec": float(r["duration_sec"]),
+            "tempo_up_sec": float(r["tempo_up_sec"]),
+            "tempo_down_sec": float(r["tempo_down_sec"]),
+            "tempo_down_inferred": False,
+            "tempo_down_sec_inferred": float(r["tempo_down_sec"]),
+            "end_frame_source": "signal_hysteresis",
+            "biomech_v1": {
+                "driver_signal": driver,
+                "driver_rom_deg": float(r["rom_deg"]),
+                "elbow_rom_deg": elbow_rom_deg,
+            },
         }
+        rep["confidence_v1"] = _rep_confidence(rep)
+        rep["faults_v1"] = _rep_faults(exercise, rep)
+        reps.append(rep)
 
-        out_reps.append(rep_dict)
+    set_summary = {
+        "n_reps": len(reps),
+        "avg_rom": float(mean([r["rom"] for r in reps])) if reps else 0.0,
+        "avg_duration_sec": float(mean([r["duration_sec"] for r in reps])) if reps else 0.0,
+    }
+    return {
+        "schema_version": "analysis_v1",
+        "exercise": exercise,
+        "fps": fps,
+        "reps": reps,
+        "set_summary_v1": set_summary,
+        "rep_debug": rep_debug,
+    }
 
-    # Optional: a small deterministic set_summary_v1 (no ML, no tuning)
-    set_summary_v1: Dict[str, Any] = {"n_reps": int(len(out_reps))}
-    if out_reps:
-        roms = np.array([float(r.get("rom", 0.0) or 0.0) for r in out_reps], dtype=float)
-        durs = np.array([float(r.get("duration_sec", 0.0) or 0.0) for r in out_reps], dtype=float)
-        set_summary_v1.update({
-            "avg_rom": float(np.mean(roms)),
-            "avg_duration_sec": float(np.mean(durs)),
-        })
 
-    return {"reps": out_reps, "set_summary_v1": set_summary_v1}
+def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fps: float = 25.0) -> dict[str, Any]:
+    frames, angles = read_driver_angle(jsonl_path)
+    reps_raw, rep_debug = detect_reps(frames, smooth(angles, win=5), fps)
+    analysis = build_analysis_v1(exercise, fps, reps_raw, rep_debug)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
+    return analysis
 
 
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--exercise", required=True, choices=["bench", "deadlift", "squat", "curl"])
+    ap.add_argument("--jsonl", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--fps", type=float, default=25.0)
+    args = ap.parse_args()
 
+    analysis = compute_rep_metrics_file(args.exercise, Path(args.jsonl), Path(args.out), args.fps)
+    print(f"[OK] wrote {args.out} ({analysis['set_summary_v1']['n_reps']} reps)")
+
+
+if __name__ == "__main__":
+    main()

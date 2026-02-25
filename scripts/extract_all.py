@@ -10,6 +10,7 @@ TOKENS = {
     'bench': ['benchpress','bench_press','bench','barbell_bench','dumbbell_bench','incline','decline'],
     'squat': ['squat','back_squat','front_squat','goblet'],
     'curl' : ['bicep','biceps','curl','barbell_curl','ezbar'],
+    'deadlift': ['deadlift','romanian_deadlift','rdl','sumo_deadlift'],
 }
 
 def guess_label(name: str):
@@ -125,8 +126,8 @@ class LiveRepCounter:
         self.prev = driver_angle
         return event
 
-def process_video(in_path: Path, out_dir: Path):
-    label = guess_label(in_path.name) or "bench"
+def process_video(in_path: Path, out_dir: Path, label_override: str | None = None):
+    label = (label_override or guess_label(in_path.name) or "bench").lower()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cap = cv2.VideoCapture(str(in_path))
