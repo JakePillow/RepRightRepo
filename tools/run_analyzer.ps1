@@ -1,46 +1,21 @@
 param(
-  [Parameter(Mandatory=$true)][string]$Video,
-  [Parameter(Mandatory=$true)][string]$Exercise,
-
-  # Always prefer venv python by default
-  [string]$Py = ".\.venv\Scripts\python.exe",
-
-  [string]$ProcessedRoot = "data/processed",
-  [string]$UploadsRoot   = "data/uploads",
-
-  # Optional: write full analyzer JSON here
-  [string]$Out = ""
+  [Parameter(Mandatory=$true)][string]$VideoPath,
+  [Parameter(Mandatory=$true)][ValidateSet('bench','curl','deadlift','squat')][string]$Exercise,
+  [Parameter(Mandatory=$true)][string]$OutPath,
+  [string]$Py = "python"
 )
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
-
-# Ensure we're running from repo root (directory that contains repright/)
-$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-Set-Location $RepoRoot
-
-# Resolve paths early (handles relative paths)
-$VideoPath = (Resolve-Path -LiteralPath $Video).Path
-
-if (-not (Test-Path -LiteralPath $Py)) {
-  throw "Python not found: $Py (run from repo root, or pass -Py explicitly)"
-}
-if (-not (Test-Path -LiteralPath $VideoPath)) {
-  throw "Video not found: $VideoPath"
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+function Resolve-RepoPath([string]$PathValue) {
+  if ([System.IO.Path]::IsPathRooted($PathValue)) { return $PathValue }
+  return (Join-Path $RepoRoot $PathValue)
 }
 
-# Run analyzer module (repright/analyzer.py main())
-$argv = @(
-  "-m","repright.analyzer",
-  "--video",$VideoPath,
-  "--exercise",$Exercise,
-  "--processed-root",$ProcessedRoot,
-  "--uploads-root",$UploadsRoot
-)
+$VideoFull = Resolve-RepoPath $VideoPath
+$OutFull = Resolve-RepoPath $OutPath
+$OutDir = Split-Path -Parent $OutFull
+if ($OutDir -and -not (Test-Path $OutDir)) { New-Item -ItemType Directory -Force -Path $OutDir | Out-Null }
 
-if ($Out -and $Out.Trim() -ne "") {
-  $argv += @("--out",$Out)
-}
-
-& $Py @argv
-exit $LASTEXITCODE
+& $Py -m repright.analyzer_cli --video-path $VideoFull --exercise $Exercise --out $OutFull
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "Analyzer JSON: $OutFull"

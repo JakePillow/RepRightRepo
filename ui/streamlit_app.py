@@ -1,55 +1,87 @@
-﻿import streamlit as st
+from __future__ import annotations
+
+import tempfile
 from pathlib import Path
+import sys
+
+import streamlit as st
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT))
 
 from repright.analyzer import RepRightAnalyzer
+from repright.coach_payload import build_coach_payload
+from repright.llm_wrapper import run_coach
 
-st.set_page_config(page_title="RepRight", layout="wide")
-st.title("RepRight — Video Rep Analysis")
+EXERCISES = ["bench", "deadlift", "squat", "curl"]
 
-# Make sure analyzer uses the venv python (important if it shells out / ffmpeg usage differs)
-analyzer = RepRightAnalyzer(python_exe=r".\.venv\Scripts\python.exe")
+st.set_page_config(page_title="RepRight Chat", layout="wide")
+st.title("RepRight — Chat Shell")
 
-exercise = st.selectbox("Exercise", ["bench", "squat", "curl", "deadlift"], index=2)
-up = st.file_uploader("Upload a video", type=["mp4", "mov", "avi", "mkv"])
+if "history" not in st.session_state:
+    st.session_state.history = []
+if "last_analysis" not in st.session_state:
+    st.session_state.last_analysis = None
+if "last_payload" not in st.session_state:
+    st.session_state.last_payload = None
+if "last_response" not in st.session_state:
+    st.session_state.last_response = None
 
-if up is not None:
-    uploads_dir = Path("data/uploads") / exercise
-    uploads_dir.mkdir(parents=True, exist_ok=True)
+with st.sidebar:
+    exercise = st.selectbox("Exercise", EXERCISES)
+    load_kg = st.number_input("Load (kg)", min_value=0.0, value=0.0)
+    if st.button("New chat"):
+        st.session_state.history = []
+        st.session_state.last_analysis = None
+        st.session_state.last_payload = None
+        st.session_state.last_response = None
 
-    name = up.name.replace(" ", "_")
-    video_path = uploads_dir / name
+upload = st.file_uploader("Upload set video", type=["mp4", "mov", "m4v", "avi", "mkv", "webm"])
+user_msg = st.text_input("Message", value="")
 
-    video_path.write_bytes(up.getbuffer())
-    st.success(f"Saved: {video_path.as_posix()}")
+if st.button("Run analysis + coach", type="primary"):
+    analysis = None
 
-    with st.spinner("Running analysis (pose + metrics + overlay)..."):
-        out = analyzer.analyze(str(video_path), exercise)
+    if upload is not None:
+        tmp = Path(tempfile.gettempdir()) / upload.name
+        tmp.write_bytes(upload.getbuffer())
 
-    st.subheader("Summary")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Exercise", out.get("exercise", ""))
-    c2.metric("Reps", out.get("n_reps", 0))
-    c3.metric("Driver", out.get("driver", ""))
-    c4.metric("FPS", out.get("fps", 0))
+        analyzer = RepRightAnalyzer()
+        analysis = analyzer.run(tmp, exercise)
+        st.session_state.last_analysis = analysis
 
-    st.write("Metrics JSON:", out.get("metrics_path", ""))
+    elif st.session_state.last_analysis is not None:
+        analysis = st.session_state.last_analysis
 
-    overlay_path = (out.get("overlay_path") or "").strip()
-    st.subheader("Overlay (pose skeleton)")
-    if overlay_path and Path(overlay_path).exists() and Path(overlay_path).stat().st_size > 0:
-        st.video(Path(overlay_path).read_bytes())
-        st.caption(overlay_path)
     else:
-        st.warning(f"Overlay missing/empty: {overlay_path}")
+        st.warning("Upload a video first, or reuse an existing analysis from this chat.")
 
-    with st.expander("Original uploaded video"):
-        st.video(video_path.read_bytes())
-        st.caption(video_path.as_posix())
+    if analysis is not None:
+        payload = build_coach_payload(analysis, message=user_msg, load_kg=(load_kg if load_kg > 0 else None))
+        response = run_coach(payload)
 
-    with st.expander("Raw output JSON"):
-        st.json(out)
+        st.session_state.last_payload = payload
+        st.session_state.last_response = response
+        st.session_state.history.append({"user": user_msg, "assistant": response["response_text"]})
 
-    reps = out.get("reps") or []
-    if reps:
-        st.subheader("Per-rep metrics")
-        st.dataframe(reps, use_container_width=True)
+if st.session_state.last_payload:
+    st.subheader("Latest coach response")
+    st.write(st.session_state.last_response["response_text"])
+
+    st.subheader("Follow-up")
+    followup = st.text_input("Ask a follow-up question", key="followup")
+    if st.button("Send follow-up") and followup:
+        follow_payload = dict(st.session_state.last_payload)
+        follow_payload["user_message"] = followup
+        follow_payload["history"] = st.session_state.history
+        response = run_coach(follow_payload)
+        st.session_state.last_response = response
+        st.session_state.history.append({"user": followup, "assistant": response["response_text"]})
+
+for turn in st.session_state.history:
+    st.chat_message("user").write(turn["user"])
+    st.chat_message("assistant").write(turn["assistant"])
+
+if st.session_state.last_payload:
+    with st.expander("Payload debug"):
+        st.json(st.session_state.last_payload)
