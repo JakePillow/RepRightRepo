@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+import cv2
 import numpy as np
 
 from repright.pose_extract import extract_pose_npz
@@ -19,6 +20,8 @@ from scripts.compute_rep_metrics import (
     detect_reps_low_to_high,
     compute_rep_metrics,
 )
+
+MIN_VALID_OVERLAY_BYTES = 50 * 1024
 
 
 @dataclass
@@ -78,6 +81,7 @@ class RepRightAnalyzer:
         else:
             rep_metrics = metrics_out
             set_summary_v1 = {}
+
         summary = {
             "exercise": ex,
             "driver": driver,
@@ -102,14 +106,27 @@ class RepRightAnalyzer:
         final_mp4 = Path(str(base) + "_overlay.mp4")
         return tmp_mp4v, final_mp4
 
+    def _is_decodable_video(self, path: Path) -> bool:
+        """
+        Cheap validity check: file exists, minimum size, and OpenCV can see >0 frames.
+        """
+        if (not path.exists()) or path.stat().st_size < MIN_VALID_OVERLAY_BYTES:
+            return False
+        cap = cv2.VideoCapture(str(path))
+        try:
+            n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+            return n > 0
+        finally:
+            cap.release()
+
     def _ensure_overlay(self, video_path: Path, npz_path: Path) -> str:
         """
-        Ensure overlay exists and is non-empty. Returns '' if generation fails.
+        Ensure overlay exists and is valid/decodable. Returns '' if generation fails.
         """
         tmp_mp4v, final_mp4 = self._overlay_paths_for_npz(npz_path)
 
-        # If final already exists and non-empty, trust it
-        if final_mp4.exists() and final_mp4.stat().st_size > 0:
+        # If final already exists and is decodable, trust it
+        if self._is_decodable_video(final_mp4):
             return str(final_mp4).replace("\\", "/")
 
         # Generate tmp overlay (mp4v) from NPZ
@@ -125,7 +142,9 @@ class RepRightAnalyzer:
         except Exception:
             return ""
 
-        if (not tmp_mp4v.exists()) or tmp_mp4v.stat().st_size == 0:
+        if not self._is_decodable_video(tmp_mp4v):
+            if tmp_mp4v.exists():
+                print(f"[warn] overlay invalid after write: {tmp_mp4v} ({tmp_mp4v.stat().st_size} bytes)")
             return ""
 
         # Transcode to H.264 using ffmpeg if available (best for Streamlit/Chrome)
@@ -145,11 +164,14 @@ class RepRightAnalyzer:
                 # fallback: if transcode fails, at least return tmp_mp4v
                 return str(tmp_mp4v).replace("\\", "/")
 
-            if final_mp4.exists() and final_mp4.stat().st_size > 0:
+            if self._is_decodable_video(final_mp4):
                 return str(final_mp4).replace("\\", "/")
 
-        # If no ffmpeg, return tmp_mp4v
-        return str(tmp_mp4v).replace("\\", "/") if tmp_mp4v.exists() and tmp_mp4v.stat().st_size > 0 else ""
+            if final_mp4.exists():
+                print(f"[warn] overlay invalid after transcode: {final_mp4} ({final_mp4.stat().st_size} bytes)")
+
+        # If no ffmpeg, return tmp_mp4v (already decodable here)
+        return str(tmp_mp4v).replace("\\", "/")
 
     def analyze(self, video_path: str, exercise: str) -> Dict[str, Any]:
         ex = (exercise or "").strip().lower()
@@ -166,7 +188,7 @@ class RepRightAnalyzer:
             npz_path, meta_path = extract_pose_npz(staged, ex, processed_root=self.processed_root)
             metrics_path = self._compute_metrics_single(npz_path, meta_path, ex, stem_for_metrics=stem)
 
-        # Load metrics (even cached) so we can locate source_npz and ensure overlay, this is really important stuff 
+        # Load metrics (even cached) so we can locate source_npz and ensure overlay
         data = json.loads(metrics_path.read_text(encoding="utf-8"))
         src_npz = (data.get("source_npz") or "").replace("\\", "/")
         npz_path2 = Path(src_npz) if src_npz else None
@@ -188,13 +210,13 @@ class RepRightAnalyzer:
             "overlay_path": overlay_path,
             "reps": data.get("reps", []),
             "set_summary_v1": data.get("set_summary_v1", {}),
-            "set_summary_v1": data.get("set_summary_v1", {}),
             "raw": data,
         }
         return out
+
+
 def main() -> None:
     import argparse
-    import sys
 
     ap = argparse.ArgumentParser(description="RepRight Analyzer (single-pipeline entrypoint).")
     ap.add_argument("--video", required=True, help="Path to input video")
@@ -213,13 +235,11 @@ def main() -> None:
 
     result = analyzer.analyze(args.video, args.exercise)
 
-    # Print the most useful “demo” lines first (stable + script-friendly)
-    # (Don’t crash if keys differ; analyzer already returns a dict)
     metrics_path = result.get("metrics_path") or result.get("metrics_json") or ""
     overlay_path = result.get("overlay_path") or ""
+    reps = result.get("reps", [])
     n_reps = result.get("n_reps")
     if n_reps is None:
-        reps = result.get("reps", [])
         n_reps = len(reps) if isinstance(reps, list) else 0
 
     if metrics_path:
@@ -228,7 +248,6 @@ def main() -> None:
         print(str(overlay_path).replace("\\", "/"))
     print(f"n_reps={n_reps}")
 
-    # Optional: write the full analyzer output to a JSON file
     if args.out:
         out_path = Path(args.out).resolve()
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -237,11 +256,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
