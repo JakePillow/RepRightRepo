@@ -49,3 +49,18 @@ datasets/
 .venv/
 __pycache__/
 .pytest_cache/
+# Local scratch / artifacts (never commit)
+_gpt_inspect/
+_out/
+_patch_backup/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS
+.DS_Store
+Thumbs.db
+
