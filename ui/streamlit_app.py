@@ -5,6 +5,8 @@ import tempfile
 from pathlib import Path
 import sys
 import time
+import json
+from datetime import datetime
 
 import streamlit as st
 
@@ -17,17 +19,68 @@ from repright.llm_wrapper import run_coach
 
 EXERCISES = ["bench", "deadlift", "squat", "curl"]
 
+# =============================
+# Persistent Chat Storage
+# =============================
 
-# ----------------------------
-# UI helpers
-# ----------------------------
+CHATS_DIR = ROOT / "data" / "chats"
+CHATS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _new_thread_id(exercise: str) -> str:
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{stamp}_{exercise}"
+
+
+def _thread_path(thread_id: str) -> Path:
+    return CHATS_DIR / f"{thread_id}.json"
+
+
+def _save_thread(thread_id: str) -> None:
+    analysis = st.session_state.last_analysis or {}
+
+    thread = {
+        "thread_id": thread_id,
+        "created_at": st.session_state.get("thread_created_at"),
+        "updated_at": datetime.now().isoformat(),
+        "exercise": analysis.get("exercise"),
+        "analysis_ref": {
+            "analysis_json": analysis.get("metrics_path"),
+            "overlay_path": analysis.get("overlay_path"),
+        },
+        "history": st.session_state.history,
+    }
+
+    _thread_path(thread_id).write_text(json.dumps(thread, indent=2), encoding="utf-8")
+
+
+def _load_thread(thread_id: str) -> None:
+    p = _thread_path(thread_id)
+    if not p.exists():
+        return
+
+    thread = json.loads(p.read_text(encoding="utf-8"))
+
+    st.session_state.thread_id = thread["thread_id"]
+    st.session_state.thread_created_at = thread.get("created_at")
+    st.session_state.history = thread.get("history", [])
+    st.session_state.last_analysis = {
+        "exercise": thread.get("exercise"),
+        "overlay_path": (thread.get("analysis_ref") or {}).get("overlay_path"),
+        "metrics_path": (thread.get("analysis_ref") or {}).get("analysis_json"),
+    }
+
+
+# =============================
+# UI Helpers
+# =============================
 
 def _inject_css() -> None:
     st.markdown(
         """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap');
-        html, body, [class*="css"]  { font-family: 'Nunito', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        html, body, [class*="css"] { font-family: 'Nunito', system-ui, sans-serif; }
 
         .stApp {
           background: radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,0.08), rgba(0,0,0,0.0)),
@@ -39,49 +92,9 @@ def _inject_css() -> None:
           background: rgba(255,255,255,0.04);
           border-radius: 18px;
           padding: 14px 16px;
-          box-shadow: 0 8px 20px rgba(0,0,0,0.25);
           margin-bottom: 12px;
         }
-
-        .rr-title {
-          font-size: 34px;
-          font-weight: 800;
-          letter-spacing: 0.2px;
-          margin: 0 0 4px 0;
-        }
-        .rr-subtitle {
-          opacity: 0.85;
-          margin: 0 0 8px 0;
-        }
-
-        div.stButton > button {
-          border-radius: 14px;
-          padding: 0.6rem 1rem;
-          border: 1px solid rgba(255,255,255,0.12);
-          background: rgba(255,255,255,0.06);
-        }
-        div.stButton > button:hover {
-          border: 1px solid rgba(255,255,255,0.20);
-          background: rgba(255,255,255,0.10);
-        }
-
-        section[data-testid="stSidebar"] {
-          background: rgba(255,255,255,0.03);
-          border-right: 1px solid rgba(255,255,255,0.08);
-        }
         </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def _render_header() -> None:
-    st.markdown(
-        """
-        <div class="rr-card">
-          <div class="rr-title">RepRight</div>
-          <div class="rr-subtitle">Vision-based rep analysis + coaching (chat)</div>
-        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -96,25 +109,21 @@ def _safe_tmp_video(upload) -> Path:
     return p
 
 
-# ----------------------------
-# Overlay helpers (reliability + debugging)
-# ----------------------------
+# =============================
+# Overlay Reliability
+# =============================
 
 def _overlay_debug_candidates() -> list[Path]:
     payload = st.session_state.last_payload or {}
     analysis = st.session_state.last_analysis or {}
 
     raw = [
-        (payload.get("highlights") or {}).get("overlay_path") if isinstance(payload, dict) else None,
+        (payload.get("highlights") or {}).get("overlay_path"),
         (analysis.get("artifacts_v1") or {}).get("overlay_path") if isinstance(analysis, dict) else None,
         analysis.get("overlay_path") if isinstance(analysis, dict) else None,
     ]
 
-    out: list[Path] = []
-    for c in raw:
-        if c:
-            out.append(Path(str(c)))
-    return out
+    return [Path(str(c)) for c in raw if c]
 
 
 def _resolve_overlay_path() -> Path | None:
@@ -127,67 +136,29 @@ def _resolve_overlay_path() -> Path | None:
     return None
 
 
-def _try_show_overlay_bytes(analysis: dict) -> None:
+def _try_show_overlay_bytes() -> None:
     overlay_file = _resolve_overlay_path()
     if overlay_file is None:
         return
 
     st.markdown('<div class="rr-card">', unsafe_allow_html=True)
-    st.caption("Overlay (if available)")
+    st.caption("Overlay")
 
-    # IMPORTANT: bytes playback avoids some blank-video cases in Streamlit/Chrome
     try:
         st.video(overlay_file.read_bytes())
     except Exception:
-        # fallback: path playback
         st.video(str(overlay_file))
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-def _rep_table_rows(analysis: dict) -> list[dict]:
-    reps = analysis.get("reps") or []
-    rows = []
-    for r in reps:
-        faults = r.get("faults_v1") or []
-        rows.append(
-            {
-                "rep": r.get("rep_index"),
-                "rom": r.get("rom"),
-                "dur_s": r.get("duration_sec"),
-                "down_s": r.get("tempo_down_sec"),
-                "up_s": r.get("tempo_up_sec"),
-                "conf": (r.get("confidence_v1") or {}).get("level"),
-                "faults": ", ".join([f.get("code", "") for f in faults]) if faults else "",
-            }
-        )
-    return rows
+# =============================
+# Pipeline Runner
+# =============================
 
-
-def _show_analysis_summary(analysis: dict) -> None:
-    st.markdown('<div class="rr-card">', unsafe_allow_html=True)
-    ss = analysis.get("set_summary_v1") or {}
-    cols = st.columns(4)
-    cols[0].metric("Exercise", analysis.get("exercise", "?"))
-    cols[1].metric("Reps", ss.get("n_reps", analysis.get("n_reps", 0)))
-    cols[2].metric("Avg ROM", f"{ss.get('avg_rom', 0.0):.3f}")
-    cols[3].metric("Avg Duration (s)", f"{ss.get('avg_duration_sec', 0.0):.3f}")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    rows = _rep_table_rows(analysis)
-    st.markdown('<div class="rr-card">', unsafe_allow_html=True)
-    st.caption("Per-rep summary")
-    if rows:
-        st.dataframe(rows, use_container_width=True, hide_index=True)
-    else:
-        st.info("No reps detected for this set (analysis still saved).")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | None) -> tuple[dict, dict, dict]:
+def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | None):
     tmp_path = _safe_tmp_video(upload)
 
-    # Loading animation (clears when done)
     anim_slot = st.empty()
     anim_path = ROOT / "ui" / "assets" / "loading_lift.mp4"
     if anim_path.exists():
@@ -195,7 +166,6 @@ def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | Non
 
     prog = st.progress(0, text="Tracking pose…")
     time.sleep(0.05)
-    prog.progress(15, text="Tracking pose…")
 
     analyzer = RepRightAnalyzer()
     analysis = analyzer.analyze(str(tmp_path), exercise)
@@ -215,59 +185,60 @@ def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | Non
     return analysis, payload, response
 
 
-# ----------------------------
-# App
-# ----------------------------
+# =============================
+# App Start
+# =============================
 
 st.set_page_config(page_title="RepRight", layout="wide")
 _inject_css()
-_render_header()
 
-if "history" not in st.session_state:
-    st.session_state.history = []  # list[{role, content}]
-if "last_analysis" not in st.session_state:
-    st.session_state.last_analysis = None
-if "last_payload" not in st.session_state:
-    st.session_state.last_payload = None
-if "last_response" not in st.session_state:
-    st.session_state.last_response = None
+# Session State Init
+for key in ["history", "last_analysis", "last_payload", "last_response", "thread_id", "thread_created_at"]:
+    if key not in st.session_state:
+        st.session_state[key] = None if key != "history" else []
 
+# =============================
+# Sidebar
+# =============================
 
 with st.sidebar:
-    st.markdown("### Session")
-    exercise = st.selectbox("Exercise", EXERCISES, index=0)
-    load_kg = st.number_input("Load (kg)", min_value=0.0, value=0.0, step=2.5)
-    use_load = (load_kg if load_kg > 0 else None)
+    exercise = st.selectbox("Exercise", EXERCISES)
+    load_kg = st.number_input("Load (kg)", min_value=0.0, value=0.0)
+    use_load = load_kg if load_kg > 0 else None
 
-    st.divider()
-    st.markdown("### Controls")
-    if st.button("New chat", use_container_width=True):
+    if st.button("New chat"):
         st.session_state.history = []
         st.session_state.last_analysis = None
         st.session_state.last_payload = None
         st.session_state.last_response = None
+        st.session_state.thread_id = None
+        st.session_state.thread_created_at = None
         st.rerun()
 
-    if st.session_state.last_analysis:
-        ss = st.session_state.last_analysis.get("set_summary_v1") or {}
-        st.caption("Last analysis")
-        st.write({"exercise": st.session_state.last_analysis.get("exercise"), "n_reps": ss.get("n_reps", st.session_state.last_analysis.get("n_reps"))})
+    st.divider()
+    st.markdown("### Saved Chats")
 
+    threads = sorted(CHATS_DIR.glob("*.json"), reverse=True)
+    options = ["<none>"] + [t.stem for t in threads]
+
+    selected = st.selectbox("Resume chat", options)
+    if selected != "<none>" and st.button("Load chat"):
+        _load_thread(selected)
+        st.rerun()
+
+# =============================
+# Main Layout
+# =============================
 
 left, right = st.columns([1.1, 0.9], gap="large")
 
 with left:
-    st.markdown('<div class="rr-card">', unsafe_allow_html=True)
-    st.subheader("1) Upload & analyze")
     upload = st.file_uploader("Upload set video", type=["mp4", "mov", "m4v", "avi", "mkv", "webm"])
-    st.caption("Tip: Side or 45° camera angle is usually more reliable than front view.")
-    st.markdown("</div>", unsafe_allow_html=True)
+    user_message = st.text_input("Optional note to coach", value="")
 
-    user_message = st.text_input("Optional note to coach (e.g., goal / pain / how it felt)", value="")
-
-    if st.button("Analyze set", type="primary", use_container_width=True):
-        if upload is None and st.session_state.last_analysis is None:
-            st.warning("Upload a video first (or reuse the last analysis in this chat).")
+    if st.button("Analyze set"):
+        if upload is None and not st.session_state.last_analysis:
+            st.warning("Upload a video first.")
         else:
             try:
                 if upload is not None:
@@ -282,25 +253,24 @@ with left:
                     st.session_state.last_payload = payload
                     st.session_state.last_response = response
 
-                # Append chat turn
+                if st.session_state.thread_id is None:
+                    st.session_state.thread_id = _new_thread_id(exercise)
+                    st.session_state.thread_created_at = datetime.now().isoformat()
+
                 if user_message.strip():
                     st.session_state.history.append({"role": "user", "content": user_message.strip()})
-                st.session_state.history.append({"role": "assistant", "content": st.session_state.last_response["response_text"]})
+                st.session_state.history.append({"role": "assistant", "content": response["response_text"]})
+
+                _save_thread(st.session_state.thread_id)
 
             except Exception as e:
-                st.error("Something went wrong while analyzing this set.")
+                st.error("Analysis failed.")
                 st.exception(e)
 
     if st.session_state.last_analysis:
-        _try_show_overlay_bytes(st.session_state.last_analysis)
-        _show_analysis_summary(st.session_state.last_analysis)
+        _try_show_overlay_bytes()
 
 with right:
-    st.markdown('<div class="rr-card">', unsafe_allow_html=True)
-    st.subheader("2) Chat with your coach")
-    st.caption("Follow-ups reuse the last analysis context (no re-upload needed).")
-    st.markdown("</div>", unsafe_allow_html=True)
-
     for msg in st.session_state.history:
         st.chat_message("user" if msg["role"] == "user" else "assistant").write(msg["content"])
 
@@ -310,26 +280,24 @@ with right:
         follow_payload["user_message"] = follow
         follow_payload["history"] = st.session_state.history
 
-        try:
-            response = run_coach(follow_payload)
-            st.session_state.last_response = response
-            st.session_state.history.append({"role": "user", "content": follow})
-            st.session_state.history.append({"role": "assistant", "content": response["response_text"]})
-            st.rerun()
-        except Exception as e:
-            st.error("Coach failed to respond.")
-            st.exception(e)
+        response = run_coach(follow_payload)
+
+        st.session_state.history.append({"role": "user", "content": follow})
+        st.session_state.history.append({"role": "assistant", "content": response["response_text"]})
+        st.session_state.last_response = response
+
+        if st.session_state.thread_id:
+            _save_thread(st.session_state.thread_id)
+
+        st.rerun()
 
     if st.session_state.last_payload:
-        with st.expander("Debug: payload JSON + overlay candidates"):
+        with st.expander("Debug"):
             st.json(st.session_state.last_payload)
             for idx, cand in enumerate(_overlay_debug_candidates(), start=1):
                 try:
                     exists = cand.exists()
                     size = cand.stat().st_size if exists else 0
-                    head = cand.read_bytes()[:12].hex() if exists and size > 0 else ""
                 except Exception:
-                    exists, size, head = False, 0, ""
-                st.caption(f"candidate_{idx} = {cand} | exists={exists} | bytes={size} | head12={head}")
-            if not _overlay_debug_candidates():
-                st.caption("overlay_path = <none provided>")
+                    exists, size = False, 0
+                st.caption(f"{cand} | exists={exists} | bytes={size}")
