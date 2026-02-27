@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -228,7 +228,24 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
 
 def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fps: float = 25.0) -> dict[str, Any]:
     frames, angles = read_driver_angle(jsonl_path)
-    reps_raw, rep_debug = detect_reps(frames, smooth(angles, win=5), fps)
+
+    a_s = smooth(angles, win=5)
+
+    # Run detection on normal signal
+    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps)
+
+    # Run detection on inverted signal (polarity robustness)
+    a_inv = [-v for v in a_s]
+    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps)
+
+    # Deterministic selection: choose the polarity with more detected reps
+    if len(reps_raw_2) > len(reps_raw_1):
+        reps_raw = reps_raw_2
+        rep_debug = {**debug_2, "signal_inverted": True}
+    else:
+        reps_raw = reps_raw_1
+        rep_debug = {**debug_1, "signal_inverted": False}
+
     analysis = build_analysis_v1(exercise, fps, reps_raw, rep_debug)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(analysis, indent=2), encoding="utf-8")

@@ -20,3 +20,47 @@ data_backup_*/
 # --- Large local logs / inventories (never commit) ---
 backup_*.log
 data_raw_filelist.txt
+# Big / generated / local-only
+data/raw/
+data/external/
+datasets/
+storage/runs/
+storage/eval/
+*.mp4
+*.mov
+*.mkv
+.venv/
+__pycache__/
+.pytest_cache/
+# === Generated / local-only ===
+_gpt_inspect/
+storage/runs/
+storage/eval/
+data/raw/
+data/external/
+datasets/
+
+# Video artifacts
+*.mp4
+*.mov
+*.mkv
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+# Local scratch / artifacts (never commit)
+_gpt_inspect/
+_out/
+_patch_backup/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS
+.DS_Store
+Thumbs.db
+
