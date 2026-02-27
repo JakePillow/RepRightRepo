@@ -1,4 +1,4 @@
-﻿import argparse, json, math, time
+﻿import argparse, json, math, shutil, subprocess, time
 from pathlib import Path
 import cv2
 import numpy as np
@@ -126,6 +126,32 @@ class LiveRepCounter:
         self.prev = driver_angle
         return event
 
+MIN_VALID_OVERLAY_BYTES = 50 * 1024
+
+
+def _valid_video_file(path: Path, min_bytes: int = MIN_VALID_OVERLAY_BYTES) -> bool:
+    if not path.exists() or path.stat().st_size < min_bytes:
+        return False
+    cap = cv2.VideoCapture(str(path))
+    try:
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+        return frame_count > 0
+    finally:
+        cap.release()
+
+
+def _transcode_with_ffmpeg(src: Path, dst: Path, args: list[str]) -> bool:
+    ffmpeg = shutil.which("ffmpeg")
+    if ffmpeg is None:
+        return False
+    cmd = [ffmpeg, "-y", "-i", str(src), *args, str(dst)]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        print(f"[warn] ffmpeg transcode failed for {dst.name}: {proc.stderr.strip()[:200]}")
+        return False
+    return _valid_video_file(dst)
+
+
 def process_video(in_path: Path, out_dir: Path, label_override: str | None = None):
     label = (label_override or guess_label(in_path.name) or "bench").lower()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -135,8 +161,14 @@ def process_video(in_path: Path, out_dir: Path, label_override: str | None = Non
     w   = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+    raw_overlay_mp4 = out_dir / f"{in_path.stem}_overlay_raw.mp4"
+    overlay_mp4 = out_dir / f"{in_path.stem}_overlay.mp4"
+    overlay_webm = out_dir / f"{in_path.stem}_overlay.webm"
+
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    writer = cv2.VideoWriter(str(out_dir / f"{in_path.stem}_overlay.mp4"), fourcc, fps, (w,h))
+    writer = cv2.VideoWriter(str(raw_overlay_mp4), fourcc, fps, (w,h))
+    if not writer.isOpened():
+        raise RuntimeError(f"Failed to open VideoWriter for {raw_overlay_mp4}")
 
     jsonl = (out_dir / f"{in_path.stem}.jsonl").open("w", encoding="utf-8")
     summary_path = out_dir / f"{in_path.stem}_summary.json"
@@ -152,49 +184,71 @@ def process_video(in_path: Path, out_dir: Path, label_override: str | None = Non
     rep_events = []
 
     t0 = time.time()
-    while True:
-        ok, frame = cap.read()
-        if not ok: break
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        res = pose.process(rgb)
+    try:
+        while True:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            res = pose.process(rgb)
 
-        angles = {}
-        if res.pose_landmarks:
-            lm = res.pose_landmarks.landmark
-            drv = choose_driver(label, lm)
-            angles["driver"] = drv
-            evt = counter.update(frame_idx, drv)
-            if evt:
-                rep_events.append(evt)
+            angles = {}
+            if res.pose_landmarks:
+                lm = res.pose_landmarks.landmark
+                drv = choose_driver(label, lm)
+                angles["driver"] = drv
+                evt = counter.update(frame_idx, drv)
+                if evt:
+                    rep_events.append(evt)
 
-            # draw skeleton
-            draw.draw_landmarks(
-                frame,
-                res.pose_landmarks,
-                mp_pose.POSE_CONNECTIONS,
-                landmark_drawing_spec=style.get_default_pose_landmarks_style()
-            )
-            # HUD
-            cv2.rectangle(frame, (10,10), (230,90), (0,0,0), -1)
-            cv2.putText(frame, f"{label.upper()}", (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 2)
-            cv2.putText(frame, f"Reps: {counter.reps}", (20,75), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
-        else:
-            # if no pose, still show current reps
-            cv2.putText(frame, f"Reps: {counter.reps}", (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
+                # draw skeleton
+                draw.draw_landmarks(
+                    frame,
+                    res.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS,
+                    landmark_drawing_spec=style.get_default_pose_landmarks_style()
+                )
+                # HUD
+                cv2.rectangle(frame, (10,10), (230,90), (0,0,0), -1)
+                cv2.putText(frame, f"{label.upper()}", (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 2)
+                cv2.putText(frame, f"Reps: {counter.reps}", (20,75), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
+            else:
+                # if no pose, still show current reps
+                cv2.putText(frame, f"Reps: {counter.reps}", (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
 
-        # write per-frame JSONL
-        row = {
-            "frame": frame_idx,
-            "t": float(frame_idx / (fps or 25.0)),
-            "angles": angles,
-            "reps": counter.reps
-        }
-        jsonl.write(json.dumps(row) + "\n")
+            # write per-frame JSONL
+            row = {
+                "frame": frame_idx,
+                "t": float(frame_idx / (fps or 25.0)),
+                "angles": angles,
+                "reps": counter.reps
+            }
+            jsonl.write(json.dumps(row) + "\n")
 
-        writer.write(frame)
-        frame_idx += 1
+            writer.write(frame)
+            frame_idx += 1
+    finally:
+        cap.release()
+        writer.release()
+        jsonl.close()
+        pose.close()
 
-    cap.release(); writer.release(); jsonl.close(); pose.close()
+    final_overlay = None
+    h264_ok = _transcode_with_ffmpeg(raw_overlay_mp4, overlay_mp4, ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart"])
+    if h264_ok:
+        final_overlay = overlay_mp4
+    else:
+        if _transcode_with_ffmpeg(raw_overlay_mp4, overlay_webm, ["-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "32"]):
+            final_overlay = overlay_webm
+        elif _valid_video_file(raw_overlay_mp4):
+            raw_overlay_mp4.replace(overlay_mp4)
+            final_overlay = overlay_mp4
+
+    if raw_overlay_mp4.exists() and final_overlay != raw_overlay_mp4:
+        raw_overlay_mp4.unlink(missing_ok=True)
+
+    if not final_overlay or not _valid_video_file(final_overlay):
+        print(f"[warn] Overlay output invalid for {in_path.name}; expected > {MIN_VALID_OVERLAY_BYTES} bytes and readable video.")
     dt = time.time() - t0
 
     # build basic per-set summary
@@ -215,6 +269,7 @@ def process_video(in_path: Path, out_dir: Path, label_override: str | None = Non
         "reps": int(counter.reps),
         "avg_rep_time_s": round(avg_rep_time, 3),
         "avg_rom_deg": round(avg_rom, 1),
+        "overlay_path": str(final_overlay.resolve()) if final_overlay and final_overlay.exists() else None,
         "notes": "Streaming baseline. Thresholds to be tuned per lift; offline smoothing & exact phase timing can refine."
     }
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
