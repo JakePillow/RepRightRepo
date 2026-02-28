@@ -161,6 +161,7 @@ def _inject_css() -> None:
           border-radius: 16px;
           padding: 12px 16px;
           margin-bottom: 12px;
+          text-align: center;
         }
         .rr-title { font-size: 1.4rem; font-weight: 800; }
         .rr-sub { opacity: 0.8; font-size: 0.95rem; }
@@ -175,6 +176,14 @@ def _inject_css() -> None:
         unsafe_allow_html=True,
     )
 
+
+
+
+def _upload_signature(upload) -> str:
+    hasher = hashlib.md5()
+    raw = upload.getvalue()
+    hasher.update(raw[:1024 * 1024])
+    return f"{upload.name}:{len(raw)}:{hasher.hexdigest()}"
 
 def _safe_tmp_video(upload) -> Path:
     suffix = Path(upload.name).suffix or ".mp4"
@@ -279,7 +288,7 @@ def _new_chat(exercise: str) -> None:
     _save_thread(thread_id)
 
 
-st.set_page_config(page_title="RepRight", layout="wide")
+st.set_page_config(page_title="RepRight", layout="wide", initial_sidebar_state="expanded")
 _inject_css()
 
 for key in ["thread_id", "thread_created_at", "thread_title", "history", "last_analysis", "last_payload", "last_response"]:
@@ -351,6 +360,8 @@ with left:
     if st.button("Analyze set", use_container_width=True):
         if upload is None:
             st.warning("Upload a video first.")
+        elif not upload_ready:
+            st.warning("Confirm starting a new chat for this upload before analyzing.")
         else:
             try:
                 st.session_state._analyzing = True
