@@ -6,6 +6,8 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
+from repright.summary_v1 import build_set_summary_v1
+
 
 def read_driver_angle(jsonl_path: Path) -> tuple[list[int], list[float]]:
     frames: list[int] = []
@@ -211,11 +213,10 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
         rep["faults_v1"] = _rep_faults(exercise, rep)
         reps.append(rep)
 
-    set_summary = {
-        "n_reps": len(reps),
-        "avg_rom": float(mean([r["rom"] for r in reps])) if reps else 0.0,
-        "avg_duration_sec": float(mean([r["duration_sec"] for r in reps])) if reps else 0.0,
-    }
+    set_summary = build_set_summary_v1(reps)
+    set_summary.setdefault("n_reps", len(reps))
+    set_summary.setdefault("avg_rom", float(mean([r["rom"] for r in reps])) if reps else 0.0)
+    set_summary.setdefault("avg_duration_sec", float(mean([r["duration_sec"] for r in reps])) if reps else 0.0)
     return {
         "schema_version": "analysis_v1",
         "exercise": exercise,
