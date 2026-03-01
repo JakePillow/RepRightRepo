@@ -11,6 +11,49 @@ def _mean(xs: List[float]) -> float:
     return float(sum(xs2) / len(xs2)) if xs2 else 0.0
 
 
+
+
+def _quality_score_and_band(reps: List[Dict[str, Any]]) -> Tuple[int, str]:
+    score = 100
+    sev_penalty = {"high": 15, "error": 15, "medium": 8, "warn": 8, "low": 4, "info": 4}
+    conf_penalty = {"medium": 8, "low": 15}
+
+    for r in reps:
+        conf = r.get("confidence_v1") or {}
+        level = str(conf.get("level") or "").lower()
+        score -= conf_penalty.get(level, 0)
+
+        for f in (r.get("faults_v1") or []):
+            sev = str((f or {}).get("severity") or "info").lower()
+            score -= sev_penalty.get(sev, 4)
+
+    # consistency penalties (if enough reps)
+    roms = [float(r.get("rom")) for r in reps if isinstance(r.get("rom"), (int, float))]
+    ups = [float(r.get("tempo_up_sec")) for r in reps if isinstance(r.get("tempo_up_sec"), (int, float))]
+    downs = [float(r.get("tempo_down_sec")) for r in reps if isinstance(r.get("tempo_down_sec"), (int, float))]
+
+    def _std(xs: List[float]) -> float:
+        if len(xs) < 2:
+            return 0.0
+        m = sum(xs) / len(xs)
+        return (sum((x - m) ** 2 for x in xs) / len(xs)) ** 0.5
+
+    if _std(roms) > 0.10:
+        score -= 8
+    if _std(ups) > 0.25:
+        score -= 6
+    if _std(downs) > 0.25:
+        score -= 6
+
+    score = max(0, min(100, int(round(score))))
+    if score >= 80:
+        band = "green"
+    elif score >= 50:
+        band = "yellow"
+    else:
+        band = "red"
+    return score, band
+
 def build_set_summary_v1(reps: List[Dict[str, Any]]) -> SetSummaryV1:
     """
     Build a stable set-level summary from per-rep metrics.
@@ -63,6 +106,8 @@ def build_set_summary_v1(reps: List[Dict[str, Any]]) -> SetSummaryV1:
             "severity_max": fault_sev_max.get(code, "info"),
         })
 
+    quality_score, quality_band = _quality_score_and_band(reps)
+
     out: SetSummaryV1 = {
         "n_reps": n,
         "avg_rom": _mean(roms),
@@ -73,5 +118,7 @@ def build_set_summary_v1(reps: List[Dict[str, Any]]) -> SetSummaryV1:
         "n_inferred_eccentric": int(n_inferred),
         "fault_counts": {k: int(v) for k, v in fault_counts.items()},
         "top_faults": top_faults,
+        "quality_score_pct": quality_score,
+        "quality_band": quality_band,
     }
     return out
