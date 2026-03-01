@@ -5,7 +5,6 @@ import os
 import sys
 import tempfile
 import time
-import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -77,7 +76,7 @@ def _save_thread(thread_id: str) -> None:
     analysis_json = artifacts.get("analysis_json") or analysis.get("metrics_path")
     overlay_path = analysis.get("overlay_path") or artifacts.get("overlay_path")
 
-    fallback_exercise = analysis.get("exercise") or st.session_state.get("current_exercise") or thread_id.split("_")[-1]
+    fallback_exercise = analysis.get("exercise") or st.session_state.get("exercise_choice") or thread_id.split("_")[-1]
 
     thread = {
         "thread_id": thread_id,
@@ -89,7 +88,6 @@ def _save_thread(thread_id: str) -> None:
             "analysis_json": analysis_json,
             "overlay_path": overlay_path,
             "run_dir": artifacts.get("run_dir"),
-            "video_path": analysis.get("video_path"),
         },
         "history": st.session_state.get("history") or [],
     }
@@ -109,7 +107,6 @@ def _load_thread(thread_id: str) -> None:
     st.session_state.thread_created_at = thread.get("created_at")
     st.session_state.thread_title = thread.get("title")
     st.session_state.history = thread.get("history") if isinstance(thread.get("history"), list) else []
-    st.session_state.current_exercise = thread.get("exercise") or "bench"
 
     analysis_json = analysis_ref.get("analysis_json")
     overlay_path = analysis_ref.get("overlay_path")
@@ -138,8 +135,6 @@ def _load_thread(thread_id: str) -> None:
     st.session_state.last_analysis = loaded_analysis
     st.session_state.last_payload = None
     st.session_state.last_response = None
-    st.session_state.active_upload_sig = None
-    st.session_state.pending_upload_sig = None
 
 
 def _append_history(role: str, content: str) -> None:
@@ -160,23 +155,9 @@ def _inject_css() -> None:
         footer { visibility: hidden; }
         .block-container { padding-top: 1.2rem; }
 
-        section[data-testid="stSidebar"][aria-expanded="false"] {
-          min-width: 6rem !important;
-          max-width: 6rem !important;
-        }
-        button[data-testid="collapsedControl"] {
-          display: inline-flex !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-
         .rr-header {
-          position: sticky;
-          top: 0;
-          z-index: 50;
           border: 1px solid rgba(255,255,255,0.08);
           background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(8px);
           border-radius: 16px;
           padding: 12px 16px;
           margin-bottom: 12px;
@@ -300,33 +281,26 @@ def _new_chat(exercise: str) -> None:
     st.session_state.thread_id = thread_id
     st.session_state.thread_created_at = _now_iso()
     st.session_state.thread_title = _thread_title(st.session_state.thread_created_at, exercise)
-    st.session_state.current_exercise = exercise
     st.session_state.history = []
     st.session_state.last_analysis = None
     st.session_state.last_payload = None
     st.session_state.last_response = None
-    st.session_state.active_upload_sig = None
-    st.session_state.pending_upload_sig = None
-    st.session_state.pending_upload_name = None
     _save_thread(thread_id)
 
 
 st.set_page_config(page_title="RepRight", layout="wide", initial_sidebar_state="expanded")
 _inject_css()
 
-for key in ["thread_id", "thread_created_at", "thread_title", "history", "last_analysis", "last_payload", "last_response", "active_upload_sig", "pending_upload_sig", "pending_upload_name", "current_exercise"]:
+for key in ["thread_id", "thread_created_at", "thread_title", "history", "last_analysis", "last_payload", "last_response"]:
     if key not in st.session_state:
         st.session_state[key] = [] if key == "history" else None
 
 if st.session_state.thread_id is None:
     _new_chat("bench")
-if not st.session_state.get("current_exercise"):
-    st.session_state.current_exercise = "bench"
 
 with st.sidebar:
-    new_chat_ex = st.selectbox("New chat exercise", EXERCISES, key="new_chat_exercise")
     if st.button("+ New chat", use_container_width=True):
-        _new_chat(new_chat_ex)
+        _new_chat(st.session_state.get("exercise_choice") or "bench")
         st.rerun()
 
     q = st.text_input("Search chats", value="")
@@ -376,44 +350,12 @@ st.markdown(
 left, right = st.columns([1.05, 0.95], gap="large")
 
 with left:
-    exercise = st.session_state.get("current_exercise") or "bench"
-    st.caption(f"Exercise (thread-locked): {exercise}")
+    exercise = st.selectbox("Exercise", EXERCISES, key="exercise_choice")
     load_kg = st.number_input("Load (kg)", min_value=0.0, value=0.0)
     use_load = load_kg if load_kg > 0 else None
 
     upload = st.file_uploader("Upload set video", type=["mp4", "mov", "m4v", "avi", "mkv", "webm"])
     user_message = st.text_input("Optional note to coach", value="")
-
-    upload_ready = upload is not None
-    if upload is not None:
-        upload_sig = _upload_signature(upload)
-        active_sig = st.session_state.get("active_upload_sig")
-        pending_sig = st.session_state.get("pending_upload_sig")
-
-        if active_sig and upload_sig != active_sig and pending_sig != upload_sig:
-            st.session_state.pending_upload_sig = upload_sig
-            st.session_state.pending_upload_name = upload.name
-            upload_ready = False
-
-        if st.session_state.get("pending_upload_sig") == upload_sig:
-            st.warning("⚠️ Uploading a new video will start a new chat and keep the previous chat saved. Press OK to continue.")
-            ok_col, cancel_col = st.columns(2)
-            with ok_col:
-                if st.button("OK - Start new chat", use_container_width=True):
-                    _new_chat(exercise)
-                    st.session_state.active_upload_sig = upload_sig
-                    st.session_state.pending_upload_sig = None
-                    st.session_state.pending_upload_name = None
-                    st.info("Started a new blank chat for this upload.")
-                    st.rerun()
-            with cancel_col:
-                if st.button("Cancel upload switch", use_container_width=True):
-                    st.session_state.pending_upload_sig = None
-                    st.session_state.pending_upload_name = None
-                    upload_ready = False
-            upload_ready = False
-        elif active_sig is None:
-            st.session_state.active_upload_sig = upload_sig
 
     if st.button("Analyze set", use_container_width=True):
         if upload is None:
@@ -427,7 +369,6 @@ with left:
                 st.session_state.last_analysis = analysis
                 st.session_state.last_payload = payload
                 st.session_state.last_response = response
-                st.session_state.active_upload_sig = _upload_signature(upload)
 
                 if st.session_state.thread_id is None:
                     _new_chat(exercise)
@@ -463,8 +404,6 @@ with left:
                 "avg_duration_sec": ss.get("avg_duration_sec"),
                 "avg_tempo_up_sec": ss.get("avg_tempo_up_sec"),
                 "avg_tempo_down_sec": ss.get("avg_tempo_down_sec"),
-                "quality_score_pct": ss.get("quality_score_pct"),
-                "quality_band": ss.get("quality_band"),
             }
         )
         st.markdown("</div>", unsafe_allow_html=True)
@@ -510,11 +449,3 @@ with right:
     if st.session_state.last_payload:
         with st.expander("Debug payload"):
             st.json(st.session_state.last_payload)
-            for idx, cand in enumerate(_overlay_debug_candidates(), start=1):
-                try:
-                    exists = cand.exists()
-                    size = cand.stat().st_size if exists else 0
-                    head = cand.read_bytes()[:8].hex() if exists and size > 0 else ""
-                except Exception:
-                    exists, size, head = False, 0, ""
-                st.caption(f"[{idx}] {cand} | exists={exists} | bytes={size} | head={head}")
