@@ -16,7 +16,6 @@ FAULT_CUES = {
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 
-
 def _safe_dict(v: Any) -> dict[str, Any]:
     return v if isinstance(v, dict) else {}
 
@@ -29,17 +28,8 @@ def _fmt_num(v: Any, fallback: str = "n/a") -> str:
     return f"{float(v):.2f}" if isinstance(v, (int, float)) else fallback
 
 
-def _fault_counts(rep_table: list[dict[str, Any]]) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for rep in rep_table:
-        for fault in _safe_list(_safe_dict(rep).get("faults_v1")):
-            code = str(_safe_dict(fault).get("code") or "").upper()
-            if code:
-                counts[code] = counts.get(code, 0) + 1
-    return counts
-
-
-def _build_stub_response(payload: dict[str, Any], mode: str) -> dict[str, Any]:
+def run_coach(payload: dict[str, Any], mode: str = "stub") -> dict[str, Any]:
+    payload = _safe_dict(payload)
     rep_table = _safe_list(payload.get("rep_table"))
     summary = _safe_dict(payload.get("high_level_summary"))
     patterns = _safe_dict(payload.get("form_pattern_aggregates"))
@@ -48,7 +38,13 @@ def _build_stub_response(payload: dict[str, Any], mode: str) -> dict[str, Any]:
     n_reps = int(summary.get("n_reps", len(rep_table)))
     exercise = str(summary.get("exercise") or payload.get("exercise") or "lift")
 
-    fault_counts = _fault_counts(rep_table)
+    fault_counts: dict[str, int] = {}
+    for rep in rep_table:
+        for fault in _safe_list(_safe_dict(rep).get("faults_v1")):
+            code = str(_safe_dict(fault).get("code") or "").upper()
+            if code:
+                fault_counts[code] = fault_counts.get(code, 0) + 1
+
     top_faults = sorted(fault_counts.items(), key=lambda kv: kv[1], reverse=True)
     avg_rom = summary.get("avg_rom")
     tempo_down_avg = _safe_dict(summary.get("tempo_summary")).get("tempo_down_sec_avg")
