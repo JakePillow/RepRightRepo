@@ -135,28 +135,41 @@ def _transcode_with_ffmpeg(src: Path, dst: Path, args: list[str]) -> bool:
         return False
     return _valid_video_file(dst)
 
-def _read_offline_rep_count(analysis_json_path: Path | None) -> int | None:
-    """
-    If analysis_v1.json exists, use its set_summary_v1.n_reps (or len(reps)) as the HUD count.
-    Returns None if not available/readable.
-    """
+def _build_offline_rep_ranges(analysis_json_path: Path | None) -> list[tuple[int, int]]:
+    """Read rep start/end frames from analysis_v1 and return sorted inclusive ranges."""
     if analysis_json_path is None:
-        return None
+        return []
     try:
         p = Path(analysis_json_path)
         if not p.exists():
-            return None
+            return []
         data = json.loads(p.read_text(encoding="utf-8"))
-        ss = data.get("set_summary_v1") if isinstance(data.get("set_summary_v1"), dict) else {}
-        n = ss.get("n_reps")
-        if isinstance(n, int):
-            return n
-        reps = data.get("reps")
-        if isinstance(reps, list):
-            return len(reps)
-        return None
+        reps = data.get("reps") if isinstance(data.get("reps"), list) else []
+        ranges: list[tuple[int, int]] = []
+        for rep in reps:
+            if not isinstance(rep, dict):
+                continue
+            sf = rep.get("start_frame")
+            ef = rep.get("end_frame")
+            if isinstance(sf, int) and isinstance(ef, int) and ef >= sf:
+                ranges.append((sf, ef))
+        ranges.sort(key=lambda x: x[0])
+        return ranges
     except Exception:
-        return None
+        return []
+
+
+def _offline_reps_at_frame(frame_idx: int, rep_ranges: list[tuple[int, int]]) -> int:
+    """Count completed/active reps at frame index using offline ranges."""
+    if not rep_ranges:
+        return 0
+    count = 0
+    for sf, ef in rep_ranges:
+        if frame_idx >= sf:
+            count += 1
+        if frame_idx < sf:
+            break
+    return count
 
 def process_video(
     in_path: Path,
@@ -195,6 +208,7 @@ def process_video(
     style = mp.solutions.drawing_styles
 
     counter = LiveRepCounter(fps, label)
+    offline_rep_ranges = _build_offline_rep_ranges(analysis_json_path)
     frame_idx = 0
     rep_events = []
 
@@ -225,9 +239,8 @@ def process_video(
                 )
 
             # ---- HUD ----
-            # Prefer offline (analysis_v1) rep count if available, else live.
-            offline_n = _read_offline_rep_count(analysis_json_path)
-            hud_reps = offline_n if isinstance(offline_n, int) else counter.reps
+            # Prefer offline per-frame rep count if available, else live.
+            hud_reps = _offline_reps_at_frame(frame_idx, offline_rep_ranges) if offline_rep_ranges else counter.reps
 
             cv2.rectangle(frame, (10, 10), (260, 95), (0, 0, 0), -1)
             cv2.putText(frame, f"{label.upper()}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
@@ -289,7 +302,7 @@ def process_video(
         "fps": float(fps),
         "duration_s": float(frame_idx / (fps or 25.0)),
         "reps_live": int(counter.reps),
-        "reps_offline": _read_offline_rep_count(analysis_json_path),
+        "reps_offline": len(offline_rep_ranges) if offline_rep_ranges else None,
         "avg_rep_time_s": round(avg_rep_time, 3),
         "avg_rom_deg": round(avg_rom, 1),
         "overlay_path": str(final_overlay.resolve()) if final_overlay and final_overlay.exists() else None,
