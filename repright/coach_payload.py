@@ -36,9 +36,20 @@ def build_coach_payload(
     load_kg: float | None = None,
     history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
+    # ---------- safety / normalization ----------
+    analysis = _safe_dict(analysis)
     reps = _safe_list(analysis.get("reps"))
     set_summary = _safe_dict(analysis.get("set_summary_v1"))
     artifacts = _safe_dict(analysis.get("artifacts_v1"))
+
+    # Bound history to keep prompts safe + deterministic
+    hist = _safe_list(history) if history is not None else _safe_list(analysis.get("history"))
+    hist = hist[-12:]  # last 12 turns max
+
+    # Prefer canonical artifact paths (pipeline writes these)
+    overlay_path = artifacts.get("overlay_path") or analysis.get("overlay_path")
+    analysis_json = artifacts.get("analysis_json") or artifacts.get("metrics_path") or analysis.get("metrics_path")
+    run_dir = artifacts.get("run_dir")
 
     rep_table: list[dict[str, Any]] = []
     fault_counter: Counter[str] = Counter()
@@ -80,12 +91,14 @@ def build_coach_payload(
                 "reasons": _safe_list(confidence.get("reasons")),
             },
             "faults_v1": faults,
+            # keep these for debugging / inversions
             "driver_signal": rep_d.get("driver_signal") or analysis.get("driver_signal"),
             "inversion": rep_d.get("inversion") if "inversion" in rep_d else analysis.get("inversion"),
             "elbow_rom_deg": _as_float_or_none(biomech.get("elbow_rom_deg")),
         }
         rep_table.append(rep_row)
 
+    # ---------- aggregates ----------
     rom_vals = [r.get("rom") for r in rep_table]
     dur_vals = [r.get("duration_sec") for r in rep_table]
     tempo_up_vals = [r.get("tempo_up_sec") for r in rep_table]
@@ -104,8 +117,11 @@ def build_coach_payload(
 
     repeated_faults = [{"code": code, "count": int(count)} for code, count in fault_counter.most_common()]
 
+    # Prefer analysis.exercise but keep stable fallback
+    exercise = str(analysis.get("exercise") or "unknown")
+
     high_level = {
-        "exercise": analysis.get("exercise", "unknown"),
+        "exercise": exercise,
         "fps": analysis.get("fps"),
         "n_reps": int(set_summary.get("n_reps", len(rep_table))),
         "avg_rom": set_summary.get("avg_rom"),
@@ -136,28 +152,34 @@ def build_coach_payload(
         "asymmetry": analysis.get("asymmetry") or set_summary.get("asymmetry"),
     }
 
+    # Highlights are what UI should primarily use (and LLM can cite)
     highlights = {
         "n_reps": high_level["n_reps"],
-        "overlay_path": analysis.get("overlay_path") or artifacts.get("overlay_path"),
-        "analysis_json": artifacts.get("analysis_json") or artifacts.get("metrics_path") or analysis.get("metrics_path"),
-        "run_dir": artifacts.get("run_dir"),
+        # always prefer artifact overlay first
+        "overlay_path": overlay_path,
+        "analysis_json": analysis_json,
+        "run_dir": run_dir,
     }
 
+    # Artifact refs (explicit)
+    artifact_refs = {
+        "overlay_path": overlay_path,
+        "analysis_json": analysis_json,
+        "run_dir": run_dir,
+    }
+
+    # IMPORTANT: keep analysis_v1 embedded (LLM needs full context; UI can reload)
     return {
         "schema_version": "coach_payload_v2",
         "user_message": message or "",
-        "exercise": high_level["exercise"],
+        "exercise": exercise,
         "load_kg": load_kg,
-        "history": history or [],
+        "history": hist,
         "analysis_v1": analysis,
         "high_level_summary": high_level,
-        "rep_table": rep_table,
+        "rep_table": rep_table,  # downstream will bound again if needed
         "form_pattern_aggregates": pattern_aggregates,
-        "artifact_refs": {
-            "overlay_path": highlights["overlay_path"],
-            "analysis_json": highlights["analysis_json"],
-            "run_dir": highlights["run_dir"],
-        },
+        "artifact_refs": artifact_refs,
         "highlights": highlights,
     }
 
