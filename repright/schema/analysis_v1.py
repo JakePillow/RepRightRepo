@@ -69,6 +69,8 @@ class SetSummaryV1(TypedDict, total=False):
     # faults aggregation
     fault_counts: Dict[str, int]
     top_faults: List[Dict[str, Any]]  # [{"code":..., "count":..., "severity_max":...}, ...]
+    quality_score_pct: int
+    quality_band: Literal["green", "yellow", "red"]
 
 
 class AnalysisV1(TypedDict, total=False):

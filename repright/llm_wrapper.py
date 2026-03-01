@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
+from urllib import error, request
 
 
 FAULT_CUES = {
@@ -12,6 +14,7 @@ FAULT_CUES = {
     "LUMBAR_FLEXION": "Brace harder and keep a neutral trunk throughout.",
 }
 
+OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 
 def _safe_dict(v: Any) -> dict[str, Any]:
     return v if isinstance(v, dict) else {}
@@ -111,14 +114,142 @@ def run_coach(payload: dict[str, Any], mode: str = "stub") -> dict[str, Any]:
     }
 
 
+def _compact_payload_for_prompt(payload: dict[str, Any]) -> dict[str, Any]:
+    rep_table = _safe_list(payload.get("rep_table"))[:8]
+    slim_reps: list[dict[str, Any]] = []
+    for rep in rep_table:
+        r = _safe_dict(rep)
+        slim_reps.append(
+            {
+                "rep_index": r.get("rep_index"),
+                "duration_sec": r.get("duration_sec"),
+                "tempo_up_sec": r.get("tempo_up_sec"),
+                "tempo_down_sec": r.get("tempo_down_sec"),
+                "rom": r.get("rom"),
+                "confidence_v1": r.get("confidence_v1"),
+                "faults_v1": r.get("faults_v1"),
+            }
+        )
+
+    return {
+        "exercise": payload.get("exercise"),
+        "user_message": payload.get("user_message"),
+        "load_kg": payload.get("load_kg"),
+        "high_level_summary": payload.get("high_level_summary"),
+        "form_pattern_aggregates": payload.get("form_pattern_aggregates"),
+        "artifact_refs": payload.get("artifact_refs"),
+        "history": _safe_list(payload.get("history"))[-6:],
+        "rep_table": slim_reps,
+    }
+
+
+def _gpt_coach_response(payload: dict[str, Any], mode: str) -> dict[str, Any]:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set")
+
+    model = os.getenv("REPRIGHT_COACH_MODEL", "gpt-4.1-mini")
+    timeout_s = float(os.getenv("REPRIGHT_COACH_TIMEOUT_S", "30"))
+
+    system_instruction = (
+        "You are RepRight Coach. Use only provided metrics. "
+        "Output concise coaching with this exact structure:\n"
+        "1) One-sentence set summary with reps count and at least 1 concrete metric.\n"
+        "2) Address the user's note directly in one sentence.\n"
+        "3) 3 bullet cues: technique / tempo / next set.\n"
+        "4) Include a safety disclaimer only when pain/injury is implied.\n"
+        "5) Optional: one follow-up question at most."
+    )
+
+    user_payload = _compact_payload_for_prompt(payload)
+    body = {
+        "model": model,
+        "input": [
+            {"role": "system", "content": [{"type": "text", "text": system_instruction}]},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Coach this set based on the JSON payload below. Be concrete and data-driven.\n"
+                        + json.dumps(user_payload, ensure_ascii=False),
+                    }
+                ],
+            },
+        ],
+    }
+
+    req = request.Request(
+        OPENAI_RESPONSES_URL,
+        method="POST",
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+    )
+
+    with request.urlopen(req, timeout=timeout_s) as resp:
+        raw = resp.read().decode("utf-8")
+    data = json.loads(raw)
+
+    output_text = data.get("output_text")
+    if not output_text:
+        output_text = "I could not generate a coaching response from the model output."
+
+    return {
+        "schema_version": "coach_response_v1",
+        "mode": mode,
+        "response_text": output_text,
+        "debug": {
+            "provider": "openai",
+            "model": model,
+            "response_id": data.get("id"),
+        },
+    }
+
+
+def run_coach(payload: dict[str, Any], mode: str = "auto") -> dict[str, Any]:
+    payload = _safe_dict(payload)
+    requested = (mode or "auto").lower().strip()
+
+    if requested == "stub":
+        return _build_stub_response(payload, mode="stub")
+
+    env_mode = os.getenv("REPRIGHT_COACH_MODE", "auto").lower().strip()
+    use_gpt = requested == "gpt" or env_mode == "gpt"
+
+    if not use_gpt:
+        # auto mode: use GPT if key exists, else stub
+        use_gpt = bool(os.getenv("OPENAI_API_KEY"))
+
+    if use_gpt:
+        try:
+            return _gpt_coach_response(payload, mode="gpt")
+        except (RuntimeError, error.URLError, error.HTTPError, TimeoutError, ValueError) as exc:
+            fallback = _build_stub_response(payload, mode="stub_fallback")
+            fallback.setdefault("debug", {})
+            fallback["debug"].update(
+                {
+                    "fallback_reason": str(exc),
+                    "requested_mode": requested,
+                    "env_mode": env_mode,
+                }
+            )
+            return fallback
+
+    return _build_stub_response(payload, mode="stub")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--payload", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--mode", default="auto", choices=["auto", "stub", "gpt"])
     args = parser.parse_args()
 
     payload = json.loads(Path(args.payload).read_text(encoding="utf-8"))
-    response = run_coach(payload, mode="stub")
+    response = run_coach(payload, mode=args.mode)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(response, indent=2), encoding="utf-8")

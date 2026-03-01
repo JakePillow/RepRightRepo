@@ -10,10 +10,6 @@ MIN_VALID_OVERLAY_BYTES = 50 * 1024
 
 
 def _clamp_rep_frames_inplace(analysis: dict) -> None:
-    """
-    Clamp per-rep frame indices into [0, n_frames-1] and recompute duration_sec if possible.
-    Prevents downstream mismatches when frames go out of bounds.
-    """
     if not isinstance(analysis, dict):
         return
 
@@ -25,20 +21,14 @@ def _clamp_rep_frames_inplace(analysis: dict) -> None:
         return
 
     max_idx = n_frames - 1
-
     for r in reps:
         if not isinstance(r, dict):
             continue
-
         for k in ("start_frame", "peak_frame", "end_frame"):
             v = r.get(k)
             if isinstance(v, int):
-                if v < 0:
-                    r[k] = 0
-                elif v > max_idx:
-                    r[k] = max_idx
+                r[k] = max(0, min(max_idx, v))
 
-        # Keep duration consistent after clamping
         if isinstance(fps, (int, float)) and fps > 0:
             sf = r.get("start_frame")
             ef = r.get("end_frame")
@@ -47,12 +37,6 @@ def _clamp_rep_frames_inplace(analysis: dict) -> None:
 
 
 def new_run_dir(video_path: str | Path, exercise: str, processed_root: str | Path = "data/processed") -> Path:
-    """
-    Create a stable run_dir under:
-      <processed_root>/runs/<exercise>/<timestamp>_<safe_stem>
-
-    Accepts str or Path.
-    """
     video_path = Path(video_path)
     ex = (exercise or "").strip().lower()
     processed_root = Path(processed_root)
@@ -73,12 +57,6 @@ def _pick_first(run_dir: Path, patterns: list[str]) -> Path | None:
 
 
 def _is_valid_overlay(path: Path | None, min_bytes: int = MIN_VALID_OVERLAY_BYTES) -> bool:
-    """
-    Overlay is considered valid if:
-      - exists
-      - size >= min_bytes
-      - cv2 can open and reports frame_count > 0
-    """
     if not path or not path.exists():
         return False
     try:
@@ -100,15 +78,7 @@ def run_full_pipeline(
     exercise: str,
     run_dir: str | Path | None = None,
     processed_root: str | Path = "data/processed",
-) -> tuple[Path, Path, Path]:
-    """
-    Canonical pipeline:
-      1) extract_all.process_video -> produces poses jsonl + overlay candidate(s) + optional summary
-      2) compute_rep_metrics_file -> writes analysis_v1.json
-      3) load analysis -> clamp -> attach overlay/artifacts -> rewrite analysis_v1.json
-
-    Returns: (overlay_video_path, analysis_json_path, run_dir)
-    """
+) -> tuple[Path | None, Path, Path]:
     video_path = Path(video_path)
     ex = (exercise or "").strip().lower()
 
@@ -121,14 +91,13 @@ def run_full_pipeline(
     from scripts import extract_all
     from scripts.compute_rep_metrics import compute_rep_metrics_file
 
-    # 1) Pose extraction + overlay attempt(s)
+    # 1) extract poses + draft overlay
     extract_all.process_video(video_path, run_dir_p, label_override=ex)
 
     poses_jsonl = _pick_first(run_dir_p, [f"{video_path.stem}*.jsonl", "*.jsonl"])
     if poses_jsonl is None:
         raise RuntimeError("Pose extraction failed (no jsonl produced).")
 
-    # 2) Pick overlay candidate (may have been generated already in extract_all)
     overlay_video = _pick_first(
         run_dir_p,
         [
@@ -140,16 +109,10 @@ def run_full_pipeline(
             "*overlay*.webm",
         ],
     )
-
     if not _is_valid_overlay(overlay_video):
-        if overlay_video is not None and overlay_video.exists():
-            try:
-                print(f"[warn] Overlay looks invalid ({overlay_video.stat().st_size} bytes): {overlay_video}")
-            except OSError:
-                print(f"[warn] Overlay looks invalid: {overlay_video}")
-        overlay_video = run_dir_p / "MISSING_OVERLAY.mp4"
+        overlay_video = None
 
-    # 3) Determine fps (prefer summary if present)
+    # 2) determine fps
     summary_json = _pick_first(run_dir_p, [f"{video_path.stem}*_summary.json", "*_summary.json"])
     fps = 25.0
     if summary_json and summary_json.exists():
@@ -159,24 +122,14 @@ def run_full_pipeline(
         except Exception:
             pass
 
-       # 4) Compute metrics (writes analysis_v1.json)
+    # 3) compute metrics
     metrics_json = run_dir_p / "analysis_v1.json"
     compute_rep_metrics_file(ex, poses_jsonl, metrics_json, fps=fps)
 
-    # 4b) Re-render overlay AFTER metrics exist so HUD can display offline rep count.
-    # This will overwrite/refresh the overlay files in run_dir_p.
+    # 4) re-render overlay with offline analysis hint
     try:
-        from scripts import extract_all as _extract_all
-
-        _extract_all.process_video(
-            video_path,
-            run_dir_p,
-            label_override=ex,
-            analysis_json_path=metrics_json,
-        )
-
-        # Re-pick overlay candidate after re-render
-        overlay_video = _pick_first(
+        extract_all.process_video(video_path, run_dir_p, label_override=ex, analysis_json_path=metrics_json)
+        candidate = _pick_first(
             run_dir_p,
             [
                 f"{video_path.stem}*_overlay.mp4",
@@ -187,24 +140,27 @@ def run_full_pipeline(
                 "*overlay*.webm",
             ],
         )
-        if not _is_valid_overlay(overlay_video):
-            if overlay_video is not None and overlay_video.exists():
-                try:
-                    print(f"[warn] Overlay looks invalid after re-render ({overlay_video.stat().st_size} bytes): {overlay_video}")
-                except OSError:
-                    print(f"[warn] Overlay looks invalid after re-render: {overlay_video}")
-            overlay_video = run_dir_p / "MISSING_OVERLAY.mp4"
-
+        overlay_video = candidate if _is_valid_overlay(candidate) else overlay_video
     except Exception as e:
-        print(f"[warn] Overlay re-render after metrics failed: {e}")
+        print(f"[warn] offline overlay re-render failed: {e}")
 
-    # 5) Load, clamp, attach overlay + artifacts, and rewrite
+    # 5) post-annotate overlay from final analysis reps (single source of truth)
+    if overlay_video and _is_valid_overlay(overlay_video):
+        try:
+            from scripts.annotate_overlay_from_analysis import annotate_overlay
+
+            annotated_target = run_dir_p / f"{video_path.stem}_overlay_annotated.mp4"
+            annotated = annotate_overlay(overlay_video, metrics_json, annotated_target)
+            overlay_video = annotated if _is_valid_overlay(annotated) else overlay_video
+        except Exception as e:
+            print(f"[warn] overlay annotation step failed: {e}")
+
+    # 6) load analysis BEFORE clamping (prevents UnboundLocalError)
     analysis = json.loads(metrics_json.read_text(encoding="utf-8"))
     _clamp_rep_frames_inplace(analysis)
 
-    # Ensure schema marker exists
-    analysis.setdefault("schema_version", "analysis_v1")
-    analysis.setdefault("exercise", ex)
+    analysis["schema_version"] = "analysis_v1"
+    analysis["exercise"] = ex
 
     overlay_abs = str(overlay_video.resolve()) if _is_valid_overlay(overlay_video) else None
     analysis["overlay_path"] = overlay_abs
@@ -221,5 +177,4 @@ def run_full_pipeline(
     analysis["artifacts_v1"] = artifacts
 
     metrics_json.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
-
     return overlay_video, metrics_json, run_dir_p
