@@ -6,7 +6,7 @@ import random
 import time
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple
 
 
 DEFAULT_MODEL = os.getenv("REPRIGHT_COACH_MODEL", "gpt-4.1-mini")
@@ -19,10 +19,22 @@ MAX_HISTORY_TURNS = int(os.getenv("REPRIGHT_COACH_MAX_HISTORY_TURNS", "12"))
 MAX_REP_ROWS = int(os.getenv("REPRIGHT_COACH_MAX_REP_ROWS", "12"))
 
 
+# ----------------------------
+# Helpers
+# ----------------------------
+def _safe_dict(v: Any) -> dict[str, Any]:
+    return v if isinstance(v, dict) else {}
+
+
+def _safe_list(v: Any) -> list[Any]:
+    return v if isinstance(v, list) else []
+
+
 def _stub_response(payload: dict, reason: str | None = None, status_code: int | None = None) -> Dict[str, Any]:
     exercise = payload.get("exercise")
     user_message = payload.get("user_message") or ""
-    summary = (payload.get("analysis_v1") or {}).get("set_summary_v1", {}) if isinstance(payload.get("analysis_v1"), dict) else {}
+    analysis = payload.get("analysis_v1") if isinstance(payload.get("analysis_v1"), dict) else {}
+    summary = _safe_dict(_safe_dict(analysis).get("set_summary_v1"))
     n_reps = summary.get("n_reps")
 
     text = f"""
@@ -42,30 +54,28 @@ Focus on:
     if status_code is not None:
         dbg["status_code"] = int(status_code)
 
-    return {"mode": "stub", "response_text": text, "debug": dbg}
-
-
-def _safe_dict(v: Any) -> dict[str, Any]:
-    return v if isinstance(v, dict) else {}
-
-
-def _safe_list(v: Any) -> list[Any]:
-    return v if isinstance(v, list) else []
+    return {
+        "mode": "stub",
+        "response_text": text,
+        "structured": {},  # keep key present for callers
+        "debug": dbg,
+    }
 
 
 def _compact_history(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    # Expect [{role, content}] but tolerate old shapes
     out: list[dict[str, Any]] = []
     for h in history[-MAX_HISTORY_TURNS:]:
         if isinstance(h, dict):
-            role = h.get("role") or ("user" if "user" in h else "assistant")
-            content = h.get("content") or h.get("user") or h.get("assistant") or ""
-            out.append({"role": str(role), "content": str(content)[:600]})
+            role = str(h.get("role") or "user")
+            content = h.get("content")
+            if content is None:
+                # tolerate old shapes
+                content = h.get("user") or h.get("assistant") or ""
+            out.append({"role": role, "content": str(content)[:700]})
     return out
 
 
 def _compact_rep_table(rep_table: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    # Keep numerics + faults; drop noise
     out: list[dict[str, Any]] = []
     for r in rep_table[:MAX_REP_ROWS]:
         if not isinstance(r, dict):
@@ -80,70 +90,25 @@ def _compact_rep_table(rep_table: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "tempo_down_sec": r.get("tempo_down_sec"),
                 "tempo_up_sec": r.get("tempo_up_sec"),
                 "confidence_level": conf.get("level"),
-                "fault_codes": [(_safe_dict(f).get("code") or "UNKNOWN") for f in faults][:8],
-                # include thresholded numeric evidence when present
                 "faults_v1": [
                     {
-                        "code": _safe_dict(f).get("code"),
-                        "severity": _safe_dict(f).get("severity"),
+                        "code": _safe_dict(f).get("code") or "UNKNOWN",
+                        "severity": _safe_dict(f).get("severity") or "info",
                         "value": _safe_dict(f).get("value"),
                         "threshold": _safe_dict(f).get("threshold"),
                     }
-                    for f in faults[:8]
+                    for f in faults[:10]
+                    if isinstance(f, dict)
                 ],
             }
         )
     return out
 
 
-def _build_prompt(payload: dict) -> str:
-    """
-    Deterministic prompt contract:
-    - MUST ground advice in provided numeric values (ROM/tempo/duration/fault thresholds)
-    - MUST cite at least 3 numbers when n_reps > 0
-    - MUST avoid inventing any measurement not in JSON
-    """
-    payload = _safe_dict(payload)
-
-    analysis = _safe_dict(payload.get("analysis_v1"))
-    high = _safe_dict(payload.get("high_level_summary"))
-    reps = _safe_list(payload.get("rep_table"))  # prefer rep_table (already normalized)
-    aggs = _safe_dict(payload.get("form_pattern_aggregates"))
-    artifact_refs = _safe_dict(payload.get("artifact_refs"))
-    history = _safe_list(payload.get("history"))
-
-    prompt_obj = {
-        "developer_instructions": [
-            "You are RepRight, an elite strength coach and biomechanics assistant.",
-            "Only use the JSON values provided. Do NOT invent data.",
-            "Ground feedback in the numeric fields (ROM, tempo, duration, thresholds, fault counts).",
-            "If n_reps > 0: cite at least 3 specific numbers from the payload (e.g., avg_rom, tempo_down_sec_avg, rep 2 rom).",
-            "If you give a cue (instruction), include the numeric reason in the same bullet.",
-            "Output should be concise and directly actionable.",
-            "Structure the response as: (1) One-line verdict, (2) 2–4 bullets of key findings with numbers, (3) 2–4 cues with numeric justification, (4) one follow-up question.",
-        ],
-        "context": {
-            "exercise": payload.get("exercise") or high.get("exercise") or analysis.get("exercise"),
-            "user_message": payload.get("user_message") or "",
-            "load_kg": payload.get("load_kg"),
-            "high_level_summary": high,
-            "rep_table": _compact_rep_table(reps),
-            "form_pattern_aggregates": aggs,
-            "history": _compact_history(history),
-            "artifact_refs": artifact_refs,
-            # keep minimal artifacts for traceability
-            "analysis_artifacts": _safe_dict(analysis.get("artifacts_v1")),
-        },
-    }
-
-    return json.dumps(prompt_obj, ensure_ascii=False)
-
-
 def _sleep_backoff(attempt: int, retry_after_s: float | None) -> None:
     if retry_after_s is not None and retry_after_s > 0:
         time.sleep(retry_after_s)
         return
-    # exponential backoff with jitter
     base = BASE_BACKOFF_S * (2 ** max(0, attempt - 1))
     jitter = random.uniform(0.0, 0.25 * base)
     time.sleep(base + jitter)
@@ -159,18 +124,98 @@ def _parse_retry_after(err: urllib.error.HTTPError) -> float | None:
         return None
 
 
-def _call_openai(prompt: str) -> Tuple[str, dict]:
+# ----------------------------
+# Prompt + OpenAI call
+# ----------------------------
+def _build_messages(payload: dict) -> list[dict[str, Any]]:
     """
-    Calls OpenAI Responses API using urllib (no SDK dep).
-    Returns: (text, debug_raw)
+    Build Responses API input messages.
+    We keep it deterministic and data-grounded:
+    - coach MUST cite numerical values
+    - produce JSON structured output
+    """
+    analysis = _safe_dict(payload.get("analysis_v1"))
+    summary = _safe_dict(payload.get("high_level_summary"))
+    aggregates = _safe_dict(payload.get("form_pattern_aggregates"))
+
+    history = _compact_history(_safe_list(payload.get("history")))
+    rep_table = _compact_rep_table(_safe_list(payload.get("rep_table")))
+
+    user_message = str(payload.get("user_message") or "")
+    exercise = str(payload.get("exercise") or analysis.get("exercise") or "unknown")
+
+    # Provide compact “facts” object that the model must ground on
+    facts = {
+        "exercise": exercise,
+        "user_message": user_message,
+        "summary": summary or _safe_dict(analysis.get("set_summary_v1")),
+        "rep_table": rep_table,
+        "aggregates": aggregates,
+        "repeated_faults": _safe_list(aggregates.get("repeated_faults")),
+        "artifact_refs": _safe_dict(payload.get("artifact_refs")),
+        "history": history,
+    }
+
+    system = (
+        "You are RepRight, an elite strength coach.\n"
+        "Hard rules:\n"
+        "- Base ALL claims strictly on the numeric data provided in FACTS.\n"
+        "- Never invent values.\n"
+        "- When you mention a metric, include the number (and threshold if provided).\n"
+        "- If data is insufficient, say what is missing.\n"
+        "- Output MUST follow the JSON schema exactly.\n"
+    )
+
+    # The user content is the *only* thing we want the model to use as data
+    user = (
+        "FACTS (authoritative JSON; use ONLY this):\n"
+        + json.dumps(facts, ensure_ascii=False)
+        + "\n\n"
+        "Task:\n"
+        "1) Identify up to 3 key issues using numeric evidence (rep_index + values).\n"
+        "2) Give 2 actionable cues.\n"
+        "3) Give an overall_score 0-100 grounded on consistency + faults.\n"
+        "4) summary_text: a short natural paragraph (<120 words) referencing the numbers.\n"
+    )
+
+    return [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+
+def _call_openai(messages: list[dict[str, Any]]) -> Tuple[dict[str, Any], dict[str, Any]]:
+    """
+    Calls OpenAI Responses API using urllib (no SDK dependency).
+    Returns: (response_json, debug_raw)
     """
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("missing_openai_api_key")
 
+    # Responses API expects `input` as either a string or list of messages.
+    # Structured output is controlled via `text.format`.
     body = {
         "model": DEFAULT_MODEL,
-        "input": prompt,
+        "input": messages,
+        "text": {
+            "format": {
+                "type": "json_schema",
+                "name": "coach_response",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "overall_score": {"type": "number", "minimum": 0, "maximum": 100},
+                        "issues": {"type": "array", "items": {"type": "string"}, "minItems": 0, "maxItems": 5},
+                        "cues": {"type": "array", "items": {"type": "string"}, "minItems": 0, "maxItems": 5},
+                        "summary_text": {"type": "string"},
+                    },
+                    "required": ["overall_score", "issues", "cues", "summary_text"],
+                    "additionalProperties": False,
+                },
+            }
+        },
     }
 
     req = urllib.request.Request(
@@ -187,41 +232,72 @@ def _call_openai(prompt: str) -> Tuple[str, dict]:
         raw = resp.read().decode("utf-8")
         data = json.loads(raw)
 
-    # Responses API: safest extraction is to walk output blocks
-    text = None
-    try:
-        # Common shape: data["output"][0]["content"][0]["text"]
-        out0 = (data.get("output") or [None])[0] or {}
-        content0 = (out0.get("content") or [None])[0] or {}
-        text = content0.get("text")
-    except Exception:
-        text = None
-
-    if not isinstance(text, str) or not text.strip():
-        # best-effort fallback: search for any "text" fields
-        def _find_text(obj: Any) -> Optional[str]:
-            if isinstance(obj, dict):
-                if isinstance(obj.get("text"), str) and obj.get("text").strip():
-                    return obj["text"]
-                for v in obj.values():
-                    t = _find_text(v)
-                    if t:
-                        return t
-            if isinstance(obj, list):
-                for it in obj:
-                    t = _find_text(it)
-                    if t:
-                        return t
-            return None
-
-        text = _find_text(data)
-
-    if not isinstance(text, str) or not text.strip():
-        raise RuntimeError("openai_parse_error: no_text_in_response")
-
-    return text, {"response_id": data.get("id"), "model": data.get("model")}
+    dbg = {"response_id": data.get("id"), "model": data.get("model")}
+    return data, dbg
 
 
+def _extract_structured_from_responses_api(resp_json: dict[str, Any]) -> dict[str, Any]:
+    """
+    Responses API typically returns:
+      resp_json["output"][0]["content"][0]["text"]  (string)
+    With json_schema format, that string should be JSON.
+    """
+    out = _safe_list(resp_json.get("output"))
+    if not out:
+        raise RuntimeError("openai_parse_error: missing_output")
+
+    # Find first message block with output_text
+    for block in out:
+        if not isinstance(block, dict):
+            continue
+        content = _safe_list(block.get("content"))
+        for c in content:
+            if isinstance(c, dict) and c.get("type") in ("output_text", "text"):
+                txt = c.get("text")
+                if isinstance(txt, str) and txt.strip():
+                    try:
+                        return json.loads(txt)
+                    except Exception as e:
+                        raise RuntimeError(f"openai_parse_error: invalid_json_text ({e})")
+    raise RuntimeError("openai_parse_error: no_output_text_found")
+
+
+def _render_text(structured: dict[str, Any]) -> str:
+    """
+    Convert structured JSON into a nice human response.
+    (UI can show this; we still return structured for scoring widgets etc.)
+    """
+    score = structured.get("overall_score")
+    issues = _safe_list(structured.get("issues"))
+    cues = _safe_list(structured.get("cues"))
+    summary = structured.get("summary_text") or ""
+
+    lines: list[str] = []
+    if isinstance(score, (int, float)):
+        lines.append(f"**Lift quality:** {round(float(score), 1)}/100")
+        lines.append("")
+
+    if issues:
+        lines.append("**Key issues (evidence-based):**")
+        for it in issues[:5]:
+            lines.append(f"- {str(it)}")
+        lines.append("")
+
+    if cues:
+        lines.append("**Cues:**")
+        for c in cues[:5]:
+            lines.append(f"- {str(c)}")
+        lines.append("")
+
+    if isinstance(summary, str) and summary.strip():
+        lines.append(str(summary).strip())
+
+    return "\n".join(lines).strip()
+
+
+# ----------------------------
+# Public API
+# ----------------------------
 def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
     """
     mode:
@@ -237,20 +313,24 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
     if mode == "auto" and not os.getenv("OPENAI_API_KEY"):
         return _stub_response(payload, reason="no_api_key")
 
-    prompt = _build_prompt(payload)
-
     last_err: str | None = None
     last_status: int | None = None
+
+    # Build once (deterministic)
+    messages = _build_messages(payload)
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             t0 = time.time()
-            text, raw_dbg = _call_openai(prompt)
+            resp_json, raw_dbg = _call_openai(messages)
+            structured = _extract_structured_from_responses_api(resp_json)
+            text = _render_text(structured)
             dt = time.time() - t0
 
             return {
                 "mode": "gpt",
-                "response_text": text.strip(),
+                "response_text": text,
+                "structured": structured,
                 "debug": {
                     "provider": "openai",
                     "model": DEFAULT_MODEL,
@@ -261,14 +341,20 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
 
         except urllib.error.HTTPError as e:
             last_status = int(getattr(e, "code", 0) or 0)
+            # read server body for real diagnostics
+            try:
+                body = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                body = ""
             last_err = f"HTTP Error {last_status}: {getattr(e, 'reason', '')}".strip()
+            if body:
+                # include a short slice (don’t blow logs)
+                last_err += f" | body={body[:400]}"
 
-            # Retry on rate limits + transient server errors
             if last_status in (429, 500, 502, 503, 504) and attempt < MAX_RETRIES:
                 ra = _parse_retry_after(e)
                 _sleep_backoff(attempt, ra)
                 continue
-
             break
 
         except urllib.error.URLError as e:
@@ -282,5 +368,4 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
             last_err = str(e)
             break
 
-    # Fallback
     return _stub_response(payload, reason=last_err, status_code=last_status)
