@@ -48,6 +48,7 @@ def detect_reps(
     min_rom_deg: float = 10.0,
     min_gap_sec: float = 0.2,
     hyst_frac: float = 0.08,
+    min_rep_duration_sec: float = 0.30,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if len(a) < 10:
         return [], {"reason": "too_short", "len": len(a)}
@@ -96,7 +97,7 @@ def detect_reps(
                 dur = (f1 - f0) / fps
                 seg = a[start_i : end_i + 1]
                 rom_deg = float(max(seg) - min(seg))
-                if dur >= 0.30 and rom_deg >= min_rom_deg:
+                if dur >= min_rep_duration_sec and rom_deg >= min_rom_deg:
                     tempo_down = max(0.0, (fp - f0) / fps)
                     tempo_up = max(0.0, (f1 - fp) / fps)
                     reps.append(
@@ -120,6 +121,8 @@ def detect_reps(
         "rom_total": float(rom_total),
         "threshold_low": float(low),
         "threshold_high": float(high),
+        "min_rom_deg": float(min_rom_deg),
+        "min_rep_duration_sec": float(min_rep_duration_sec),
         "fps": float(fps),
     }
     return reps, debug
@@ -232,12 +235,19 @@ def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fp
 
     a_s = smooth(angles, win=5)
 
+    detect_kwargs: dict[str, float] = {}
+    if exercise == "curl":
+        detect_kwargs = {
+            "min_rom_deg": 8.0,
+            "min_rep_duration_sec": 0.27,
+        }
+
     # Run detection on normal signal
-    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps)
+    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps, **detect_kwargs)
 
     # Run detection on inverted signal (polarity robustness)
     a_inv = [-v for v in a_s]
-    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps)
+    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps, **detect_kwargs)
 
     # Deterministic selection: choose the polarity with more detected reps
     if len(reps_raw_2) > len(reps_raw_1):
