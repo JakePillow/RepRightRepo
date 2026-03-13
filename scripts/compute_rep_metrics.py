@@ -238,8 +238,8 @@ def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fp
     detect_kwargs: dict[str, float] = {}
     if exercise == "curl":
         detect_kwargs = {
-            "min_rom_deg": 8.0,
-            "min_rep_duration_sec": 0.27,
+            "min_rom_deg": 7.0,
+            "min_rep_duration_sec": 0.25,
         }
 
     # Run detection on normal signal
