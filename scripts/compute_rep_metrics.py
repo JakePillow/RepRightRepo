@@ -424,14 +424,12 @@ def compute_rep_metrics_file(
     fps: float = 25.0,
     curl_diag: bool = False,
 ) -> dict[str, Any]:
-    frames, angles, driver_meta = read_driver_angle(jsonl_path, exercise)
+    frames, angles = read_driver_angle(jsonl_path)
 
     a_s = smooth(angles, win=5)
 
     detect_kwargs: dict[str, float] = {}
-    curl_diag_enabled = exercise == "curl" and (
-        curl_diag or os.getenv("REPRIGHT_CURL_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
-    )
+    curl_diag_enabled = exercise == "curl" and os.getenv("REPRIGHT_CURL_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
     if exercise == "curl":
         detect_kwargs = {
             "min_rom_deg": 7.0,
@@ -461,12 +459,7 @@ def compute_rep_metrics_file(
         diag = {
             "exercise": exercise,
             "jsonl": str(jsonl_path),
-            "driver_signal": rep_debug.get("driver_selected", "driver"),
-            "driver_selection": {
-                "selected_side": rep_debug.get("driver_side_selected"),
-                "selection_rule": rep_debug.get("driver_selection_rule"),
-                "side_quality": rep_debug.get("driver_side_quality"),
-            },
+            "driver_signal": "angles.driver (RIGHT_SHOULDER-RIGHT_ELBOW-RIGHT_WRIST elbow angle)",
             "signal_summary": {
                 "frames": int(len(frames)),
                 "raw_min": float(min(angles)) if angles else None,

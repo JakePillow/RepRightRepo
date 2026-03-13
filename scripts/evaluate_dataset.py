@@ -37,6 +37,9 @@ RESULT_FIELDS = [
 ]
 
 
+EXERCISE_CHOICES = ["bench", "curl", "deadlift", "squat"]
+
+
 def _short_git_commit() -> str:
     try:
         out = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True)
@@ -110,12 +113,33 @@ def _ensure_results_header(out_path: Path) -> None:
         writer.writeheader()
 
 
+def _load_existing_keys(out_path: Path, tag: str) -> set[tuple[str, str]]:
+    keys: set[tuple[str, str]] = set()
+    if not out_path.exists():
+        return keys
+
+    with out_path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            row_tag = (row.get("tag") or "").strip()
+            video_id = (row.get("video_id") or "").strip()
+            if row_tag and video_id and row_tag == tag:
+                keys.add((row_tag, video_id))
+    return keys
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Batch-evaluate RepRight analyzer outputs against labeled rep counts.")
     parser.add_argument("--ground", required=True, help="Path to ground_truth.csv")
     parser.add_argument("--out", required=True, help="Path to append-only results.csv")
     parser.add_argument("--tag", required=True, help="Run tag (e.g. baseline_v0)")
+    parser.add_argument("--exercise", choices=EXERCISE_CHOICES, default=None, help="Optional exercise filter")
+    parser.add_argument("--limit", type=int, default=None, help="Optional max rows to process after filtering")
+    parser.add_argument("--skip-existing", action="store_true", help="Skip rows where (tag, video_id) already exists in --out")
     args = parser.parse_args()
+
+    if args.limit is not None and args.limit < 0:
+        raise ValueError("--limit must be >= 0")
 
     ground_path = Path(args.ground)
     out_path = Path(args.out)
@@ -126,20 +150,40 @@ def main() -> None:
         raise FileNotFoundError(f"Ground truth file not found: {ground_path}")
 
     rows = _read_ground_truth(ground_path)
+
+    if args.exercise:
+        rows = [r for r in rows if (r.get("exercise") or "").strip() == args.exercise]
+
+    if args.limit is not None:
+        rows = rows[: args.limit]
+
     _ensure_results_header(out_path)
 
+    existing_keys: set[tuple[str, str]] = set()
+    if args.skip_existing:
+        existing_keys = _load_existing_keys(out_path, args.tag)
+
     analyzer = RepRightAnalyzer()
+    appended = 0
 
     with out_path.open("a", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=RESULT_FIELDS)
 
-        for row in rows:
+        total_rows = len(rows)
+        for idx, row in enumerate(rows, start=1):
+            video_id = (row.get("video_id") or "").strip()
+            exercise = (row.get("exercise") or "").strip()
+            print(f"[{idx}/{total_rows}] {exercise} :: {video_id}")
+
+            if args.skip_existing and (args.tag, video_id) in existing_keys:
+                continue
+
             base = {
                 "run_id": run_id,
                 "tag": args.tag,
                 "git_commit": git_commit,
-                "video_id": (row.get("video_id") or "").strip(),
-                "exercise": (row.get("exercise") or "").strip(),
+                "video_id": video_id,
+                "exercise": exercise,
                 "path": (row.get("path") or "").strip(),
                 "true_reps": (row.get("true_reps") or "").strip(),
                 "pred_reps": "",
@@ -187,8 +231,9 @@ def main() -> None:
                 base["error"] = str(exc)
 
             writer.writerow(base)
+            appended += 1
 
-    print(f"[OK] appended {len(rows)} rows to {out_path}")
+    print(f"[OK] appended {appended} rows to {out_path}")
     print(f"[INFO] run_id={run_id} tag={args.tag} git_commit={git_commit}")
 
 
