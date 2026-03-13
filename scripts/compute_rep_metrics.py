@@ -10,24 +10,133 @@ from typing import Any
 from repright.summary_v1 import build_set_summary_v1
 
 
-def read_driver_angle(jsonl_path: Path) -> tuple[list[int], list[float]]:
+def _safe_float(v: Any) -> float | None:
+    try:
+        if v is None:
+            return None
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _select_curl_side(left: list[float], right: list[float]) -> tuple[str, dict[str, Any]]:
+    """Choose curl side with explicit quality rule.
+
+    Rule priority:
+    1) Higher valid sample count.
+    2) Larger smoothed ROM over clip.
+    3) Larger raw ROM.
+    4) Deterministic tiebreak: right.
+    """
+
+    def _quality(vals: list[float]) -> dict[str, float]:
+        if not vals:
+            return {"valid_count": 0.0, "rom_smooth": 0.0, "rom_raw": 0.0}
+        vals_s = smooth(vals, win=5)
+        rom_raw = max(vals) - min(vals)
+        rom_smooth = (max(vals_s) - min(vals_s)) if vals_s else 0.0
+        return {
+            "valid_count": float(len(vals)),
+            "rom_smooth": float(rom_smooth),
+            "rom_raw": float(rom_raw),
+        }
+
+    ql = _quality(left)
+    qr = _quality(right)
+
+    if ql["valid_count"] > qr["valid_count"]:
+        selected = "left"
+    elif qr["valid_count"] > ql["valid_count"]:
+        selected = "right"
+    elif ql["rom_smooth"] > qr["rom_smooth"]:
+        selected = "left"
+    elif qr["rom_smooth"] > ql["rom_smooth"]:
+        selected = "right"
+    elif ql["rom_raw"] > qr["rom_raw"]:
+        selected = "left"
+    else:
+        selected = "right"
+
+    return selected, {"left": ql, "right": qr}
+
+
+def read_driver_angle(jsonl_path: Path, exercise: str) -> tuple[list[int], list[float], dict[str, Any]]:
     frames: list[int] = []
-    angles: list[float] = []
+    driver_angles: list[float] = []
+    left_angles: list[float] = []
+    right_angles: list[float] = []
+
     with jsonl_path.open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
             row = json.loads(line)
-            ang = (row.get("angles") or {}).get("driver")
-            if ang is None:
+            frame_v = _safe_float(row.get("frame"))
+            if frame_v is None:
                 continue
-            try:
-                frames.append(int(row.get("frame", 0)))
-                angles.append(float(ang))
-            except (TypeError, ValueError):
-                continue
-    return frames, angles
+            frame_i = int(frame_v)
+
+            angles_d = row.get("angles") or {}
+            if exercise == "curl":
+                l = _safe_float(angles_d.get("driver_left"))
+                r = _safe_float(angles_d.get("driver_right"))
+                d = _safe_float(angles_d.get("driver"))
+                if l is not None:
+                    left_angles.append(l)
+                if r is not None:
+                    right_angles.append(r)
+                # keep per-frame fallback path for backward compatibility
+                if l is None and r is None and d is not None:
+                    frames.append(frame_i)
+                    driver_angles.append(d)
+            else:
+                d = _safe_float(angles_d.get("driver"))
+                if d is not None:
+                    frames.append(frame_i)
+                    driver_angles.append(d)
+
+    if exercise != "curl":
+        return frames, driver_angles, {"driver_selected": "driver"}
+
+    # Curl: if bilateral channels exist, select best side clip-wise.
+    if left_angles or right_angles:
+        selected, quality = _select_curl_side(left_angles, right_angles)
+        selected_key = "driver_left" if selected == "left" else "driver_right"
+
+        # Re-read for frame-aligned selected-side series.
+        frames = []
+        driver_angles = []
+        with jsonl_path.open("r", encoding="utf-8") as f2:
+            for line in f2:
+                line = line.strip()
+                if not line:
+                    continue
+                row = json.loads(line)
+                frame_v = _safe_float(row.get("frame"))
+                if frame_v is None:
+                    continue
+                angles_d = row.get("angles") or {}
+                v = _safe_float(angles_d.get(selected_key))
+                if v is None:
+                    continue
+                frames.append(int(frame_v))
+                driver_angles.append(v)
+
+        meta = {
+            "driver_selected": selected_key,
+            "driver_side_selected": selected,
+            "driver_side_quality": quality,
+            "driver_selection_rule": "valid_count > smoothed_rom > raw_rom > right_tiebreak",
+        }
+        return frames, driver_angles, meta
+
+    # Legacy fallback: only single driver present.
+    return frames, driver_angles, {
+        "driver_selected": "driver",
+        "driver_side_selected": "legacy_single",
+        "driver_selection_rule": "fallback_single_driver",
+    }
 
 
 def smooth(x: list[float], win: int = 5) -> list[float]:
@@ -337,10 +446,10 @@ def compute_rep_metrics_file(
     # Deterministic selection: choose the polarity with more detected reps
     if len(reps_raw_2) > len(reps_raw_1):
         reps_raw = reps_raw_2
-        rep_debug = {**debug_2, "signal_inverted": True}
+        rep_debug = {**debug_2, **driver_meta, "signal_inverted": True}
     else:
         reps_raw = reps_raw_1
-        rep_debug = {**debug_1, "signal_inverted": False}
+        rep_debug = {**debug_1, **driver_meta, "signal_inverted": False}
 
     analysis = build_analysis_v1(exercise, fps, reps_raw, rep_debug)
     out_path.parent.mkdir(parents=True, exist_ok=True)
