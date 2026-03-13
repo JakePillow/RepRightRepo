@@ -320,9 +320,7 @@ def compute_rep_metrics_file(
     a_s = smooth(angles, win=5)
 
     detect_kwargs: dict[str, float] = {}
-    curl_diag_enabled = exercise == "curl" and (
-        curl_diag or os.getenv("REPRIGHT_CURL_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
-    )
+    curl_diag_enabled = exercise == "curl" and os.getenv("REPRIGHT_CURL_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
     if exercise == "curl":
         detect_kwargs = {
             "min_rom_deg": 7.0,
