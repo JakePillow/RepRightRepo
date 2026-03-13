@@ -47,6 +47,18 @@ def choose_driver(label, lm):
     else:
         return angle(pt(li.RIGHT_SHOULDER), pt(li.RIGHT_HIP), pt(li.RIGHT_KNEE))
 
+def choose_curl_drivers(lm):
+    """Return bilateral curl elbow driver angles (left, right)."""
+    li = mp.solutions.pose.PoseLandmark
+
+    def pt(idx):
+        p = lm[idx]
+        return (p.x, p.y)
+
+    left = angle(pt(li.LEFT_SHOULDER), pt(li.LEFT_ELBOW), pt(li.LEFT_WRIST))
+    right = angle(pt(li.RIGHT_SHOULDER), pt(li.RIGHT_ELBOW), pt(li.RIGHT_WRIST))
+    return left, right
+
 class LiveRepCounter:
     """
     Very lightweight streaming rep counter on a single driver angle.
@@ -227,6 +239,10 @@ def process_video(
                 lm = res.pose_landmarks.landmark
                 drv = choose_driver(label, lm)
                 angles["driver"] = drv
+                if label == 'curl':
+                    l_drv, r_drv = choose_curl_drivers(lm)
+                    angles["driver_left"] = l_drv
+                    angles["driver_right"] = r_drv
                 evt = counter.update(frame_idx, drv)
                 if evt:
                     rep_events.append(evt)

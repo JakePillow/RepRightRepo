@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -9,24 +10,133 @@ from typing import Any
 from repright.summary_v1 import build_set_summary_v1
 
 
-def read_driver_angle(jsonl_path: Path) -> tuple[list[int], list[float]]:
+def _safe_float(v: Any) -> float | None:
+    try:
+        if v is None:
+            return None
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _select_curl_side(left: list[float], right: list[float]) -> tuple[str, dict[str, Any]]:
+    """Choose curl side with explicit quality rule.
+
+    Rule priority:
+    1) Higher valid sample count.
+    2) Larger smoothed ROM over clip.
+    3) Larger raw ROM.
+    4) Deterministic tiebreak: right.
+    """
+
+    def _quality(vals: list[float]) -> dict[str, float]:
+        if not vals:
+            return {"valid_count": 0.0, "rom_smooth": 0.0, "rom_raw": 0.0}
+        vals_s = smooth(vals, win=5)
+        rom_raw = max(vals) - min(vals)
+        rom_smooth = (max(vals_s) - min(vals_s)) if vals_s else 0.0
+        return {
+            "valid_count": float(len(vals)),
+            "rom_smooth": float(rom_smooth),
+            "rom_raw": float(rom_raw),
+        }
+
+    ql = _quality(left)
+    qr = _quality(right)
+
+    if ql["valid_count"] > qr["valid_count"]:
+        selected = "left"
+    elif qr["valid_count"] > ql["valid_count"]:
+        selected = "right"
+    elif ql["rom_smooth"] > qr["rom_smooth"]:
+        selected = "left"
+    elif qr["rom_smooth"] > ql["rom_smooth"]:
+        selected = "right"
+    elif ql["rom_raw"] > qr["rom_raw"]:
+        selected = "left"
+    else:
+        selected = "right"
+
+    return selected, {"left": ql, "right": qr}
+
+
+def read_driver_angle(jsonl_path: Path, exercise: str) -> tuple[list[int], list[float], dict[str, Any]]:
     frames: list[int] = []
-    angles: list[float] = []
+    driver_angles: list[float] = []
+    left_angles: list[float] = []
+    right_angles: list[float] = []
+
     with jsonl_path.open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
             row = json.loads(line)
-            ang = (row.get("angles") or {}).get("driver")
-            if ang is None:
+            frame_v = _safe_float(row.get("frame"))
+            if frame_v is None:
                 continue
-            try:
-                frames.append(int(row.get("frame", 0)))
-                angles.append(float(ang))
-            except (TypeError, ValueError):
-                continue
-    return frames, angles
+            frame_i = int(frame_v)
+
+            angles_d = row.get("angles") or {}
+            if exercise == "curl":
+                l = _safe_float(angles_d.get("driver_left"))
+                r = _safe_float(angles_d.get("driver_right"))
+                d = _safe_float(angles_d.get("driver"))
+                if l is not None:
+                    left_angles.append(l)
+                if r is not None:
+                    right_angles.append(r)
+                # keep per-frame fallback path for backward compatibility
+                if l is None and r is None and d is not None:
+                    frames.append(frame_i)
+                    driver_angles.append(d)
+            else:
+                d = _safe_float(angles_d.get("driver"))
+                if d is not None:
+                    frames.append(frame_i)
+                    driver_angles.append(d)
+
+    if exercise != "curl":
+        return frames, driver_angles, {"driver_selected": "driver"}
+
+    # Curl: if bilateral channels exist, select best side clip-wise.
+    if left_angles or right_angles:
+        selected, quality = _select_curl_side(left_angles, right_angles)
+        selected_key = "driver_left" if selected == "left" else "driver_right"
+
+        # Re-read for frame-aligned selected-side series.
+        frames = []
+        driver_angles = []
+        with jsonl_path.open("r", encoding="utf-8") as f2:
+            for line in f2:
+                line = line.strip()
+                if not line:
+                    continue
+                row = json.loads(line)
+                frame_v = _safe_float(row.get("frame"))
+                if frame_v is None:
+                    continue
+                angles_d = row.get("angles") or {}
+                v = _safe_float(angles_d.get(selected_key))
+                if v is None:
+                    continue
+                frames.append(int(frame_v))
+                driver_angles.append(v)
+
+        meta = {
+            "driver_selected": selected_key,
+            "driver_side_selected": selected,
+            "driver_side_quality": quality,
+            "driver_selection_rule": "valid_count > smoothed_rom > raw_rom > right_tiebreak",
+        }
+        return frames, driver_angles, meta
+
+    # Legacy fallback: only single driver present.
+    return frames, driver_angles, {
+        "driver_selected": "driver",
+        "driver_side_selected": "legacy_single",
+        "driver_selection_rule": "fallback_single_driver",
+    }
 
 
 def smooth(x: list[float], win: int = 5) -> list[float]:
@@ -49,6 +159,7 @@ def detect_reps(
     min_gap_sec: float = 0.2,
     hyst_frac: float = 0.08,
     min_rep_duration_sec: float = 0.30,
+    collect_trace: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if len(a) < 10:
         return [], {"reason": "too_short", "len": len(a)}
@@ -71,6 +182,26 @@ def detect_reps(
     peak_i: int | None = None
     last_start_frame: int | None = None
 
+    # Optional diagnostics for curl-only troubleshooting.
+    trace_events: list[dict[str, Any]] = []
+    max_trace_events = 300
+    reject_counts = {
+        "gap_too_short": 0,
+        "duration": 0,
+        "rom": 0,
+        "duration_and_rom": 0,
+        "accepted": 0,
+    }
+    transition_counts = {
+        "top_to_down": 0,
+        "down_to_up": 0,
+        "up_to_top": 0,
+    }
+
+    def _trace(evt: dict[str, Any]) -> None:
+        if collect_trace and len(trace_events) < max_trace_events:
+            trace_events.append(evt)
+
     for i in range(1, len(a)):
         prev, cur = a[i - 1], a[i]
 
@@ -78,17 +209,30 @@ def detect_reps(
             if prev > high_enter and cur <= high_enter:
                 f0cand = frames[i]
                 if last_start_frame is not None and (f0cand - last_start_frame) / fps < min_gap_sec:
+                    reject_counts["gap_too_short"] += 1
+                    _trace({
+                        "type": "start_rejected_gap",
+                        "i": i,
+                        "frame": int(f0cand),
+                        "delta_sec": float((f0cand - last_start_frame) / fps),
+                        "min_gap_sec": float(min_gap_sec),
+                    })
                     continue
                 state = "down"
                 start_i = i
                 peak_i = None
                 last_start_frame = frames[i]
+                transition_counts["top_to_down"] += 1
+                _trace({"type": "top_to_down", "i": i, "frame": int(frames[i]), "angle": float(cur)})
 
         elif state == "down":
             if peak_i is None or cur < a[peak_i]:
                 peak_i = i
+                _trace({"type": "trough_update", "i": i, "frame": int(frames[i]), "angle": float(cur)})
             if prev < low_enter and cur >= low_enter:
                 state = "up"
+                transition_counts["down_to_up"] += 1
+                _trace({"type": "down_to_up", "i": i, "frame": int(frames[i]), "angle": float(cur)})
 
         elif state == "up":
             if prev < high_exit and cur >= high_exit and start_i is not None and peak_i is not None:
@@ -97,7 +241,11 @@ def detect_reps(
                 dur = (f1 - f0) / fps
                 seg = a[start_i : end_i + 1]
                 rom_deg = float(max(seg) - min(seg))
-                if dur >= min_rep_duration_sec and rom_deg >= min_rom_deg:
+
+                duration_ok = dur >= min_rep_duration_sec
+                rom_ok = rom_deg >= min_rom_deg
+
+                if duration_ok and rom_ok:
                     tempo_down = max(0.0, (fp - f0) / fps)
                     tempo_up = max(0.0, (f1 - fp) / fps)
                     reps.append(
@@ -111,9 +259,41 @@ def detect_reps(
                             "rom_deg": float(rom_deg),
                         }
                     )
+                    reject_counts["accepted"] += 1
+                    _trace({
+                        "type": "rep_accepted",
+                        "start_frame": int(f0),
+                        "peak_frame": int(fp),
+                        "end_frame": int(f1),
+                        "duration_sec": float(dur),
+                        "rom_deg": float(rom_deg),
+                    })
+                else:
+                    if (not duration_ok) and (not rom_ok):
+                        reject_counts["duration_and_rom"] += 1
+                        rej_reason = "duration_and_rom"
+                    elif not duration_ok:
+                        reject_counts["duration"] += 1
+                        rej_reason = "duration"
+                    else:
+                        reject_counts["rom"] += 1
+                        rej_reason = "rom"
+                    _trace({
+                        "type": "rep_rejected",
+                        "reason": rej_reason,
+                        "start_frame": int(f0),
+                        "peak_frame": int(fp),
+                        "end_frame": int(f1),
+                        "duration_sec": float(dur),
+                        "rom_deg": float(rom_deg),
+                        "min_rep_duration_sec": float(min_rep_duration_sec),
+                        "min_rom_deg": float(min_rom_deg),
+                    })
+
                 state = "top"
                 start_i = None
                 peak_i = None
+                transition_counts["up_to_top"] += 1
 
     debug = {
         "signal_min": float(amin),
@@ -124,7 +304,14 @@ def detect_reps(
         "min_rom_deg": float(min_rom_deg),
         "min_rep_duration_sec": float(min_rep_duration_sec),
         "fps": float(fps),
+        "state_transition_counts": transition_counts,
+        "rejection_counts": reject_counts,
+        "unfinished_cycle_state": state,
+        "unfinished_cycle_has_start": bool(start_i is not None),
+        "unfinished_cycle_has_trough": bool(peak_i is not None),
     }
+    if collect_trace:
+        debug["trace_events"] = trace_events
     return reps, debug
 
 
@@ -230,36 +417,75 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
     }
 
 
-def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fps: float = 25.0) -> dict[str, Any]:
-    frames, angles = read_driver_angle(jsonl_path)
+def compute_rep_metrics_file(
+    exercise: str,
+    jsonl_path: Path,
+    out_path: Path,
+    fps: float = 25.0,
+    curl_diag: bool = False,
+) -> dict[str, Any]:
+    frames, angles, driver_meta = read_driver_angle(jsonl_path, exercise)
 
     a_s = smooth(angles, win=5)
 
     detect_kwargs: dict[str, float] = {}
+    curl_diag_enabled = exercise == "curl" and (
+        curl_diag or os.getenv("REPRIGHT_CURL_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
+    )
     if exercise == "curl":
         detect_kwargs = {
-            "min_rom_deg": 8.0,
-            "min_rep_duration_sec": 0.27,
+            "min_rom_deg": 7.0,
+            "min_rep_duration_sec": 0.25,
         }
 
     # Run detection on normal signal
-    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps, **detect_kwargs)
+    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps, collect_trace=curl_diag_enabled, **detect_kwargs)
 
     # Run detection on inverted signal (polarity robustness)
     a_inv = [-v for v in a_s]
-    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps, **detect_kwargs)
+    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps, collect_trace=curl_diag_enabled, **detect_kwargs)
 
     # Deterministic selection: choose the polarity with more detected reps
     if len(reps_raw_2) > len(reps_raw_1):
         reps_raw = reps_raw_2
-        rep_debug = {**debug_2, "signal_inverted": True}
+        rep_debug = {**debug_2, **driver_meta, "signal_inverted": True}
     else:
         reps_raw = reps_raw_1
-        rep_debug = {**debug_1, "signal_inverted": False}
+        rep_debug = {**debug_1, **driver_meta, "signal_inverted": False}
 
     analysis = build_analysis_v1(exercise, fps, reps_raw, rep_debug)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
+
+    if curl_diag_enabled:
+        diag = {
+            "exercise": exercise,
+            "jsonl": str(jsonl_path),
+            "driver_signal": rep_debug.get("driver_selected", "driver"),
+            "driver_selection": {
+                "selected_side": rep_debug.get("driver_side_selected"),
+                "selection_rule": rep_debug.get("driver_selection_rule"),
+                "side_quality": rep_debug.get("driver_side_quality"),
+            },
+            "signal_summary": {
+                "frames": int(len(frames)),
+                "raw_min": float(min(angles)) if angles else None,
+                "raw_max": float(max(angles)) if angles else None,
+                "raw_rom_total": float((max(angles) - min(angles))) if angles else None,
+                "smoothed_min": float(min(a_s)) if a_s else None,
+                "smoothed_max": float(max(a_s)) if a_s else None,
+                "smoothed_rom_total": float((max(a_s) - min(a_s))) if a_s else None,
+            },
+            "params": detect_kwargs,
+            "normal": debug_1,
+            "inverted": debug_2,
+            "selected_polarity": "inverted" if rep_debug.get("signal_inverted") else "normal",
+            "selected_n_reps": int(len(reps_raw)),
+        }
+        diag_path = out_path.with_name(f"{out_path.stem}.curl_diag.json")
+        diag_path.write_text(json.dumps(diag, indent=2), encoding="utf-8")
+        print(f"[DIAG] wrote {diag_path}")
+
     return analysis
 
 
@@ -269,9 +495,14 @@ def main() -> None:
     ap.add_argument("--jsonl", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--fps", type=float, default=25.0)
+    ap.add_argument(
+        "--curl-diag",
+        action="store_true",
+        help="Enable curl-only diagnostics (writes <out>.curl_diag.json).",
+    )
     args = ap.parse_args()
 
-    analysis = compute_rep_metrics_file(args.exercise, Path(args.jsonl), Path(args.out), args.fps)
+    analysis = compute_rep_metrics_file(args.exercise, Path(args.jsonl), Path(args.out), args.fps, curl_diag=args.curl_diag)
     print(f"[OK] wrote {args.out} ({analysis['set_summary_v1']['n_reps']} reps)")
 
 
