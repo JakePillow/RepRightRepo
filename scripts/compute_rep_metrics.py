@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -49,6 +50,7 @@ def detect_reps(
     min_gap_sec: float = 0.2,
     hyst_frac: float = 0.08,
     min_rep_duration_sec: float = 0.30,
+    collect_trace: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if len(a) < 10:
         return [], {"reason": "too_short", "len": len(a)}
@@ -71,6 +73,26 @@ def detect_reps(
     peak_i: int | None = None
     last_start_frame: int | None = None
 
+    # Optional diagnostics for curl-only troubleshooting.
+    trace_events: list[dict[str, Any]] = []
+    max_trace_events = 300
+    reject_counts = {
+        "gap_too_short": 0,
+        "duration": 0,
+        "rom": 0,
+        "duration_and_rom": 0,
+        "accepted": 0,
+    }
+    transition_counts = {
+        "top_to_down": 0,
+        "down_to_up": 0,
+        "up_to_top": 0,
+    }
+
+    def _trace(evt: dict[str, Any]) -> None:
+        if collect_trace and len(trace_events) < max_trace_events:
+            trace_events.append(evt)
+
     for i in range(1, len(a)):
         prev, cur = a[i - 1], a[i]
 
@@ -78,17 +100,30 @@ def detect_reps(
             if prev > high_enter and cur <= high_enter:
                 f0cand = frames[i]
                 if last_start_frame is not None and (f0cand - last_start_frame) / fps < min_gap_sec:
+                    reject_counts["gap_too_short"] += 1
+                    _trace({
+                        "type": "start_rejected_gap",
+                        "i": i,
+                        "frame": int(f0cand),
+                        "delta_sec": float((f0cand - last_start_frame) / fps),
+                        "min_gap_sec": float(min_gap_sec),
+                    })
                     continue
                 state = "down"
                 start_i = i
                 peak_i = None
                 last_start_frame = frames[i]
+                transition_counts["top_to_down"] += 1
+                _trace({"type": "top_to_down", "i": i, "frame": int(frames[i]), "angle": float(cur)})
 
         elif state == "down":
             if peak_i is None or cur < a[peak_i]:
                 peak_i = i
+                _trace({"type": "trough_update", "i": i, "frame": int(frames[i]), "angle": float(cur)})
             if prev < low_enter and cur >= low_enter:
                 state = "up"
+                transition_counts["down_to_up"] += 1
+                _trace({"type": "down_to_up", "i": i, "frame": int(frames[i]), "angle": float(cur)})
 
         elif state == "up":
             if prev < high_exit and cur >= high_exit and start_i is not None and peak_i is not None:
@@ -97,7 +132,11 @@ def detect_reps(
                 dur = (f1 - f0) / fps
                 seg = a[start_i : end_i + 1]
                 rom_deg = float(max(seg) - min(seg))
-                if dur >= min_rep_duration_sec and rom_deg >= min_rom_deg:
+
+                duration_ok = dur >= min_rep_duration_sec
+                rom_ok = rom_deg >= min_rom_deg
+
+                if duration_ok and rom_ok:
                     tempo_down = max(0.0, (fp - f0) / fps)
                     tempo_up = max(0.0, (f1 - fp) / fps)
                     reps.append(
@@ -111,9 +150,41 @@ def detect_reps(
                             "rom_deg": float(rom_deg),
                         }
                     )
+                    reject_counts["accepted"] += 1
+                    _trace({
+                        "type": "rep_accepted",
+                        "start_frame": int(f0),
+                        "peak_frame": int(fp),
+                        "end_frame": int(f1),
+                        "duration_sec": float(dur),
+                        "rom_deg": float(rom_deg),
+                    })
+                else:
+                    if (not duration_ok) and (not rom_ok):
+                        reject_counts["duration_and_rom"] += 1
+                        rej_reason = "duration_and_rom"
+                    elif not duration_ok:
+                        reject_counts["duration"] += 1
+                        rej_reason = "duration"
+                    else:
+                        reject_counts["rom"] += 1
+                        rej_reason = "rom"
+                    _trace({
+                        "type": "rep_rejected",
+                        "reason": rej_reason,
+                        "start_frame": int(f0),
+                        "peak_frame": int(fp),
+                        "end_frame": int(f1),
+                        "duration_sec": float(dur),
+                        "rom_deg": float(rom_deg),
+                        "min_rep_duration_sec": float(min_rep_duration_sec),
+                        "min_rom_deg": float(min_rom_deg),
+                    })
+
                 state = "top"
                 start_i = None
                 peak_i = None
+                transition_counts["up_to_top"] += 1
 
     debug = {
         "signal_min": float(amin),
@@ -124,7 +195,14 @@ def detect_reps(
         "min_rom_deg": float(min_rom_deg),
         "min_rep_duration_sec": float(min_rep_duration_sec),
         "fps": float(fps),
+        "state_transition_counts": transition_counts,
+        "rejection_counts": reject_counts,
+        "unfinished_cycle_state": state,
+        "unfinished_cycle_has_start": bool(start_i is not None),
+        "unfinished_cycle_has_trough": bool(peak_i is not None),
     }
+    if collect_trace:
+        debug["trace_events"] = trace_events
     return reps, debug
 
 
@@ -236,6 +314,7 @@ def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fp
     a_s = smooth(angles, win=5)
 
     detect_kwargs: dict[str, float] = {}
+    curl_diag_enabled = exercise == "curl" and os.getenv("REPRIGHT_CURL_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
     if exercise == "curl":
         detect_kwargs = {
             "min_rom_deg": 7.0,
@@ -243,11 +322,11 @@ def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fp
         }
 
     # Run detection on normal signal
-    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps, **detect_kwargs)
+    reps_raw_1, debug_1 = detect_reps(frames, a_s, fps, collect_trace=curl_diag_enabled, **detect_kwargs)
 
     # Run detection on inverted signal (polarity robustness)
     a_inv = [-v for v in a_s]
-    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps, **detect_kwargs)
+    reps_raw_2, debug_2 = detect_reps(frames, a_inv, fps, collect_trace=curl_diag_enabled, **detect_kwargs)
 
     # Deterministic selection: choose the polarity with more detected reps
     if len(reps_raw_2) > len(reps_raw_1):
@@ -260,6 +339,31 @@ def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fp
     analysis = build_analysis_v1(exercise, fps, reps_raw, rep_debug)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
+
+    if curl_diag_enabled:
+        diag = {
+            "exercise": exercise,
+            "jsonl": str(jsonl_path),
+            "driver_signal": "angles.driver (RIGHT_SHOULDER-RIGHT_ELBOW-RIGHT_WRIST elbow angle)",
+            "signal_summary": {
+                "frames": int(len(frames)),
+                "raw_min": float(min(angles)) if angles else None,
+                "raw_max": float(max(angles)) if angles else None,
+                "raw_rom_total": float((max(angles) - min(angles))) if angles else None,
+                "smoothed_min": float(min(a_s)) if a_s else None,
+                "smoothed_max": float(max(a_s)) if a_s else None,
+                "smoothed_rom_total": float((max(a_s) - min(a_s))) if a_s else None,
+            },
+            "params": detect_kwargs,
+            "normal": debug_1,
+            "inverted": debug_2,
+            "selected_polarity": "inverted" if rep_debug.get("signal_inverted") else "normal",
+            "selected_n_reps": int(len(reps_raw)),
+        }
+        diag_path = out_path.with_name(f"{out_path.stem}.curl_diag.json")
+        diag_path.write_text(json.dumps(diag, indent=2), encoding="utf-8")
+        print(f"[DIAG] wrote {diag_path}")
+
     return analysis
 
 
