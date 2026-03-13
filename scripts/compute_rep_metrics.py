@@ -308,7 +308,13 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
     }
 
 
-def compute_rep_metrics_file(exercise: str, jsonl_path: Path, out_path: Path, fps: float = 25.0) -> dict[str, Any]:
+def compute_rep_metrics_file(
+    exercise: str,
+    jsonl_path: Path,
+    out_path: Path,
+    fps: float = 25.0,
+    curl_diag: bool = False,
+) -> dict[str, Any]:
     frames, angles = read_driver_angle(jsonl_path)
 
     a_s = smooth(angles, win=5)
@@ -373,9 +379,14 @@ def main() -> None:
     ap.add_argument("--jsonl", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--fps", type=float, default=25.0)
+    ap.add_argument(
+        "--curl-diag",
+        action="store_true",
+        help="Enable curl-only diagnostics (writes <out>.curl_diag.json).",
+    )
     args = ap.parse_args()
 
-    analysis = compute_rep_metrics_file(args.exercise, Path(args.jsonl), Path(args.out), args.fps)
+    analysis = compute_rep_metrics_file(args.exercise, Path(args.jsonl), Path(args.out), args.fps, curl_diag=args.curl_diag)
     print(f"[OK] wrote {args.out} ({analysis['set_summary_v1']['n_reps']} reps)")
 
 
