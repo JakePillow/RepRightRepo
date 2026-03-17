@@ -69,6 +69,7 @@ class SetSummaryV1(TypedDict, total=False):
     # faults aggregation
     fault_counts: Dict[str, int]
     top_faults: List[Dict[str, Any]]  # [{"code":..., "count":..., "severity_max":...}, ...]
+    quality_score: int
     quality_score_pct: int
     quality_band: Literal["green", "yellow", "red"]
 
@@ -78,11 +79,16 @@ class AnalysisV1(TypedDict, total=False):
     exercise: str
     video_path: str
     driver: str
+    driver_signal: str
+    driver_side: str
     fps: float
     n_frames: int
     n_reps: int
     metrics_path: str
     overlay_path: str
+    git_commit: str
+    timestamp: str
+    video_id: str
 
     reps: List[RepV1]
     set_summary_v1: SetSummaryV1

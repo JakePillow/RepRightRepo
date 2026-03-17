@@ -1,0 +1,86 @@
+{
+  "schema_version": "analysis_v1",
+  "exercise": "bench",
+  "fps": 29.97,
+  "driver_signal": "driver",
+  "driver_side": null,
+  "reps": [
+    {
+      "rep_index": 1,
+      "start_frame": 20,
+      "peak_frame": 52,
+      "end_frame": 64,
+      "rom": 0.861879846439345,
+      "duration_sec": 1.4681348014681348,
+      "tempo_up_sec": 0.4004004004004004,
+      "tempo_down_sec": 1.0677344010677345,
+      "tempo_down_inferred": false,
+      "tempo_down_sec_inferred": 1.0677344010677345,
+      "end_frame_source": "signal_hysteresis",
+      "biomech_v1": {
+        "driver_signal": "elbow",
+        "driver_rom_deg": 155.1383723590821,
+        "elbow_rom_deg": 155.1383723590821
+      },
+      "confidence_v1": {
+        "level": "high",
+        "reasons": [
+          "stable_driver_signal"
+        ]
+      },
+      "faults_v1": []
+    }
+  ],
+  "set_summary_v1": {
+    "n_reps": 1,
+    "avg_rom": 0.861879846439345,
+    "avg_duration_sec": 1.4681348014681348,
+    "avg_tempo_up_sec": 0.4004004004004004,
+    "avg_tempo_down_sec": 1.0677344010677345,
+    "n_low_confidence": 0,
+    "n_inferred_eccentric": 0,
+    "fault_counts": {},
+    "top_faults": [],
+    "quality_score": 100,
+    "quality_score_pct": 100,
+    "quality_band": "green"
+  },
+  "rep_debug": {
+    "signal_min": 4.174601544159046,
+    "signal_max": 179.62570447930426,
+    "rom_total": 175.45110293514523,
+    "threshold_low": 48.03737727794535,
+    "threshold_high": 135.76292874551797,
+    "min_rom_deg": 10.0,
+    "min_rep_duration_sec": 0.3,
+    "fps": 29.97,
+    "state_transition_counts": {
+      "top_to_down": 1,
+      "down_to_up": 1,
+      "up_to_top": 1
+    },
+    "rejection_counts": {
+      "gap_too_short": 0,
+      "duration": 0,
+      "rom": 0,
+      "duration_and_rom": 0,
+      "accepted": 1
+    },
+    "unfinished_cycle_state": "top",
+    "unfinished_cycle_has_start": false,
+    "unfinished_cycle_has_trough": false,
+    "driver_selected": "driver",
+    "signal_inverted": false
+  },
+  "timestamp": "2026-03-16T11:38:45",
+  "video_id": "20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay",
+  "git_commit": "0c0537d",
+  "overlay_path": "C:\\dev\\RepRightRepo_PUSHFIX\\data\\processed\\runs\\bench\\20260316_113830_20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay\\20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay_overlay_annotated.mp4",
+  "artifacts_v1": {
+    "analysis_json": "C:\\dev\\RepRightRepo_PUSHFIX\\data\\processed\\runs\\bench\\20260316_113830_20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay\\analysis_v1.json",
+    "overlay_path": "C:\\dev\\RepRightRepo_PUSHFIX\\data\\processed\\runs\\bench\\20260316_113830_20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay\\20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay_overlay_annotated.mp4",
+    "metrics_path": "C:\\dev\\RepRightRepo_PUSHFIX\\data\\processed\\runs\\bench\\20260316_113830_20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay\\analysis_v1.json",
+    "run_dir": "C:\\dev\\RepRightRepo_PUSHFIX\\data\\processed\\runs\\bench\\20260316_113830_20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay"
+  },
+  "video_path": "data/uploads/20260316_113830_bench_20260227_195216_bench_repright_usjyfhmm_overlay.mp4"
+}

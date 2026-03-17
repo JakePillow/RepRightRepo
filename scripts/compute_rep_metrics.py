@@ -345,7 +345,7 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
         faults.append(
             _make_fault(
                 code="LOW_ROM",
-                severity="medium" if rep["rom"] >= 0.14 else "high",
+                severity="warn" if rep["rom"] >= 0.14 else "error",
                 value=rep["rom"],
                 threshold=0.2,
                 evidence="Normalized ROM below threshold.",
@@ -356,7 +356,7 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
         faults.append(
             _make_fault(
                 code="RUSHED_CONCENTRIC",
-                severity="medium",
+                severity="warn",
                 value=rep["tempo_up_sec"],
                 threshold=0.25,
                 evidence="Concentric phase completed faster than threshold.",
@@ -367,7 +367,7 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
         faults.append(
             _make_fault(
                 code="LUMBAR_FLEXION",
-                severity="medium",
+                severity="warn",
                 value=rep["tempo_down_sec"],
                 threshold=0.20,
                 evidence="Trunk-angle proxy transition was abrupt during lowering phase.",
@@ -411,6 +411,8 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
         "schema_version": "analysis_v1",
         "exercise": exercise,
         "fps": fps,
+        "driver_signal": rep_debug.get("driver_selected") or rep_debug.get("driver_signal"),
+        "driver_side": rep_debug.get("driver_side_selected"),
         "reps": reps,
         "set_summary_v1": set_summary,
         "rep_debug": rep_debug,
@@ -424,7 +426,7 @@ def compute_rep_metrics_file(
     fps: float = 25.0,
     curl_diag: bool = False,
 ) -> dict[str, Any]:
-    frames, angles = read_driver_angle(jsonl_path)
+    frames, angles, driver_meta = read_driver_angle(jsonl_path, exercise)
 
     a_s = smooth(angles, win=5)
 

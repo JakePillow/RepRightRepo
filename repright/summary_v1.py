@@ -118,6 +118,7 @@ def build_set_summary_v1(reps: List[Dict[str, Any]]) -> SetSummaryV1:
         "n_inferred_eccentric": int(n_inferred),
         "fault_counts": {k: int(v) for k, v in fault_counts.items()},
         "top_faults": top_faults,
+        "quality_score": quality_score,
         "quality_score_pct": quality_score,
         "quality_band": quality_band,
     }

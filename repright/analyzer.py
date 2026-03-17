@@ -1,7 +1,6 @@
 ﻿from __future__ import annotations
 
 import json
-import shutil
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,7 +38,43 @@ class RepRightAnalyzer:
     def _load_json(self, p: Path) -> Dict[str, Any]:
         return json.loads(p.read_text(encoding="utf-8"))
 
-    def analyze(self, video_path: str, exercise: str) -> Dict[str, Any]:
+    def _run_pipeline(self, staged: Path, exercise: str, run_dir: Path | None = None) -> Any:
+        try:
+            return run_full_pipeline(
+                video_path=str(staged),
+                exercise=exercise,
+                run_dir=str(run_dir) if run_dir is not None else None,
+                processed_root=str(self.processed_root),
+            )
+        except TypeError:
+            try:
+                return run_full_pipeline(
+                    str(staged),
+                    exercise,
+                    str(run_dir) if run_dir is not None else None,
+                    processed_root=str(self.processed_root),
+                )
+            except TypeError:
+                if run_dir is not None:
+                    try:
+                        return run_full_pipeline(
+                            str(staged),
+                            exercise,
+                            run_dir=str(run_dir),
+                            processed_root=str(self.processed_root),
+                        )
+                    except TypeError:
+                        pass
+                return run_full_pipeline(str(staged), exercise, processed_root=str(self.processed_root))
+
+    def analyze(
+        self,
+        video_path: str,
+        exercise: str,
+        *,
+        run_dir: Path | None = None,
+        out_path: Path | None = None,
+    ) -> Dict[str, Any]:
         """
         Returns locked analysis_v1 dict (including artifacts_v1.overlay_path if valid).
         """
@@ -49,21 +84,7 @@ class RepRightAnalyzer:
         staged = self._stage_upload(vp, ex)
 
         # ---- Run canonical pipeline (signature-flexible) ----
-        result: Any
-        try:
-            # preferred (kwargs)
-            result = run_full_pipeline(
-                video_path=str(staged),
-                exercise=ex,
-                processed_root=str(self.processed_root),
-            )
-        except TypeError:
-            try:
-                # common older: (video_path, exercise, processed_root=...)
-                result = run_full_pipeline(str(staged), ex, processed_root=str(self.processed_root))
-            except TypeError:
-                # simplest fallback: (video_path, exercise)
-                result = run_full_pipeline(str(staged), ex)
+        result: Any = self._run_pipeline(staged, ex, run_dir=run_dir)
 
         # ---- Normalize outputs ----
         # We support any of:
@@ -94,7 +115,7 @@ class RepRightAnalyzer:
             raise RuntimeError("Pipeline did not return analysis dict or readable analysis json path.")
 
         # Ensure expected schema marker
-        # (don’t overwrite if pipeline already sets it)
+        # (don't overwrite if pipeline already sets it)
         if "schema_version" not in analysis:
             analysis["schema_version"] = "analysis_v1"
 
@@ -102,11 +123,30 @@ class RepRightAnalyzer:
         analysis.setdefault("video_path", str(staged).replace("\\", "/"))
         analysis.setdefault("exercise", ex)
 
+        if out_path is not None and out_path.suffix.lower() == ".json":
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
+
         return analysis
 
     # Back-compat for older UI code that calls analyzer.run(...)
-    def run(self, video_path: str | Path, exercise: str) -> Dict[str, Any]:
-        return self.analyze(str(video_path), exercise)
+    def run(self, video_path: str | Path, exercise: str, **kwargs: Any) -> Dict[str, Any]:
+        options = kwargs.get("options")
+        run_dir = kwargs.get("run_dir")
+        out_path = kwargs.get("out_path")
+
+        if isinstance(options, dict):
+            run_dir = run_dir or options.get("run_dir")
+            out_path = out_path or options.get("out_path")
+
+        run_dir_p = Path(run_dir) if run_dir else None
+        out_path_p = Path(out_path) if out_path else None
+
+        if run_dir_p is None and out_path_p is not None and out_path_p.suffix.lower() != ".json":
+            run_dir_p = out_path_p
+            out_path_p = None
+
+        return self.analyze(str(video_path), exercise, run_dir=run_dir_p, out_path=out_path_p)
 
 
 def main() -> None:

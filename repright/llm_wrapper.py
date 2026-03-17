@@ -6,7 +6,7 @@ import random
 import time
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 
 DEFAULT_MODEL = os.getenv("REPRIGHT_COACH_MODEL", "gpt-4.1-mini")
@@ -19,9 +19,6 @@ MAX_HISTORY_TURNS = int(os.getenv("REPRIGHT_COACH_MAX_HISTORY_TURNS", "12"))
 MAX_REP_ROWS = int(os.getenv("REPRIGHT_COACH_MAX_REP_ROWS", "12"))
 
 
-# ----------------------------
-# Helpers
-# ----------------------------
 def _safe_dict(v: Any) -> dict[str, Any]:
     return v if isinstance(v, dict) else {}
 
@@ -57,7 +54,7 @@ Focus on:
     return {
         "mode": "stub",
         "response_text": text,
-        "structured": {},  # keep key present for callers
+        "structured": {},
         "debug": dbg,
     }
 
@@ -69,7 +66,6 @@ def _compact_history(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
             role = str(h.get("role") or "user")
             content = h.get("content")
             if content is None:
-                # tolerate old shapes
                 content = h.get("user") or h.get("assistant") or ""
             out.append({"role": role, "content": str(content)[:700]})
     return out
@@ -124,9 +120,6 @@ def _parse_retry_after(err: urllib.error.HTTPError) -> float | None:
         return None
 
 
-# ----------------------------
-# Prompt + OpenAI call
-# ----------------------------
 def _build_messages(payload: dict) -> list[dict[str, Any]]:
     """
     Build Responses API input messages.
@@ -144,7 +137,7 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
     user_message = str(payload.get("user_message") or "")
     exercise = str(payload.get("exercise") or analysis.get("exercise") or "unknown")
 
-    # Provide compact “facts” object that the model must ground on
+    # Provide compact "facts" object that the model must ground on
     facts = {
         "exercise": exercise,
         "user_message": user_message,
@@ -166,7 +159,6 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         "- Output MUST follow the JSON schema exactly.\n"
     )
 
-    # The user content is the *only* thing we want the model to use as data
     user = (
         "FACTS (authoritative JSON; use ONLY this):\n"
         + json.dumps(facts, ensure_ascii=False)
@@ -193,8 +185,6 @@ def _call_openai(messages: list[dict[str, Any]]) -> Tuple[dict[str, Any], dict[s
     if not api_key:
         raise RuntimeError("missing_openai_api_key")
 
-    # Responses API expects `input` as either a string or list of messages.
-    # Structured output is controlled via `text.format`.
     body = {
         "model": DEFAULT_MODEL,
         "input": messages,
@@ -246,7 +236,6 @@ def _extract_structured_from_responses_api(resp_json: dict[str, Any]) -> dict[st
     if not out:
         raise RuntimeError("openai_parse_error: missing_output")
 
-    # Find first message block with output_text
     for block in out:
         if not isinstance(block, dict):
             continue
@@ -263,10 +252,6 @@ def _extract_structured_from_responses_api(resp_json: dict[str, Any]) -> dict[st
 
 
 def _render_text(structured: dict[str, Any]) -> str:
-    """
-    Convert structured JSON into a nice human response.
-    (UI can show this; we still return structured for scoring widgets etc.)
-    """
     score = structured.get("overall_score")
     issues = _safe_list(structured.get("issues"))
     cues = _safe_list(structured.get("cues"))
@@ -295,9 +280,6 @@ def _render_text(structured: dict[str, Any]) -> str:
     return "\n".join(lines).strip()
 
 
-# ----------------------------
-# Public API
-# ----------------------------
 def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
     """
     mode:
@@ -316,7 +298,6 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
     last_err: str | None = None
     last_status: int | None = None
 
-    # Build once (deterministic)
     messages = _build_messages(payload)
 
     for attempt in range(1, MAX_RETRIES + 1):
@@ -341,14 +322,13 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
 
         except urllib.error.HTTPError as e:
             last_status = int(getattr(e, "code", 0) or 0)
-            # read server body for real diagnostics
             try:
                 body = e.read().decode("utf-8", errors="replace")
             except Exception:
                 body = ""
             last_err = f"HTTP Error {last_status}: {getattr(e, 'reason', '')}".strip()
             if body:
-                # include a short slice (don’t blow logs)
+                # include a short slice (don't blow logs)
                 last_err += f" | body={body[:400]}"
 
             if last_status in (429, 500, 502, 503, 504) and attempt < MAX_RETRIES:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import sys
@@ -69,9 +68,9 @@ def _thread_title(created_at: str | None, exercise: str | None) -> str:
 
     try:
         dt = datetime.fromisoformat(created_at or "")
-        return f"{dt.strftime('%Y-%m-%d')} • {ex}"
+        return f"{dt.strftime('%Y-%m-%d')} - {ex}"
     except ValueError:
-        return f"{datetime.now().strftime('%Y-%m-%d')} • {ex}"
+        return f"{datetime.now().strftime('%Y-%m-%d')} - {ex}"
 
 
 def _save_thread(thread_id: str) -> None:
@@ -165,7 +164,6 @@ def _safe_tmp_video(upload) -> Path:
 
 
 def _resolve_overlay_path() -> Path | None:
-
     payload = st.session_state.last_payload or {}
     analysis = st.session_state.last_analysis or {}
 
@@ -190,46 +188,22 @@ def _resolve_overlay_path() -> Path | None:
     return None
 
 
-def _compute_lift_quality(analysis: dict[str, Any] | None) -> int | None:
-
+def _canonical_lift_quality(analysis: dict[str, Any] | None) -> int | None:
     if not isinstance(analysis, dict):
         return None
 
-    reps = analysis.get("reps") if isinstance(analysis.get("reps"), list) else []
-
-    if not reps:
+    summary = analysis.get("set_summary_v1")
+    if not isinstance(summary, dict):
         return None
 
-    rep_scores = []
+    score = summary.get("quality_score")
+    if score is None:
+        score = summary.get("quality_score_pct")
 
-    for rep in reps:
-
-        r = rep if isinstance(rep, dict) else {}
-
-        score = 100
-
-        level = str((r.get("confidence_v1") or {}).get("level") or "").lower()
-
-        if level == "low":
-            score -= 10
-
-        faults = r.get("faults_v1") if isinstance(r.get("faults_v1"), list) else []
-
-        for _ in faults:
-            score -= 8
-
-        rom = r.get("rom")
-
-        if isinstance(rom, (int, float)) and rom < 0.75:
-            score -= 10
-
-        rep_scores.append(max(0, min(100, score)))
-
-    return int(round(sum(rep_scores) / len(rep_scores))) if rep_scores else None
+    return int(score) if isinstance(score, (int, float)) else None
 
 
 def _quality_color(score: int | None) -> tuple[str, str]:
-
     if score is None:
         return "#8a8f98", "n/a"
 
@@ -243,16 +217,15 @@ def _quality_color(score: int | None) -> tuple[str, str]:
 
 
 def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | None):
-
     tmp_path = _safe_tmp_video(upload)
 
-    prog = st.progress(0, text="Tracking pose…")
+    prog = st.progress(0, text="Tracking pose...")
 
     analyzer = RepRightAnalyzer()
 
     analysis = analyzer.analyze(str(tmp_path), exercise)
 
-    prog.progress(60, text="Building coach context…")
+    prog.progress(60, text="Building coach context...")
 
     payload = build_coach_payload(
         analysis,
@@ -261,7 +234,7 @@ def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | Non
         history=st.session_state.history[-6:],
     )
 
-    prog.progress(85, text="Generating coaching response…")
+    prog.progress(85, text="Generating coaching response...")
 
     response = run_coach(payload)
 
@@ -273,7 +246,6 @@ def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | Non
 
 
 def _new_chat(exercise: str):
-
     thread_id = _new_thread_id(exercise)
 
     st.session_state.thread_id = thread_id
@@ -302,7 +274,6 @@ if st.session_state.thread_id is None:
 
 
 with st.sidebar:
-
     if st.button("+ New chat", use_container_width=True):
         _new_chat(st.session_state.get("exercise_choice") or "bench")
         st.rerun()
@@ -310,7 +281,6 @@ with st.sidebar:
     st.markdown("### Chats")
 
     for thread in list_threads():
-
         tid = thread.get("thread_id")
 
         if st.button(thread.get("title") or tid, key=tid, use_container_width=True):
@@ -322,7 +292,6 @@ left, right = st.columns([1.05, 0.95])
 
 
 with left:
-
     exercise_locked = bool(st.session_state.last_analysis and st.session_state.last_analysis.get("exercise"))
 
     if exercise_locked:
@@ -338,13 +307,9 @@ with left:
     user_message = st.text_input("Optional note to coach")
 
     if st.button("Analyze set", use_container_width=True):
-
         if upload is None:
-
             st.warning("Upload a video first.")
-
         else:
-
             analysis, payload, response = _run_pipeline(upload, exercise, user_message, use_load)
 
             st.session_state.last_analysis = analysis
@@ -358,7 +323,6 @@ with left:
 
             _save_thread(st.session_state.thread_id)
 
-
     overlay_path = _resolve_overlay_path()
 
     if overlay_path:
@@ -366,27 +330,24 @@ with left:
 
 
 with right:
-
     structured = (st.session_state.last_response or {}).get("structured") if isinstance(st.session_state.last_response, dict) else {}
 
     score = structured.get("overall_score") if isinstance(structured, dict) else None
 
     if score is None:
-        score = _compute_lift_quality(st.session_state.last_analysis)
+        score = _canonical_lift_quality(st.session_state.last_analysis)
 
     color, zone = _quality_color(score)
 
-    st.markdown(f"### Lift Quality: **{score if score else 'n/a'}** ({zone})")
+    st.markdown(f"### Lift Quality: **{score if score is not None else 'n/a'}** ({zone})")
 
     for msg in st.session_state.history:
         role = "user" if msg.get("role") == "user" else "assistant"
         st.chat_message(role).write(msg.get("content"))
 
-
-    follow = st.chat_input("Ask a follow-up…")
+    follow = st.chat_input("Ask a follow-up...")
 
     if follow and st.session_state.last_analysis:
-
         payload = build_coach_payload(
             st.session_state.last_analysis,
             message=follow,

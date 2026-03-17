@@ -1,12 +1,25 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import time
 from pathlib import Path
 
 import cv2
 
+from repright.schema.validate_analysis import validate_analysis
+
 MIN_VALID_OVERLAY_BYTES = 50 * 1024
+
+
+def _git_commit_short() -> str | None:
+    try:
+        return (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True)
+            .strip()
+        )
+    except Exception:
+        return None
 
 
 def _clamp_rep_frames_inplace(analysis: dict) -> None:
@@ -161,6 +174,12 @@ def run_full_pipeline(
 
     analysis["schema_version"] = "analysis_v1"
     analysis["exercise"] = ex
+    analysis["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    analysis["video_id"] = video_path.stem
+
+    git_commit = _git_commit_short()
+    if git_commit:
+        analysis["git_commit"] = git_commit
 
     overlay_abs = str(overlay_video.resolve()) if _is_valid_overlay(overlay_video) else None
     analysis["overlay_path"] = overlay_abs
@@ -176,5 +195,6 @@ def run_full_pipeline(
     )
     analysis["artifacts_v1"] = artifacts
 
+    validate_analysis(analysis)
     metrics_json.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
     return overlay_video, metrics_json, run_dir_p

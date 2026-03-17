@@ -135,6 +135,7 @@ def build_coach_payload(
             "tempo_down_sec_avg": set_summary.get("avg_tempo_down_sec"),
         },
         "driver_signal": analysis.get("driver_signal"),
+        "driver_side": analysis.get("driver_side"),
         "inversion": analysis.get("inversion"),
     }
 
