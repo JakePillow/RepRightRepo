@@ -113,6 +113,9 @@ def main() -> None:
     runs_root = outdir / "runs"
 
     rows = _read_label_rows(Path(args.labels))
+    print(f"[EVAL] Using {len(rows)} labeled videos")
+
+    valid_rows = 0
 
     for row in rows:
 
@@ -121,14 +124,19 @@ def main() -> None:
         video_path = (row.get("path") or "").strip()
         expected = _as_int(row.get("true_reps"), default=0)
 
-        if not video_path or exercise not in {"bench", "curl", "deadlift", "squat"}:
+        if not video_path or not video_id or exercise not in {"bench", "curl", "deadlift", "squat"}:
             continue
+
+        video_raw = Path(video_path)
+        if not video_raw.exists():
+            print(f"[WARN] missing video: {video_path}")
+            continue
+
+        valid_rows += 1
 
         video_abs = _resolve_video(repo_root, video_path)
 
-        safe = Path(video_path).stem.replace(" ", "_")
-
-        analysis_path = runs_root / exercise / safe / "analysis_v1.json"
+        analysis_path = runs_root / exercise / video_id / "analysis_v1.json"
 
         if analysis_path.exists():
             analysis = _load_json(analysis_path)
@@ -227,9 +235,14 @@ def main() -> None:
 
             w.writerow([code, tp, fp, fn, c["tn"], precision, recall, f1])
 
+    if valid_rows > 0 and total_sets <= 0:
+        raise RuntimeError("n_sets must be > 0 when valid videos exist")
+
     print(f"[OK] wrote: {outdir/'eval_summary.json'}")
     print(f"[OK] wrote: {outdir/'eval_repcount.csv'}")
     print(f"[OK] wrote: {outdir/'eval_faults.csv'}")
+    if processed_videos != valid_rows:
+        raise RuntimeError(f"processed_videos mismatch: processed={processed_videos} valid_rows={valid_rows}")
     print(f"[DBG] processed_videos={processed_videos} n_sets={total_sets}")
 
 
