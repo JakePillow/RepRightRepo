@@ -11,9 +11,27 @@ from repright.analyzer import RepRightAnalyzer
 
 
 FAULT_MAP = {
+    # Existing
     "partial_rom": "LOW_ROM",
     "depth_fail": "LOW_ROM",
     "lumbar_flexion": "LUMBAR_FLEXION",
+    # Core faults
+    "low_rom": "LOW_ROM",
+    "rushed_concentric": "RUSHED_CONCENTRIC",
+    "erratic_tempo": "ERRATIC_TEMPO",
+    # Bench
+    "elbow_flare": "ELBOW_FLARE",
+    "lockout_failure": "LOCKOUT_FAILURE",
+    # Squat
+    "insufficient_depth": "INSUFFICIENT_DEPTH",
+    "forward_lean": "FORWARD_LEAN",
+    "knee_valgus_proxy": "KNEE_VALGUS_PROXY",
+    # Deadlift
+    "back_rounding": "BACK_ROUNDING",
+    "hip_shoot": "HIP_SHOOT",
+    # Curl
+    "momentum_swing": "MOMENTUM_SWING",
+    "incomplete_extension": "INCOMPLETE_EXTENSION",
 }
 
 
