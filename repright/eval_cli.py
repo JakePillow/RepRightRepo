@@ -68,6 +68,14 @@ def _truth_fault_codes(row: dict[str, Any]) -> set[str]:
     return out
 
 
+def _has_any_fault_label(row: dict[str, Any]) -> bool:
+    for k in ("error_primary", "error_secondary"):
+        lab = (row.get(k) or "").strip().lower()
+        if lab and lab != "none":
+            return True
+    return False
+
+
 def _pred_fault_codes(analysis: dict[str, Any]) -> set[str]:
     codes: set[str] = set()
     for rep in analysis.get("reps", []) or []:
@@ -121,6 +129,9 @@ def main() -> None:
     repcount_rows: list[RepCountRow] = []
 
     counts: dict[str, dict[str, int]] = {}
+    fault_count_per_video_rows: list[tuple[str, str, int]] = []
+    fault_rate_per_exercise: dict[str, dict[str, int]] = {}
+    fault_summary_by_exercise: dict[tuple[str, str], int] = {}
 
     total_sets = 0
     exact_match_sets = 0
@@ -134,6 +145,7 @@ def main() -> None:
     print(f"[EVAL] Using {len(rows)} labeled videos")
 
     valid_rows = 0
+    has_ground_truth_fault_labels = any(_has_any_fault_label(r) for r in rows)
 
     for row in rows:
 
@@ -184,22 +196,41 @@ def main() -> None:
 
         truth = _truth_fault_codes(row)
         pred = _pred_fault_codes(analysis)
+        n_faults_this_video = 0
+        for rep in analysis.get("reps", []) or []:
+            rep_faults = rep.get("faults_v1", []) or []
+            n_faults_this_video += len(rep_faults)
+            for f in rep_faults:
+                if not isinstance(f, dict):
+                    continue
+                code = str(f.get("code") or "")
+                if not code:
+                    continue
+                fault_summary_by_exercise[(exercise, code)] = fault_summary_by_exercise.get((exercise, code), 0) + 1
+
+        fault_count_per_video_rows.append((video_id, exercise, int(n_faults_this_video)))
+        rates = fault_rate_per_exercise.setdefault(exercise, {"videos": 0, "videos_with_faults": 0, "fault_count_total": 0})
+        rates["videos"] += 1
+        rates["fault_count_total"] += int(n_faults_this_video)
+        if n_faults_this_video > 0:
+            rates["videos_with_faults"] += 1
 
         universe = set(FAULT_MAP.values())
 
-        for code in universe:
-            c = counts.setdefault(code, {"tp": 0, "fp": 0, "fn": 0, "tn": 0})
-            t = code in truth
-            p = code in pred
+        if has_ground_truth_fault_labels:
+            for code in universe:
+                c = counts.setdefault(code, {"tp": 0, "fp": 0, "fn": 0, "tn": 0})
+                t = code in truth
+                p = code in pred
 
-            if t and p:
-                c["tp"] += 1
-            elif (not t) and p:
-                c["fp"] += 1
-            elif t and (not p):
-                c["fn"] += 1
-            else:
-                c["tn"] += 1
+                if t and p:
+                    c["tp"] += 1
+                elif (not t) and p:
+                    c["fp"] += 1
+                elif t and (not p):
+                    c["fn"] += 1
+                else:
+                    c["tn"] += 1
 
         processed_videos += 1
 
@@ -241,23 +272,41 @@ def main() -> None:
 
     with (outdir / "eval_faults.csv").open("w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["fault_code", "tp", "fp", "fn", "tn", "precision", "recall", "f1"])
+        if has_ground_truth_fault_labels:
+            w.writerow(["fault_code", "tp", "fp", "fn", "tn", "precision", "recall", "f1"])
+            for code, c in counts.items():
+                tp, fp, fn = c["tp"], c["fp"], c["fn"]
 
-        for code, c in counts.items():
+                precision = tp / (tp + fp) if (tp + fp) else 0.0
+                recall = tp / (tp + fn) if (tp + fn) else 0.0
+                f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
 
-            tp, fp, fn = c["tp"], c["fp"], c["fn"]
+                w.writerow([code, tp, fp, fn, c["tn"], precision, recall, f1])
+        else:
+            w.writerow(["exercise", "video_id", "fault_count_per_video", "fault_rate_per_exercise"])
+            for video_id, exercise, fault_count in fault_count_per_video_rows:
+                rates = fault_rate_per_exercise.get(exercise) or {}
+                videos = int(rates.get("videos", 0))
+                videos_with_faults = int(rates.get("videos_with_faults", 0))
+                fault_rate = (videos_with_faults / videos) if videos else 0.0
+                w.writerow([exercise, video_id, fault_count, fault_rate])
 
-            precision = tp / (tp + fp) if (tp + fp) else 0.0
-            recall = tp / (tp + fn) if (tp + fn) else 0.0
-            f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
-
-            w.writerow([code, tp, fp, fn, c["tn"], precision, recall, f1])
+    fault_summary_path = outdir / "fault_summary_by_exercise.csv"
+    with fault_summary_path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["exercise", "fault_code", "count", "avg_per_video"])
+        for (exercise, code), count in sorted(fault_summary_by_exercise.items()):
+            rates = fault_rate_per_exercise.get(exercise) or {}
+            videos = int(rates.get("videos", 0))
+            avg_per_video = (float(count) / videos) if videos else 0.0
+            w.writerow([exercise, code, int(count), avg_per_video])
 
     if valid_rows > 0 and total_sets <= 0:
         raise RuntimeError("n_sets must be > 0 when valid videos exist")
 
     print(f"[OK] wrote: {outdir/'eval_summary.json'}")
     print(f"[OK] wrote: {outdir/'eval_repcount.csv'}")
+    print(f"[OK] wrote: {outdir/'fault_summary_by_exercise.csv'}")
     print(f"[OK] wrote: {outdir/'eval_faults.csv'}")
     if processed_videos != valid_rows:
         raise RuntimeError(f"processed_videos mismatch: processed={processed_videos} valid_rows={valid_rows}")

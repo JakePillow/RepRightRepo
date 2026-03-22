@@ -346,46 +346,46 @@ def _rep_confidence(rep: dict[str, Any]) -> dict[str, Any]:
 
 def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
     faults: list[dict[str, Any]] = []
-    if rep["duration_sec"] < 0.3:
+    if rep["duration_sec"] < 0.5:
         faults.append(
             _make_fault(
                 code="ERRATIC_TEMPO",
                 severity="warn",
                 value=rep["duration_sec"],
-                threshold=0.3,
+                threshold=0.5,
                 evidence="Unstable movement pattern, possibly due to poor control or momentum.",
             )
         )
 
-    if exercise == "bench" and rep["rom"] < 0.25:
+    if exercise == "bench" and rep["rom"] < 0.35:
         faults.append(
             _make_fault(
                 code="LOW_ROM",
-                severity="warn" if rep["rom"] >= 0.14 else "error",
+                severity="warn" if rep["rom"] >= 0.2 else "error",
                 value=rep["rom"],
-                threshold=0.25,
+                threshold=0.35,
                 evidence="Normalized ROM below threshold.",
             )
         )
 
-    if rep["tempo_up_sec"] < 0.35:
+    if rep["tempo_up_sec"] < 0.6:
         faults.append(
             _make_fault(
                 code="RUSHED_CONCENTRIC",
                 severity="warn",
                 value=rep["tempo_up_sec"],
-                threshold=0.35,
+                threshold=0.6,
                 evidence="Concentric phase completed faster than threshold.",
             )
         )
 
-    if exercise in {"deadlift", "squat"} and rep["tempo_down_sec"] < 0.30:
+    if exercise == "deadlift" and rep["tempo_down_sec"] < 0.8:
         faults.append(
             _make_fault(
                 code="LUMBAR_FLEXION",
                 severity="warn",
                 value=rep["tempo_down_sec"],
-                threshold=0.30,
+                threshold=0.8,
                 evidence="Trunk-angle proxy transition was abrupt during lowering phase. Used as proxy due to monocular pose estimation limitations.",
             )
         )
@@ -395,99 +395,99 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
     driver_rom_deg = biomech.get("driver_rom_deg")
 
     if exercise == "bench":
-        if elbow_rom_deg is not None and float(elbow_rom_deg) < 120.0:
+        if elbow_rom_deg is not None and float(elbow_rom_deg) < 130.0:
             faults.append(
                 _make_fault(
                     code="ELBOW_FLARE",
                     severity="warn",
                     value=float(elbow_rom_deg),
-                    threshold=120.0,
+                    threshold=130.0,
                     evidence="Elbow ROM fell below expected threshold, indicating a potentially flared pressing path.",
                 )
             )
-        if driver_rom_deg is not None and float(driver_rom_deg) < 170.0:
+        if driver_rom_deg is not None and float(driver_rom_deg) < 155.0:
             faults.append(
                 _make_fault(
                     code="LOCKOUT_FAILURE",
                     severity="warn",
                     value=float(driver_rom_deg),
-                    threshold=170.0,
+                    threshold=155.0,
                     evidence="Peak extension proxy remained below lockout threshold.",
                 )
             )
 
     if exercise == "squat":
-        if rep["rom"] < 0.25:
+        if rep["rom"] < 0.35:
             faults.append(
                 _make_fault(
                     code="INSUFFICIENT_DEPTH",
                     severity="error" if rep["rom"] < 0.2 else "warn",
                     value=rep["rom"],
-                    threshold=0.25,
+                    threshold=0.35,
                     evidence="Normalized squat ROM did not reach depth threshold.",
                 )
             )
-        if driver_rom_deg is not None and float(driver_rom_deg) > 45.0:
+        if driver_rom_deg is not None and float(driver_rom_deg) > 40.0:
             faults.append(
                 _make_fault(
                     code="FORWARD_LEAN",
                     severity="warn",
                     value=float(driver_rom_deg),
-                    threshold=45.0,
+                    threshold=40.0,
                     evidence="Trunk proxy angle change exceeded threshold, suggesting forward lean. Used as proxy due to monocular pose estimation limitations.",
                 )
             )
-        if driver_rom_deg is not None and 70.0 < float(driver_rom_deg) < 100.0:
+        if driver_rom_deg is not None and float(driver_rom_deg) > 60.0:
             faults.append(
                 _make_fault(
                     code="KNEE_VALGUS_PROXY",
                     severity="warn",
                     value=float(driver_rom_deg),
-                    threshold=70.0,
+                    threshold=60.0,
                     evidence="Instability proxy inferred from excessive trunk variation; used cautiously as surrogate for lower-limb instability due to lack of frontal-plane tracking (monocular pose limitation).",
                 )
             )
 
     if exercise == "deadlift":
-        if rep["tempo_down_sec"] < 0.15:
+        if rep["tempo_down_sec"] < 0.5:
             faults.append(
                 _make_fault(
                     code="BACK_ROUNDING",
                     severity="error",
                     value=rep["tempo_down_sec"],
-                    threshold=0.15,
+                    threshold=0.5,
                     evidence="Very short lowering tempo proxy suggests unstable spinal positioning. Used as proxy due to monocular pose estimation limitations.",
                 )
             )
-        if rep["duration_sec"] < 0.4 and rep["rom"] > 0.3:
+        if rep["duration_sec"] < 0.8 and rep["rom"] > 0.3:
             faults.append(
                 _make_fault(
                     code="HIP_SHOOT",
                     severity="warn",
                     value=rep["duration_sec"],
-                    threshold=0.4,
+                    threshold=0.8,
                     evidence="High-ROM, short-duration pull pattern indicates potential hip shoot instability. Used as proxy due to monocular pose estimation limitations.",
                 )
             )
 
     if exercise == "curl":
-        if rep["tempo_down_sec"] < 0.25:
+        if rep["tempo_down_sec"] < 0.5:
             faults.append(
                 _make_fault(
                     code="MOMENTUM_SWING",
                     severity="warn",
                     value=rep["tempo_down_sec"],
-                    threshold=0.25,
+                    threshold=0.5,
                     evidence="Very short eccentric tempo suggests momentum-assisted swing. Used as proxy due to monocular pose estimation limitations.",
                 )
             )
-        if rep["rom"] < 0.15:
+        if rep["rom"] < 0.2:
             faults.append(
                 _make_fault(
                     code="INCOMPLETE_EXTENSION",
                     severity="error" if rep["rom"] < 0.1 else "warn",
                     value=rep["rom"],
-                    threshold=0.15,
+                    threshold=0.2,
                     evidence="Normalized ROM below extension threshold indicates incomplete extension.",
                 )
             )
@@ -495,6 +495,44 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]], rep_debug: dict[str, Any]) -> dict[str, Any]:
+    rep_debug = dict(rep_debug or {})
+    rep_debug.setdefault("thresholds", {
+        "global": {
+            "ERRATIC_TEMPO_duration_sec_lt": 0.5,
+            "RUSHED_CONCENTRIC_tempo_up_sec_lt": 0.6,
+        },
+        "bench": {
+            "LOW_ROM_rom_lt": 0.35,
+            "ELBOW_FLARE_elbow_rom_deg_lt": 130.0,
+            "LOCKOUT_FAILURE_driver_rom_deg_lt": 155.0,
+        },
+        "curl": {
+            "MOMENTUM_SWING_tempo_down_sec_lt": 0.5,
+            "INCOMPLETE_EXTENSION_rom_lt": 0.2,
+        },
+        "squat": {
+            "INSUFFICIENT_DEPTH_rom_lt": 0.35,
+            "FORWARD_LEAN_driver_rom_deg_gt": 40.0,
+            "KNEE_VALGUS_PROXY_driver_rom_deg_gt": 60.0,
+        },
+        "deadlift": {
+            "LUMBAR_FLEXION_tempo_down_sec_lt": 0.8,
+            "BACK_ROUNDING_tempo_down_sec_lt": 0.5,
+            "HIP_SHOOT_duration_sec_lt": 0.8,
+            "HIP_SHOOT_rom_gt": 0.3,
+        },
+    })
+    rep_debug.setdefault(
+        "signal_stats",
+        {
+            "signal_min": rep_debug.get("signal_min"),
+            "signal_max": rep_debug.get("signal_max"),
+            "rom_total": rep_debug.get("rom_total"),
+            "fps": fps,
+        },
+    )
+    rep_debug.setdefault("rejection_counts", rep_debug.get("rejection_counts") or {})
+
     reps: list[dict[str, Any]] = []
     for idx, r in enumerate(reps_raw, start=1):
         driver = "elbow" if exercise in {"bench", "curl"} else "trunk_proxy"
@@ -525,6 +563,10 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
     set_summary.setdefault("n_reps", len(reps))
     set_summary.setdefault("avg_rom", float(mean([r["rom"] for r in reps])) if reps else 0.0)
     set_summary.setdefault("avg_duration_sec", float(mean([r["duration_sec"] for r in reps])) if reps else 0.0)
+    rep_debug["rep_count_detected"] = int(len(reps))
+    if len(reps) == 0:
+        rep_debug.setdefault("failure_reason", "no_valid_rep_detected")
+
     return {
         "schema_version": "analysis_v1",
         "exercise": exercise,
