@@ -405,13 +405,13 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
                     evidence="Elbow ROM fell below expected threshold, indicating a potentially flared pressing path.",
                 )
             )
-        if driver_rom_deg is not None and float(driver_rom_deg) < 155.0:
+        if driver_rom_deg is not None and float(driver_rom_deg) < 85.0:
             faults.append(
                 _make_fault(
                     code="LOCKOUT_FAILURE",
                     severity="warn",
                     value=float(driver_rom_deg),
-                    threshold=155.0,
+                    threshold=85.0,
                     evidence="Peak extension proxy remained below lockout threshold.",
                 )
             )
@@ -449,6 +449,16 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
             )
 
     if exercise == "deadlift":
+        if rep["rom"] < 0.5:
+            faults.append(
+                _make_fault(
+                    code="LOW_ROM",
+                    severity="warn",
+                    value=rep["rom"],
+                    threshold=0.5,
+                    evidence="Bar path suggests incomplete lift.",
+                )
+            )
         if rep["tempo_down_sec"] < 0.5:
             faults.append(
                 _make_fault(
