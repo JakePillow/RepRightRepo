@@ -41,8 +41,12 @@ def _stable_pick(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
 
 def _canonicalize(analysis: dict[str, Any]) -> dict[str, Any]:
     cloned = json.loads(json.dumps(analysis))
-    for k in ("timestamp", "video_path", "metrics_path", "overlay_path"):
+    for k in ("timestamp", "video_path", "git_commit", "metrics_path", "overlay_path"):
         cloned.pop(k, None)
+    artifacts = cloned.get("artifacts_v1")
+    if isinstance(artifacts, dict):
+        for k in ("analysis_json", "overlay_path", "metrics_path", "run_dir"):
+            artifacts.pop(k, None)
     return cloned
 
 

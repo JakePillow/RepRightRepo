@@ -10,26 +10,22 @@ from typing import Any
 from repright.analyzer import RepRightAnalyzer
 
 
+ACTIVE_FAULT_CODES = (
+    "FORWARD_LEAN",
+    "INCOMPLETE_EXTENSION",
+    "INSUFFICIENT_DEPTH",
+    "LOW_ROM",
+    "MOMENTUM_SWING",
+    "WEAK_EXTENSION",
+)
+
 FAULT_MAP = {
-    # Existing
     "partial_rom": "LOW_ROM",
     "depth_fail": "LOW_ROM",
-    "lumbar_flexion": "LUMBAR_FLEXION",
-    # Core faults
     "low_rom": "LOW_ROM",
-    "rushed_concentric": "RUSHED_CONCENTRIC",
-    "erratic_tempo": "ERRATIC_TEMPO",
-    # Bench
-    "elbow_flare": "ELBOW_FLARE",
-    "lockout_failure": "LOCKOUT_FAILURE",
-    # Squat
+    "weak_extension": "WEAK_EXTENSION",
     "insufficient_depth": "INSUFFICIENT_DEPTH",
     "forward_lean": "FORWARD_LEAN",
-    "knee_valgus_proxy": "KNEE_VALGUS_PROXY",
-    # Deadlift
-    "back_rounding": "BACK_ROUNDING",
-    "hip_shoot": "HIP_SHOOT",
-    # Curl
     "momentum_swing": "MOMENTUM_SWING",
     "incomplete_extension": "INCOMPLETE_EXTENSION",
 }
@@ -76,12 +72,24 @@ def _has_any_fault_label(row: dict[str, Any]) -> bool:
     return False
 
 
+def _fault_eval_row_usable(row: dict[str, Any]) -> bool:
+    for k in ("error_primary", "error_secondary"):
+        lab = (row.get(k) or "").strip().lower()
+        if not lab or lab == "none":
+            continue
+        if lab not in FAULT_MAP:
+            return False
+    return True
+
+
 def _pred_fault_codes(analysis: dict[str, Any]) -> set[str]:
     codes: set[str] = set()
     for rep in analysis.get("reps", []) or []:
         for f in rep.get("faults_v1", []) or []:
             if isinstance(f, dict) and f.get("code"):
-                codes.add(str(f["code"]))
+                code = str(f["code"])
+                if code in ACTIVE_FAULT_CODES:
+                    codes.add(code)
     return codes
 
 
@@ -128,7 +136,7 @@ def main() -> None:
 
     repcount_rows: list[RepCountRow] = []
 
-    counts: dict[str, dict[str, int]] = {}
+    counts: dict[str, dict[str, int]] = {code: {"tp": 0, "fp": 0, "fn": 0, "tn": 0} for code in ACTIVE_FAULT_CODES}
     fault_count_per_video_rows: list[tuple[str, str, int]] = []
     fault_rate_per_exercise: dict[str, dict[str, int]] = {}
     fault_summary_by_exercise: dict[tuple[str, str], int] = {}
@@ -145,7 +153,7 @@ def main() -> None:
     print(f"[EVAL] Using {len(rows)} labeled videos")
 
     valid_rows = 0
-    has_ground_truth_fault_labels = any(_has_any_fault_label(r) for r in rows)
+    has_ground_truth_fault_labels = any(_truth_fault_codes(r) for r in rows)
 
     for row in rows:
 
@@ -199,13 +207,13 @@ def main() -> None:
         n_faults_this_video = 0
         for rep in analysis.get("reps", []) or []:
             rep_faults = rep.get("faults_v1", []) or []
-            n_faults_this_video += len(rep_faults)
             for f in rep_faults:
                 if not isinstance(f, dict):
                     continue
                 code = str(f.get("code") or "")
-                if not code:
+                if code not in ACTIVE_FAULT_CODES:
                     continue
+                n_faults_this_video += 1
                 fault_summary_by_exercise[(exercise, code)] = fault_summary_by_exercise.get((exercise, code), 0) + 1
 
         fault_count_per_video_rows.append((video_id, exercise, int(n_faults_this_video)))
@@ -215,10 +223,8 @@ def main() -> None:
         if n_faults_this_video > 0:
             rates["videos_with_faults"] += 1
 
-        universe = set(FAULT_MAP.values())
-
-        if has_ground_truth_fault_labels:
-            for code in universe:
+        if has_ground_truth_fault_labels and _fault_eval_row_usable(row):
+            for code in ACTIVE_FAULT_CODES:
                 c = counts.setdefault(code, {"tp": 0, "fp": 0, "fn": 0, "tn": 0})
                 t = code in truth
                 p = code in pred
@@ -249,7 +255,7 @@ def main() -> None:
             "rmse": rmse,
             "exact_match_pct": exact_pct,
         },
-        "faults_evaluated": sorted(set(FAULT_MAP.values())),
+        "faults_evaluated": list(ACTIVE_FAULT_CODES),
     }
 
     _save_json(outdir / "eval_summary.json", summary)

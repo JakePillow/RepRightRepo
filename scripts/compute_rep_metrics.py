@@ -384,7 +384,11 @@ def _rep_faults(exercise: str, rep: dict[str, Any]) -> list[dict[str, Any]]:
                     evidence="Normalized squat ROM did not reach depth threshold.",
                 )
             )
-        if driver_rom_deg is not None and float(driver_rom_deg) > 65.0:
+        if (
+            driver_rom_deg is not None
+            and float(driver_rom_deg) > 65.0
+            and rep["rom"] >= 0.3
+        ):
             faults.append(
                 _make_fault(
                     code="FORWARD_LEAN",
@@ -449,6 +453,7 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
         "squat": {
             "INSUFFICIENT_DEPTH_rom_lt": 0.35,
             "FORWARD_LEAN_driver_rom_deg_gt": 65.0,
+            "FORWARD_LEAN_min_rom": 0.3,
         },
         "deadlift": {
             "LOW_ROM_rom_lt": 0.5,
@@ -528,7 +533,7 @@ def compute_rep_metrics_file(
         detect_kwargs = {
             "min_rom_deg": 9.0,
             "min_rep_duration_sec": 0.35,
-            "min_gap_sec": 0.35,
+            "min_gap_sec": 0.45,
         }
 
     # Run detection on normal signal
