@@ -216,6 +216,13 @@ def _quality_color(score: int | None) -> tuple[str, str]:
     return "#f25f5c", "Red"
 
 
+def _safe_summary(analysis: dict[str, Any] | None) -> dict[str, Any]:
+    if not isinstance(analysis, dict):
+        return {}
+    summary = analysis.get("set_summary_v1")
+    return summary if isinstance(summary, dict) else {}
+
+
 def _run_pipeline(upload, exercise: str, user_message: str, load_kg: float | None):
     tmp_path = _safe_tmp_video(upload)
 
@@ -278,6 +285,13 @@ with st.sidebar:
         _new_chat(st.session_state.get("exercise_choice") or "bench")
         st.rerun()
 
+    if st.button("Clear current chat", use_container_width=True):
+        st.session_state.history = []
+        st.session_state.last_payload = None
+        st.session_state.last_response = None
+        _save_thread(st.session_state.thread_id)
+        st.rerun()
+
     st.markdown("### Chats")
 
     for thread in list_threads():
@@ -331,6 +345,7 @@ with left:
 
 with right:
     structured = (st.session_state.last_response or {}).get("structured") if isinstance(st.session_state.last_response, dict) else {}
+    summary = _safe_summary(st.session_state.last_analysis)
 
     score = structured.get("overall_score") if isinstance(structured, dict) else None
 
@@ -338,8 +353,32 @@ with right:
         score = _canonical_lift_quality(st.session_state.last_analysis)
 
     color, zone = _quality_color(score)
+    st.markdown(f"### Lift Quality: <span style='color:{color};'>**{score if score is not None else 'n/a'}**</span> ({zone})", unsafe_allow_html=True)
 
-    st.markdown(f"### Lift Quality: **{score if score is not None else 'n/a'}** ({zone})")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Reps", summary.get("n_reps", "n/a"))
+    c2.metric("Avg ROM", f"{summary.get('avg_rom', 0.0):.3f}" if isinstance(summary.get("avg_rom"), (int, float)) else "n/a")
+    c3.metric("Low confidence reps", summary.get("n_low_confidence", "n/a"))
+
+    top_faults = summary.get("top_faults") if isinstance(summary.get("top_faults"), list) else []
+    with st.expander("Why this score?", expanded=False):
+        if top_faults:
+            for tf in top_faults[:5]:
+                if isinstance(tf, dict):
+                    st.write(f"- {tf.get('code', 'UNKNOWN')} × {tf.get('count', 0)} (max severity: {tf.get('severity_max', 'info')})")
+        else:
+            st.caption("No major recurring faults were detected for this set.")
+
+    artifacts = (st.session_state.last_analysis or {}).get("artifacts_v1") if isinstance(st.session_state.last_analysis, dict) else {}
+    analysis_json_path = artifacts.get("analysis_json") if isinstance(artifacts, dict) else None
+    if analysis_json_path and Path(str(analysis_json_path)).exists():
+        st.download_button(
+            "Download analysis JSON",
+            data=Path(str(analysis_json_path)).read_text(encoding="utf-8"),
+            file_name=Path(str(analysis_json_path)).name,
+            mime="application/json",
+            use_container_width=True,
+        )
 
     for msg in st.session_state.history:
         role = "user" if msg.get("role") == "user" else "assistant"
