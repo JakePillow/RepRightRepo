@@ -12,20 +12,21 @@ EXERCISE_ICONS = {
 PAGE = {
     "title":   "RepRight",
     "layout":  "wide",
-    "columns": [1.05, 0.95],
+    "columns": [1.5, 1],
 }
 
 TEXT = {
     "sidebar": {
-        "new_chat":     "+ New session",
-        "clear_chat":   "Clear chat",
-        "chats_header": "### Sessions",
+        "new_chat":          "+ New Session",
+        "clear_chat":        "Clear chat",
+        "sessions_header":   "Sessions",
+        "recent_header":     "Recent Sessions",
     },
     "inputs": {
         "exercise":       "Exercise",
-        "load":           "Load (kg)",
-        "upload":         "Upload set video",
-        "coach_note":     "Note to coach (optional)",
+        "load":           "Load (KG)",
+        "upload":         "Upload Set Video",
+        "coach_note":     "Note to Coach (Optional)",
         "analyze":        "Analyze set →",
         "upload_warning": "Please upload a video before analyzing.",
     },
@@ -34,7 +35,7 @@ TEXT = {
         "reps":          "Reps",
         "avg_rom":       "Avg ROM",
         "low_confidence":"Low conf. reps",
-        "why_score":     "Form breakdown",
+        "why_score":     "Form Breakdown",
         "no_faults":     "No recurring faults detected — clean set.",
         "download_json": "⬇  Export analysis JSON",
     },
@@ -42,7 +43,9 @@ TEXT = {
         "follow_up": "Ask your coach anything...",
     },
     "states": {
-        "empty_results": "Upload a video and run an analysis to see your form score, metrics, and AI coaching.",
+        "empty_title":   "No analysis results yet.",
+        "empty_body":    "Upload a video of a set and get feedback on your form, metrics, and potential improvements.",
+        "empty_results": "Upload a video and run an analysis to see your form score, detailed metrics, and AI coaching in this pane.",
     },
     "progress": {
         "tracking": "Tracking pose…",
@@ -50,21 +53,35 @@ TEXT = {
         "coach":    "Generating coaching response…",
         "done":     "Done.",
     },
+    "coaching_panel": {
+        "title":       "Coaching Overview",
+        "subtitle":    "Upload a video and run an analysis\nto see your form score, detailed\nmetrics, and AI coaching in this pane.",
+        "how_title":   "How it Works",
+        "view_all":    "View all",
+        "tip":         "Tip: Side views work best for analyzing most exercises.",
+        "steps": [
+            ("📷", "Camera Pose Estimation", "AI analyzes your movement."),
+            ("✅", "Form Assessment",         "Get rep breakdown and metrics."),
+            ("💬", "Coaching Feedback",       "Receive personalized AI guidance."),
+        ],
+    },
+    "main_title": "Analyze Your Set",
+    "recent_sessions_title": "Recent Sessions",
 }
 
 QUALITY_ZONES = {
-    "none":   {"color": "#6b7280", "label": "No data",    "bg": "#1f2937", "ring": "#374151"},
-    "green":  {"color": "#10b981", "label": "Good form",  "bg": "#064e3b", "ring": "#059669"},
-    "yellow": {"color": "#f59e0b", "label": "Needs work", "bg": "#451a03", "ring": "#d97706"},
-    "red":    {"color": "#ef4444", "label": "Poor form",  "bg": "#450a0a", "ring": "#dc2626"},
+    "none":   {"color": "#64748b", "label": "No data",    "bg": "#f1f5f9", "ring": "#cbd5e1"},
+    "green":  {"color": "#16a34a", "label": "Good form",  "bg": "#dcfce7", "ring": "#86efac"},
+    "yellow": {"color": "#d97706", "label": "Needs work", "bg": "#fef3c7", "ring": "#fcd34d"},
+    "red":    {"color": "#dc2626", "label": "Poor form",  "bg": "#fee2e2", "ring": "#fca5a5"},
 }
 
 FAULT_SEVERITY_COLORS = {
-    "critical": ("#ef4444", "#450a0a"),
-    "high":     ("#f97316", "#431407"),
-    "medium":   ("#f59e0b", "#451a03"),
-    "warning":  ("#f59e0b", "#451a03"),
-    "info":     ("#6b7280", "#1f2937"),
+    "critical": ("#dc2626", "#fee2e2"),
+    "high":     ("#ea580c", "#ffedd5"),
+    "medium":   ("#d97706", "#fef3c7"),
+    "warning":  ("#d97706", "#fef3c7"),
+    "info":     ("#64748b", "#f1f5f9"),
 }
 
 EMPTY_STATES = {

@@ -1,0 +1,63 @@
+from __future__ import annotations
+
+import os
+import tempfile
+import time
+from pathlib import Path
+from typing import Any
+
+import streamlit as st
+
+from repright.analyzer import RepRightAnalyzer
+from repright.coach_payload import build_coach_payload
+from repright.llm_wrapper import run_coach
+from ui.config.tokens import TEXT
+
+
+def safe_tmp_video(upload) -> Path:
+    suffix = Path(upload.name).suffix or ".mp4"
+    fd, path = tempfile.mkstemp(prefix="repright_", suffix=suffix)
+    os.close(fd)
+
+    p = Path(path)
+    p.write_bytes(upload.getbuffer())
+    return p
+
+
+def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: float | None, history: list[dict[str, Any]]):
+    tmp_path = safe_tmp_video(upload)
+
+    progress = st.progress(0, text=TEXT["progress"]["tracking"])
+
+    analyzer = RepRightAnalyzer()
+    analysis = analyzer.analyze(str(tmp_path), exercise)
+
+    progress.progress(60, text=TEXT["progress"]["context"])
+
+    payload = build_coach_payload(
+        analysis,
+        message=user_message,
+        load_kg=load_kg,
+        history=history[-6:],
+    )
+
+    progress.progress(85, text=TEXT["progress"]["coach"])
+
+    response = run_coach(payload)
+
+    progress.progress(100, text=TEXT["progress"]["done"])
+    time.sleep(0.1)
+    progress.empty()
+
+    return analysis, payload, response
+
+
+def run_followup_coaching(analysis: dict[str, Any], follow_up: str, load_kg: float, history: list[dict[str, Any]]):
+    payload = build_coach_payload(
+        analysis,
+        message=follow_up,
+        load_kg=load_kg,
+        history=history[-8:],
+    )
+    response = run_coach(payload)
+    return payload, response
