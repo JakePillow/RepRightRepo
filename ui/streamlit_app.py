@@ -23,11 +23,31 @@ RENDERERS = {
     "render_analysis_controls": panels.render_analysis_controls,
     "render_overlay_panel": panels.render_overlay_panel,
     "render_quality_header": panels.render_quality_header,
+    "render_coaching_overview": panels.render_coaching_overview,
     "render_summary_metrics": panels.render_summary_metrics,
     "render_faults_panel": panels.render_faults_panel,
     "render_artifacts_panel": panels.render_artifacts_panel,
     "render_chat_panel": panels.render_chat_panel,
 }
+
+
+def apply_accessibility_styles() -> None:
+    st.markdown(
+        """
+        <style>
+          :root { --text-strong: #0f172a; --text-muted: #334155; }
+          html, body, [data-testid="stAppViewContainer"] { color: var(--text-strong) !important; }
+          p, li, label, span, div, small, .stCaption, .stMarkdown { color: var(--text-strong) !important; }
+          [data-testid="stSidebar"] * { color: var(--text-strong) !important; }
+          [data-testid="stChatMessageContent"] * { color: var(--text-strong) !important; }
+          .stButton > button, .stDownloadButton > button {
+            color: #0b3dd9 !important;
+            border-color: #94a3b8 !important;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def start_new_chat(exercise: str) -> None:
@@ -58,7 +78,9 @@ def on_analyze(exercise: str, use_load: float | None, upload, note: str) -> None
 
     if note:
         append_history("user", note, now_iso())
-    append_history("assistant", response.get("response_text", ""), now_iso())
+    assistant_ts = now_iso()
+    append_history("assistant", response.get("response_text", ""), assistant_ts)
+    st.session_state.analysis_response_ts = assistant_ts
     save_thread(st.session_state.thread_id)
 
 
@@ -126,6 +148,7 @@ def render_column_sections(sections: list[dict], extra_context: dict | None = No
 def main() -> None:
     st.set_page_config(page_title=PAGE["title"], layout=PAGE["layout"])
     initialize_session_state()
+    apply_accessibility_styles()
 
     if st.session_state.thread_id is None:
         start_new_chat(st.session_state.get("exercise_choice") or "bench")
