@@ -44,6 +44,16 @@ def render_quality_header() -> None:
     render_quality_badge(TEXT["results"]["quality_title"], vm.score, vm.color, vm.zone_label)
 
 
+def render_coaching_overview() -> None:
+    response = st.session_state.last_response if isinstance(st.session_state.last_response, dict) else {}
+    text = response.get("response_text")
+    if isinstance(text, str) and text.strip():
+        st.markdown(f"#### {TEXT['results']['coaching_overview']}")
+        st.write(text.strip())
+    else:
+        render_empty_state(EMPTY_STATES["coaching"])
+
+
 def render_summary_metrics() -> None:
     summary = (st.session_state.last_analysis or {}).get("set_summary_v1") or {}
     metrics = summary_metrics(summary)
@@ -81,7 +91,10 @@ def render_chat_panel(on_followup: FollowupCallback) -> None:
     if not st.session_state.history:
         render_empty_state(EMPTY_STATES["chat"])
 
+    skip_ts = st.session_state.get("analysis_response_ts")
     for msg in st.session_state.history:
+        if skip_ts and msg.get("ts") == skip_ts:
+            continue
         role = "user" if msg.get("role") == "user" else "assistant"
         st.chat_message(role).write(msg.get("content"))
 

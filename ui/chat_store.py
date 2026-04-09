@@ -81,6 +81,7 @@ def save_thread(thread_id: str) -> None:
             "run_dir": artifacts.get("run_dir"),
         },
         "history": st.session_state.get("history") or [],
+        "analysis_response_ts": st.session_state.get("analysis_response_ts"),
     }
 
     thread_path(thread_id).write_text(json.dumps(thread, indent=2), encoding="utf-8")
@@ -99,6 +100,7 @@ def load_thread(thread_id: str) -> None:
     st.session_state.thread_title = thread.get("title")
     st.session_state.exercise_choice = thread.get("exercise") or "bench"
     st.session_state.history = thread.get("history") if isinstance(thread.get("history"), list) else []
+    st.session_state.analysis_response_ts = thread.get("analysis_response_ts")
 
     analysis_json = analysis_ref.get("analysis_json")
     loaded_analysis: dict[str, Any] | None = None

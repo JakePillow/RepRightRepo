@@ -27,12 +27,15 @@ def safe_tmp_video(upload) -> Path:
 def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: float | None, history: list[dict[str, Any]]):
     tmp_path = safe_tmp_video(upload)
 
-    progress = st.progress(0, text=TEXT["progress"]["tracking"])
+    progress_status = st.empty()
+    progress_status.caption(TEXT["progress"]["tracking"])
+    progress = st.progress(0)
 
     analyzer = RepRightAnalyzer()
     analysis = analyzer.analyze(str(tmp_path), exercise)
 
-    progress.progress(60, text=TEXT["progress"]["context"])
+    progress_status.caption(TEXT["progress"]["context"])
+    progress.progress(60)
 
     payload = build_coach_payload(
         analysis,
@@ -41,13 +44,16 @@ def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: flo
         history=history[-6:],
     )
 
-    progress.progress(85, text=TEXT["progress"]["coach"])
+    progress_status.caption(TEXT["progress"]["coach"])
+    progress.progress(85)
 
     response = run_coach(payload)
 
-    progress.progress(100, text=TEXT["progress"]["done"])
+    progress_status.caption(TEXT["progress"]["done"])
+    progress.progress(100)
     time.sleep(0.1)
     progress.empty()
+    progress_status.empty()
 
     return analysis, payload, response
 

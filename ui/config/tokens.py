@@ -24,6 +24,7 @@ TEXT = {
     },
     "results": {
         "quality_title": "Lift Quality",
+        "coaching_overview": "Coaching Overview",
         "reps": "Reps",
         "avg_rom": "Avg ROM",
         "low_confidence": "Low confidence reps",
@@ -54,6 +55,7 @@ QUALITY_ZONES = {
 
 EMPTY_STATES = {
     "video": "No overlay available yet. Upload and analyze a set to generate one.",
+    "coaching": "Run analysis to generate a coaching overview.",
     "chat": "Ask for form feedback after running analysis.",
 }
 
@@ -61,6 +63,7 @@ SECTION_FLAGS = {
     "left_input_panel": True,
     "left_overlay_panel": True,
     "right_results_header": True,
+    "right_coaching_overview": True,
     "right_results_metrics": True,
     "right_faults": True,
     "right_artifacts": True,

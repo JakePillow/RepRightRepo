@@ -11,6 +11,7 @@ SESSION_DEFAULTS: dict[str, Any] = {
     "exercise_choice": "bench",
     "ui_load_kg": 0.0,
     "history": [],
+    "analysis_response_ts": None,
     "last_analysis": None,
     "last_payload": None,
     "last_response": None,
@@ -19,7 +20,7 @@ SESSION_DEFAULTS: dict[str, Any] = {
 
 SESSION_GROUPS: dict[str, tuple[str, ...]] = {
     "analysis": ("last_analysis", "last_payload", "last_response"),
-    "chat": ("history",),
+    "chat": ("history", "analysis_response_ts"),
 }
 
 
