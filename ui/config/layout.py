@@ -7,6 +7,7 @@ LEFT_SECTIONS = [
 
 RIGHT_SECTIONS = [
     {"id": "right_results_header", "renderer": "render_quality_header", "enabled_flag": "right_results_header"},
+    {"id": "right_coaching_overview", "renderer": "render_coaching_overview", "enabled_flag": "right_coaching_overview"},
     {"id": "right_results_metrics", "renderer": "render_summary_metrics", "enabled_flag": "right_results_metrics"},
     {"id": "right_faults", "renderer": "render_faults_panel", "enabled_flag": "right_faults"},
     {"id": "right_artifacts", "renderer": "render_artifacts_panel", "enabled_flag": "right_artifacts"},
