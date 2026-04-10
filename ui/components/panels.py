@@ -1,5 +1,10 @@
 ﻿from __future__ import annotations
 from collections.abc import Callable
+import logging
+import os
+import tempfile
+from pathlib import Path
+
 import streamlit as st
 from ui.components.primitives import (
     render_callout, render_empty_state, render_empty_state_results,
@@ -77,9 +82,12 @@ def _reencode_to_h264(src: "Path") -> bytes | None:
     Re-encode video to H.264/MP4 using OpenCV so any browser can play it.
     Returns raw MP4 bytes, or None if re-encoding fails.
     """
+    cap = None
+    out = None
+    tmp_name = None
     try:
-        import cv2, tempfile, os
-        from pathlib import Path as _P
+        import cv2
+
         cap = cv2.VideoCapture(str(src))
         if not cap.isOpened():
             return None
@@ -88,32 +96,45 @@ def _reencode_to_h264(src: "Path") -> bytes | None:
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         tmp    = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
         tmp.close()
+        tmp_name = tmp.name
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        out    = cv2.VideoWriter(tmp.name, fourcc, fps, (width, height))
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            out.write(frame)
-        cap.release()
-        out.release()
-        data = _P(tmp.name).read_bytes()
-        os.unlink(tmp.name)
+        out    = cv2.VideoWriter(tmp_name, fourcc, fps, (width, height))
+        try:
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                out.write(frame)
+        finally:
+            cap.release()
+            out.release()
+            cap = None
+            out = None
+        data = Path(tmp_name).read_bytes()
         return data if len(data) > 1000 else None
     except Exception as e:
+        logging.warning(f"[REENCODE FAILED] {e}")
         return None
+    finally:
+        if cap is not None:
+            cap.release()
+        if out is not None:
+            out.release()
+        if tmp_name:
+            try:
+                os.unlink(tmp_name)
+            except OSError:
+                pass
 
 
 def render_overlay_panel(overlay_path) -> None:
     if overlay_path:
-        from pathlib import Path
         p = Path(str(overlay_path))
         if p.exists() and p.stat().st_size > 0:
             video_bytes = _reencode_to_h264(p)
             if video_bytes:
                 st.video(video_bytes, format="video/mp4")
             else:
-                # Last resort — serve raw bytes and hope codec is compatible
                 st.video(p.read_bytes(), format="video/mp4")
         else:
             st.warning(f"Overlay file not found or empty at: {p}")
