@@ -58,29 +58,33 @@ def render_overlay(video_path: Path, npz_path: Path, out_path: Path):
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     writer = cv2.VideoWriter(str(out_path), fourcc, fps, (w, h))
+    if not writer.isOpened():
+        cap.release()
+        raise RuntimeError(f"Failed to open VideoWriter for {out_path}")
 
     frame_idx = 0
 
-    while True:
-        ret, frame = cap.read()
-        if not ret or frame_idx >= num_frames:
-            break
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret or frame_idx >= num_frames:
+                break
 
-        lm = landmarks[frame_idx]  # (n_points, 3) assumed: x,y,z or x,y,?
-        vis = visibility[frame_idx]
+            lm = landmarks[frame_idx]  # (n_points, 3) assumed: x,y,z or x,y,?
+            vis = visibility[frame_idx]
 
-        for (i, j) in POSE_CONNECTIONS:
-            if i < lm.shape[0] and j < lm.shape[0]:
-                if vis[i] > 0.3 and vis[j] > 0.3:
-                    x1, y1 = int(lm[i][0] * w), int(lm[i][1] * h)
-                    x2, y2 = int(lm[j][0] * w), int(lm[j][1] * h)
-                    cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            for (i, j) in POSE_CONNECTIONS:
+                if i < lm.shape[0] and j < lm.shape[0]:
+                    if vis[i] > 0.3 and vis[j] > 0.3:
+                        x1, y1 = int(lm[i][0] * w), int(lm[i][1] * h)
+                        x2, y2 = int(lm[j][0] * w), int(lm[j][1] * h)
+                        cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-        writer.write(frame)
-        frame_idx += 1
-
-    cap.release()
-    writer.release()
+            writer.write(frame)
+            frame_idx += 1
+    finally:
+        cap.release()
+        writer.release()
     print(f"[OK] Overlay written to: {out_path}")
 
 

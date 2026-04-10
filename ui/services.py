@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import tempfile
 import time
@@ -33,6 +34,13 @@ def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: flo
 
     analyzer = RepRightAnalyzer()
     analysis = analyzer.analyze(str(tmp_path), exercise)
+    _op = analysis.get("overlay_path") or (analysis.get("artifacts_v1") or {}).get("overlay_path")
+    logging.warning(
+        "[OVERLAY DEBUG] path='%s' | exists=%s | size=%s",
+        _op,
+        os.path.exists(str(_op)) if _op else "NO PATH",
+        os.path.getsize(str(_op)) if _op and os.path.exists(str(_op)) else 0,
+    )
 
     progress_status.caption(TEXT["progress"]["context"])
     progress.progress(60)
