@@ -31,39 +31,43 @@ def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: flo
     progress_status = st.empty()
     progress_status.caption(TEXT["progress"]["tracking"])
     progress = st.progress(0)
+    try:
+        analyzer = RepRightAnalyzer()
+        analysis = analyzer.analyze(str(tmp_path), exercise)
+        _op = analysis.get("overlay_path") or (analysis.get("artifacts_v1") or {}).get("overlay_path")
+        logging.warning(
+            "[OVERLAY DEBUG] path='%s' | exists=%s | size=%s",
+            _op,
+            os.path.exists(str(_op)) if _op else "NO PATH",
+            os.path.getsize(str(_op)) if _op and os.path.exists(str(_op)) else 0,
+        )
 
-    analyzer = RepRightAnalyzer()
-    analysis = analyzer.analyze(str(tmp_path), exercise)
-    _op = analysis.get("overlay_path") or (analysis.get("artifacts_v1") or {}).get("overlay_path")
-    logging.warning(
-        "[OVERLAY DEBUG] path='%s' | exists=%s | size=%s",
-        _op,
-        os.path.exists(str(_op)) if _op else "NO PATH",
-        os.path.getsize(str(_op)) if _op and os.path.exists(str(_op)) else 0,
-    )
+        progress_status.caption(TEXT["progress"]["context"])
+        progress.progress(60)
 
-    progress_status.caption(TEXT["progress"]["context"])
-    progress.progress(60)
+        payload = build_coach_payload(
+            analysis,
+            message=user_message,
+            load_kg=load_kg,
+            history=history[-6:],
+        )
 
-    payload = build_coach_payload(
-        analysis,
-        message=user_message,
-        load_kg=load_kg,
-        history=history[-6:],
-    )
+        progress_status.caption(TEXT["progress"]["coach"])
+        progress.progress(85)
 
-    progress_status.caption(TEXT["progress"]["coach"])
-    progress.progress(85)
+        response = run_coach(payload)
 
-    response = run_coach(payload)
-
-    progress_status.caption(TEXT["progress"]["done"])
-    progress.progress(100)
-    time.sleep(0.1)
-    progress.empty()
-    progress_status.empty()
-
-    return analysis, payload, response
+        progress_status.caption(TEXT["progress"]["done"])
+        progress.progress(100)
+        time.sleep(0.1)
+        return analysis, payload, response
+    finally:
+        progress.empty()
+        progress_status.empty()
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def run_followup_coaching(analysis: dict[str, Any], follow_up: str, load_kg: float, history: list[dict[str, Any]]):

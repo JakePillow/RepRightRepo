@@ -15,20 +15,48 @@ PAGE = {
     "columns": [1.5, 1],
 }
 
+THEME = {
+    "page_bg": "#eef2f7",
+    "card_bg": "#ffffff",
+    "card_bg_alt": "#f8fafc",
+    "text": "#0f172a",
+    "text_soft": "#334155",
+    "text_muted": "#64748b",
+    "border": "#d7e0ea",
+    "accent": "#2563eb",
+    "accent_hover": "#1d4ed8",
+    "accent_soft": "#dbeafe",
+    "sidebar_bg": "#16233b",
+    "sidebar_button": "#22314d",
+    "sidebar_button_hover": "#2c4367",
+    "sidebar_text": "#e2e8f0",
+    "sidebar_muted": "#9fb1c8",
+    "warning": "#b45309",
+    "warning_bg": "#fef3c7",
+    "success": "#15803d",
+    "success_bg": "#dcfce7",
+    "error": "#b91c1c",
+    "error_bg": "#fee2e2",
+}
+
 TEXT = {
     "sidebar": {
         "new_chat":          "+ New Session",
-        "clear_chat":        "Clear chat",
+        "new_chat_help":     "Start a fresh draft without saving an empty session.",
+        "clear_chat":        "Clear messages",
+        "clear_chat_help":   "Remove chat messages and coaching, but keep the current analysis.",
         "sessions_header":   "Sessions",
         "recent_header":     "Recent Sessions",
     },
     "inputs": {
-        "exercise":       "Exercise",
-        "load":           "Load (KG)",
-        "upload":         "Upload Set Video",
-        "coach_note":     "Note to Coach (Optional)",
-        "analyze":        "Analyze set →",
-        "upload_warning": "Please upload a video before analyzing.",
+        "exercise":          "Exercise",
+        "exercise_locked":   "Exercise is locked to this analyzed set. Start a new session to analyze a different lift.",
+        "load":              "Load (KG)",
+        "upload":            "Upload Set Video",
+        "coach_note":        "Note to Coach (Optional)",
+        "analyze":           "Analyze set →",
+        "upload_warning":    "Please upload a video before analyzing.",
+        "busy_help":         "Analysis is running. Controls will unlock when it finishes.",
     },
     "results": {
         "quality_title": "Lift Quality",
@@ -40,7 +68,8 @@ TEXT = {
         "download_json": "⬇  Export analysis JSON",
     },
     "chat": {
-        "follow_up": "Ask your coach anything...",
+        "follow_up":          "Ask your coach anything...",
+        "follow_up_disabled": "Run an analysis to ask follow-up questions.",
     },
     "states": {
         "empty_title":   "No analysis results yet.",
@@ -53,11 +82,15 @@ TEXT = {
         "coach":    "Generating coaching response…",
         "done":     "Done.",
     },
+    "errors": {
+        "analysis_failed": "Analysis failed. Please try again with another upload or review the error details below.",
+        "followup_failed": "Coach follow-up failed. Please try again in a moment.",
+        "details_prefix":  "Details:",
+    },
     "coaching_panel": {
         "title":       "Coaching Overview",
         "subtitle":    "Upload a video and run an analysis\nto see your form score, detailed\nmetrics, and AI coaching in this pane.",
         "how_title":   "How it Works",
-        "view_all":    "View all",
         "tip":         "Tip: Side views work best for analyzing most exercises.",
         "steps": [
             ("📷", "Camera Pose Estimation", "AI analyzes your movement."),

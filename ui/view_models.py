@@ -104,6 +104,13 @@ def _resolve_path(raw: Any) -> Path | None:
     return None
 
 
+def _fallback_path(raw_candidates: list[Any]) -> Path | None:
+    for raw in raw_candidates:
+        if raw:
+            return Path(str(raw))
+    return None
+
+
 def resolve_overlay_path(payload, analysis) -> Path | None:
     """
     Walk every known key where the pipeline writes an overlay path.
@@ -150,4 +157,4 @@ def resolve_overlay_path(payload, analysis) -> Path | None:
         if p is not None:
             return p
 
-    return None
+    return _fallback_path(raw_candidates)
