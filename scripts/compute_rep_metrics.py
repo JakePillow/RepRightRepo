@@ -472,7 +472,13 @@ def build_analysis_v1(exercise: str, fps: float, reps_raw: list[dict[str, Any]],
 
     reps: list[dict[str, Any]] = []
     for idx, r in enumerate(reps_raw, start=1):
-        driver = "elbow" if exercise in {"bench", "curl"} else "trunk_proxy"
+        _DRIVER_MAP = {
+            "bench":    "elbow",
+            "curl":     "elbow",
+            "squat":    "trunk_proxy",
+            "deadlift": "hip_y",      # hip height rises to lockout — peak = completed rep
+        }
+        driver = _DRIVER_MAP.get(exercise, "trunk_proxy")
         elbow_rom_deg = float(r["rom_deg"]) if exercise in {"bench", "curl"} else None
         rep = {
             "rep_index": idx,
@@ -601,3 +607,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
