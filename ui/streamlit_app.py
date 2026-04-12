@@ -51,24 +51,16 @@ def inject_global_css() -> None:
         }}
 
         #MainMenu,
-        footer, [data-testid="stToolbar"],
+        footer,
         [data-testid="stDecoration"], .stDeployButton {{ display:none !important; }}
 
         header[data-testid="stHeader"] {{
             background: transparent !important;
         }}
 
-        [data-testid="collapsedControl"] {{
-            background: var(--rr-card-bg) !important;
-            border: 1px solid var(--rr-border) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12) !important;
-            color: var(--rr-text) !important;
-        }}
-
-        [data-testid="collapsedControl"]:hover {{
-            border-color: var(--rr-accent) !important;
-            color: var(--rr-accent) !important;
+        [data-testid="stToolbar"] {{
+            visibility: visible !important;
+            opacity: 1 !important;
         }}
 
         html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"],
@@ -88,8 +80,28 @@ def inject_global_css() -> None:
         [data-testid="stSidebar"] {{
             background: var(--rr-sidebar-bg) !important;
             border-right: none !important;
-            min-width: 220px !important;
-            max-width: 220px !important;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06) !important;
+        }}
+
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {{
+            z-index: 1000 !important;
+        }}
+
+        [data-testid="collapsedControl"] > button,
+        [data-testid="stSidebarCollapsedControl"] > button {{
+            background: linear-gradient(180deg, rgba(59,130,246,0.94), rgba(29,78,216,1)) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255,255,255,0.14) !important;
+            border-radius: 0 14px 14px 0 !important;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18) !important;
+            transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease !important;
+        }}
+
+        [data-testid="collapsedControl"] > button:hover,
+        [data-testid="stSidebarCollapsedControl"] > button:hover {{
+            background: linear-gradient(180deg, rgba(96,165,250,0.98), rgba(37,99,235,1)) !important;
+            transform: translateX(1px) !important;
         }}
 
         [data-testid="stSidebar"] * {{
@@ -112,9 +124,9 @@ def inject_global_css() -> None:
             border-radius: 12px !important;
             font-size: 13px !important;
             font-weight: 600 !important;
-            text-align: left !important;
+            text-align: center !important;
             padding: 10px 14px !important;
-            margin-bottom: 6px !important;
+            margin: 0 0 6px 0 !important;
             width: 100% !important;
         }}
 
@@ -347,6 +359,7 @@ def on_analyze(exercise, use_load, upload, note) -> None:
     if st.session_state.get("ui_busy"):
         return
 
+    should_rerun = False
     set_ui_busy(True)
     clear_ui_message()
     try:
@@ -367,12 +380,15 @@ def on_analyze(exercise, use_load, upload, note) -> None:
             append_history("user", note, now_iso())
         append_history("assistant", response.get("response_text", ""), now_iso())
         save_thread(st.session_state.thread_id)
+        should_rerun = True
     except Exception as e:
         logging.exception("Analysis pipeline failed")
         set_ui_message("error", f"{TEXT['errors']['analysis_failed']} {TEXT['errors']['details_prefix']} {e}")
-        st.rerun()
+        should_rerun = True
     finally:
         set_ui_busy(False)
+    if should_rerun:
+        st.rerun()
 
 
 def on_followup(follow_up, load_kg) -> None:
@@ -408,14 +424,10 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
-    inject_global_css()
     initialize_session_state()
+    inject_global_css()
 
     render_sidebar()
-
-    overlay_path = resolve_overlay_path(
-        st.session_state.last_payload, st.session_state.last_analysis,
-    )
 
     # Page header
     hcol, _ = st.columns([10, 1])
@@ -439,6 +451,9 @@ def main() -> None:
             panels.render_analysis_controls(on_analyze)
 
         # Empty state / overlay
+        overlay_path = resolve_overlay_path(
+            st.session_state.last_payload, st.session_state.last_analysis,
+        )
         panels.render_overlay_panel(overlay_path)
 
         # Recent sessions
@@ -459,4 +474,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

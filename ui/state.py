@@ -17,6 +17,7 @@ _DEFAULTS: dict[str, Any] = {
     "ui_load_kg":        0.0,
     "coach_note_input":  "",
     "clear_coach_note_pending": False,
+    "sidebar_collapsed": False,
 }
 
 _RESET_GROUPS: dict[str, list[str]] = {
