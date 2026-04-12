@@ -15,10 +15,30 @@ PAGE = {
     "columns": [1.5, 1],
 }
 
+THEME = {
+    "page_bg": "#eef0f5",
+    "card_bg": "#ffffff",
+    "card_bg_alt": "#f8fafc",
+    "text": "#1e293b",
+    "text_soft": "#334155",
+    "text_muted": "#64748b",
+    "border": "#e2e8f0",
+    "accent": "#2563eb",
+    "accent_hover": "#1d4ed8",
+    "accent_soft": "#bfdbfe",
+    "sidebar_bg": "#1b2b47",
+    "sidebar_button": "#243756",
+    "sidebar_button_hover": "#2f4a6e",
+    "sidebar_text": "#e2e8f0",
+    "sidebar_muted": "#94a3b8",
+}
+
 TEXT = {
     "sidebar": {
         "new_chat":          "+ New Session",
-        "clear_chat":        "Clear chat",
+        "new_chat_help":     "Start a fresh draft without removing saved sessions.",
+        "clear_chat":        "Clear messages",
+        "clear_chat_help":   "Clear the current conversation while keeping the latest analysis.",
         "sessions_header":   "Sessions",
         "recent_header":     "Recent Sessions",
     },
@@ -52,6 +72,11 @@ TEXT = {
         "context":  "Building coach context…",
         "coach":    "Generating coaching response…",
         "done":     "Done.",
+    },
+    "errors": {
+        "analysis_failed": "Analysis failed. Please try again with another upload or review the error details below.",
+        "followup_failed": "Follow-up coaching failed. Please try sending your question again.",
+        "details_prefix": "Details:",
     },
     "coaching_panel": {
         "title":       "Coaching Overview",

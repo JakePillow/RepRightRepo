@@ -20,8 +20,13 @@ FollowupCallback = Callable[[str, float], None]
 
 
 def render_analysis_controls(on_analyze: AnalyzeCallback) -> None:
+    busy = bool(st.session_state.get("ui_busy"))
     analysis = st.session_state.last_analysis
     exercise_locked = bool(analysis and analysis.get("exercise") and not analysis.get("_stub"))
+
+    if st.session_state.get("clear_coach_note_pending"):
+        st.session_state.coach_note_input = ""
+        st.session_state.clear_coach_note_pending = False
 
     if exercise_locked:
         locked_val = analysis.get("exercise", EXERCISES[0])
@@ -33,23 +38,23 @@ def render_analysis_controls(on_analyze: AnalyzeCallback) -> None:
         labels    = [f"{EXERCISE_ICONS.get(e,'')} {e.capitalize()}" for e in EXERCISES]
         label_map = dict(zip(labels, EXERCISES))
         chosen    = st.selectbox(TEXT["inputs"]["exercise"], labels,
-                                 key="exercise_choice_label")
+                                 key="exercise_choice_label", disabled=busy)
         exercise  = label_map[chosen]
         st.session_state.exercise_choice = exercise
 
     load_kg = st.number_input(TEXT["inputs"]["load"], min_value=0.0,
-                               step=2.5, key="ui_load_kg")
+                               step=2.5, key="ui_load_kg", disabled=busy)
     upload  = st.file_uploader(TEXT["inputs"]["upload"],
-                                type=["mp4", "mov", "avi", "mkv", "webm"])
-    note    = st.text_input(TEXT["inputs"]["coach_note"])
+                                type=["mp4", "mov", "avi", "mkv", "webm"],
+                                key="uploaded_video", disabled=busy)
+    note    = st.text_input(TEXT["inputs"]["coach_note"], key="coach_note_input", disabled=busy)
 
     st.markdown("<div style='margin-top:6px'></div>", unsafe_allow_html=True)
-    if st.button(TEXT["inputs"]["analyze"], use_container_width=True, type="primary"):
+    if st.button(TEXT["inputs"]["analyze"], use_container_width=True, type="primary", disabled=busy):
         if upload is None:
             render_callout("warning", TEXT["inputs"]["upload_warning"])
         else:
-            with st.spinner(TEXT["progress"]["tracking"]):
-                on_analyze(exercise, load_kg if load_kg > 0 else None, upload, note)
+            on_analyze(exercise, load_kg if load_kg > 0 else None, upload, note)
 
 
 def render_recent_sessions_in_main() -> None:
@@ -199,6 +204,7 @@ def render_artifacts_panel() -> None:
 
 
 def render_chat_panel(on_followup: FollowupCallback) -> None:
+    busy = bool(st.session_state.get("ui_busy"))
     if not st.session_state.history:
         render_empty_state(EMPTY_STATES["chat"])
     for msg in st.session_state.history:
@@ -208,7 +214,10 @@ def render_chat_panel(on_followup: FollowupCallback) -> None:
             ts = msg.get("timestamp")
             if ts:
                 st.caption(ts[:16].replace("T", " "))
-    follow_up = st.chat_input(TEXT["chat"]["follow_up"])
+    follow_up = st.chat_input(
+        TEXT["chat"]["follow_up"],
+        disabled=busy or not bool(st.session_state.last_analysis),
+    )
     if follow_up and st.session_state.last_analysis:
         on_followup(follow_up, st.session_state.get("ui_load_kg", 0.0))
 

@@ -69,6 +69,7 @@ def render_callout(kind: str, message: str) -> None:
         "warning": ("#d97706", "#fef3c7", "⚠"),
         "success": ("#16a34a", "#dcfce7", "✓"),
         "info":    ("#2563eb", "#dbeafe", "ℹ"),
+        "error":   ("#dc2626", "#fee2e2", "⚠"),
     }
     color, bg, icon = palette.get(kind, palette["info"])
     st.markdown(f"""

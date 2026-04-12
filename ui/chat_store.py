@@ -102,12 +102,16 @@ def _compute_restore_status(data: dict[str, Any]) -> str:
 
 def save_thread(thread_id: str) -> None:
     import streamlit as st
+    if not thread_id:
+        return
     path    = _thread_path(thread_id)
     history = st.session_state.get("history", [])
 
     # Build artifact refs (file pointers — kept for overlay lookup)
     analysis = st.session_state.get("last_analysis") or {}
     payload  = st.session_state.get("last_payload")  or {}
+    canonical_exercise = analysis.get("exercise") or st.session_state.get("exercise_choice", "bench")
+    created_at = st.session_state.get("thread_created_at", now_iso())
     artifacts = analysis.get("artifacts_v1") or {}
     ref = {
         k: str(v)
@@ -130,9 +134,9 @@ def save_thread(thread_id: str) -> None:
     record: dict[str, Any] = {
         "schema_version":    SCHEMA_VERSION,
         "thread_id":         thread_id,
-        "title":             st.session_state.get("thread_title", thread_id),
-        "exercise":          st.session_state.get("exercise_choice", "bench"),
-        "created_at":        st.session_state.get("thread_created_at", now_iso()),
+        "title":             st.session_state.get("thread_title") or thread_title(created_at, canonical_exercise),
+        "exercise":          canonical_exercise,
+        "created_at":        created_at,
         "updated_at":        now_iso(),
         "history":           history,
         "analysis_ref":      ref,
