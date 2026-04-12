@@ -27,6 +27,10 @@ def render_analysis_controls(on_analyze: AnalyzeCallback) -> None:
     busy = bool(st.session_state.get("ui_busy"))
     exercise_locked = bool(analysis and analysis.get("exercise") and not analysis.get("_stub"))
 
+    if st.session_state.get("clear_coach_note_pending"):
+        st.session_state.coach_note_input = ""
+        st.session_state.clear_coach_note_pending = False
+
     if exercise_locked:
         locked_val = analysis.get("exercise", EXERCISES[0])
         icon = EXERCISE_ICONS.get(locked_val, "")

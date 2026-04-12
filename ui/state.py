@@ -16,6 +16,7 @@ _DEFAULTS: dict[str, Any] = {
     "ui_message":        None,
     "ui_load_kg":        0.0,
     "coach_note_input":  "",
+    "clear_coach_note_pending": False,
 }
 
 _RESET_GROUPS: dict[str, list[str]] = {
@@ -68,9 +69,14 @@ def reset_draft_session(exercise: str = "bench") -> None:
     st.session_state.exercise_choice = exercise
     st.session_state.ui_load_kg = 0.0
     st.session_state.coach_note_input = ""
+    st.session_state.clear_coach_note_pending = False
     st.session_state.ui_busy = False
     st.session_state.ui_message = None
     if "exercise_choice_label" in st.session_state:
         del st.session_state["exercise_choice_label"]
     if "uploaded_video" in st.session_state:
         del st.session_state["uploaded_video"]
+
+
+def request_coach_note_clear() -> None:
+    st.session_state.clear_coach_note_pending = True

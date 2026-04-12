@@ -20,6 +20,7 @@ from ui.state import (
     initialize_session_state,
     reset_draft_session,
     reset_group,
+    request_coach_note_clear,
     set_ui_busy,
     set_ui_message,
 )
@@ -49,9 +50,26 @@ def inject_global_css() -> None:
             --rr-sidebar-muted: {THEME['sidebar_muted']};
         }}
 
-        #MainMenu, header[data-testid="stHeader"],
+        #MainMenu,
         footer, [data-testid="stToolbar"],
         [data-testid="stDecoration"], .stDeployButton {{ display:none !important; }}
+
+        header[data-testid="stHeader"] {{
+            background: transparent !important;
+        }}
+
+        [data-testid="collapsedControl"] {{
+            background: var(--rr-card-bg) !important;
+            border: 1px solid var(--rr-border) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12) !important;
+            color: var(--rr-text) !important;
+        }}
+
+        [data-testid="collapsedControl"]:hover {{
+            border-color: var(--rr-accent) !important;
+            color: var(--rr-accent) !important;
+        }}
 
         html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"],
         section[data-testid="stMain"] > div {{
@@ -344,7 +362,7 @@ def on_analyze(exercise, use_load, upload, note) -> None:
         st.session_state.last_payload = payload
         st.session_state.last_response = response
         st.session_state.restore_status = None
-        st.session_state.coach_note_input = ""
+        request_coach_note_clear()
         if note:
             append_history("user", note, now_iso())
         append_history("assistant", response.get("response_text", ""), now_iso())
@@ -384,7 +402,12 @@ def on_followup(follow_up, load_kg) -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="RepRight", page_icon="🏋️", layout="wide")
+    st.set_page_config(
+        page_title="RepRight",
+        page_icon="🏋️",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
     inject_global_css()
     initialize_session_state()
 
