@@ -30,11 +30,116 @@ def _std(values: list[float | None]) -> float | None:
     return float(pstdev(nums))
 
 
+def _fault_map(summary: dict[str, Any]) -> dict[str, int]:
+    top_faults = _safe_list(summary.get("top_faults"))
+    counts: dict[str, int] = {}
+    for item in top_faults:
+        if not isinstance(item, dict):
+            continue
+        code = str(item.get("code") or "UNKNOWN")
+        count = item.get("count")
+        counts[code] = int(count) if isinstance(count, (int, float)) else 0
+    return counts
+
+
+def _summary_snapshot(analysis: dict[str, Any], load_kg: float | None = None) -> dict[str, Any]:
+    analysis = _safe_dict(analysis)
+    summary = _safe_dict(analysis.get("set_summary_v1"))
+    return {
+        "exercise": str(analysis.get("exercise") or "unknown"),
+        "load_kg": load_kg,
+        "n_reps": summary.get("n_reps"),
+        "avg_rom": summary.get("avg_rom"),
+        "quality_score": summary.get("quality_score") or summary.get("quality_score_pct"),
+        "n_low_confidence": summary.get("n_low_confidence"),
+        "avg_duration_sec": summary.get("avg_duration_sec"),
+        "avg_tempo_up_sec": summary.get("avg_tempo_up_sec"),
+        "avg_tempo_down_sec": summary.get("avg_tempo_down_sec"),
+        "top_faults": _safe_list(summary.get("top_faults"))[:6],
+    }
+
+
+def _delta(curr: Any, prev: Any) -> float | None:
+    curr_f = _as_float_or_none(curr)
+    prev_f = _as_float_or_none(prev)
+    if curr_f is None or prev_f is None:
+        return None
+    return round(curr_f - prev_f, 4)
+
+
+def _trend_label(delta: float | None, positive_is_better: bool = True) -> str:
+    if delta is None:
+        return "unknown"
+    if abs(delta) < 1e-6:
+        return "stable"
+    improved = delta > 0 if positive_is_better else delta < 0
+    return "improved" if improved else "regressed"
+
+
+def _build_comparison_context(
+    previous_analysis: dict[str, Any] | None,
+    current_analysis: dict[str, Any],
+    previous_load_kg: float | None,
+    current_load_kg: float | None,
+) -> dict[str, Any] | None:
+    previous = _safe_dict(previous_analysis)
+    current = _safe_dict(current_analysis)
+    if not previous:
+        return None
+
+    prev_summary = _summary_snapshot(previous, previous_load_kg)
+    curr_summary = _summary_snapshot(current, current_load_kg)
+
+    prev_faults = _fault_map(_safe_dict(previous.get("set_summary_v1")))
+    curr_faults = _fault_map(_safe_dict(current.get("set_summary_v1")))
+    fault_changes: list[dict[str, Any]] = []
+    for code in sorted(set(prev_faults) | set(curr_faults)):
+        prev_count = prev_faults.get(code, 0)
+        curr_count = curr_faults.get(code, 0)
+        fault_changes.append(
+            {
+                "code": code,
+                "previous_count": prev_count,
+                "current_count": curr_count,
+                "delta": curr_count - prev_count,
+            }
+        )
+    fault_changes.sort(key=lambda row: abs(int(row.get("delta", 0))), reverse=True)
+
+    delta_quality = _delta(curr_summary.get("quality_score"), prev_summary.get("quality_score"))
+    delta_rom = _delta(curr_summary.get("avg_rom"), prev_summary.get("avg_rom"))
+    delta_low_conf = _delta(curr_summary.get("n_low_confidence"), prev_summary.get("n_low_confidence"))
+
+    return {
+        "exercise_match": prev_summary.get("exercise") == curr_summary.get("exercise"),
+        "previous": prev_summary,
+        "current": curr_summary,
+        "delta": {
+            "quality_score": delta_quality,
+            "avg_rom": delta_rom,
+            "n_reps": _delta(curr_summary.get("n_reps"), prev_summary.get("n_reps")),
+            "n_low_confidence": delta_low_conf,
+            "avg_duration_sec": _delta(curr_summary.get("avg_duration_sec"), prev_summary.get("avg_duration_sec")),
+            "avg_tempo_up_sec": _delta(curr_summary.get("avg_tempo_up_sec"), prev_summary.get("avg_tempo_up_sec")),
+            "avg_tempo_down_sec": _delta(curr_summary.get("avg_tempo_down_sec"), prev_summary.get("avg_tempo_down_sec")),
+            "load_kg": _delta(curr_summary.get("load_kg"), prev_summary.get("load_kg")),
+        },
+        "trend": {
+            "quality_score": _trend_label(delta_quality, positive_is_better=True),
+            "avg_rom": _trend_label(delta_rom, positive_is_better=True),
+            "n_low_confidence": _trend_label(delta_low_conf, positive_is_better=False),
+        },
+        "fault_changes": fault_changes[:8],
+    }
+
+
 def build_coach_payload(
     analysis: dict[str, Any],
     message: str = "",
     load_kg: float | None = None,
     history: list[dict[str, Any]] | None = None,
+    previous_analysis: dict[str, Any] | None = None,
+    previous_load_kg: float | None = None,
 ) -> dict[str, Any]:
     # ---------- safety / normalization ----------
     analysis = _safe_dict(analysis)
@@ -122,6 +227,7 @@ def build_coach_payload(
 
     high_level = {
         "exercise": exercise,
+        "load_kg": load_kg,
         "fps": analysis.get("fps"),
         "n_reps": int(set_summary.get("n_reps", len(rep_table))),
         "avg_rom": set_summary.get("avg_rom"),
@@ -152,10 +258,12 @@ def build_coach_payload(
         "duration_consistency_stddev": _std(dur_vals),
         "asymmetry": analysis.get("asymmetry") or set_summary.get("asymmetry"),
     }
+    comparison_v1 = _build_comparison_context(previous_analysis, analysis, previous_load_kg, load_kg)
 
     # Highlights are what UI should primarily use (and LLM can cite)
     highlights = {
         "n_reps": high_level["n_reps"],
+        "load_kg": load_kg,
         # always prefer artifact overlay first
         "overlay_path": overlay_path,
         "analysis_json": analysis_json,
@@ -177,6 +285,7 @@ def build_coach_payload(
         "load_kg": load_kg,
         "history": hist,
         "analysis_v1": analysis,
+        "comparison_v1": comparison_v1,
         "high_level_summary": high_level,
         "rep_table": rep_table,  # downstream will bound again if needed
         "form_pattern_aggregates": pattern_aggregates,

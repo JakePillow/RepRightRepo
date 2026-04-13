@@ -30,18 +30,33 @@ def _safe_list(v: Any) -> list[Any]:
 def _stub_response(payload: dict, reason: str | None = None, status_code: int | None = None) -> Dict[str, Any]:
     exercise = payload.get("exercise")
     user_message = payload.get("user_message") or ""
+    load_kg = payload.get("load_kg")
     analysis = payload.get("analysis_v1") if isinstance(payload.get("analysis_v1"), dict) else {}
     summary = _safe_dict(_safe_dict(analysis).get("set_summary_v1"))
     n_reps = summary.get("n_reps")
+    comparison = _safe_dict(payload.get("comparison_v1"))
+
+    load_line = f"Load provided: {float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "Load provided: none"
+    comparison_line = ""
+    if comparison:
+        delta = _safe_dict(comparison.get("delta"))
+        quality_delta = delta.get("quality_score")
+        rom_delta = delta.get("avg_rom")
+        comparison_line = (
+            f"\nComparison to previous set: "
+            f"quality delta={quality_delta}, avg ROM delta={rom_delta}."
+        )
 
     text = f"""
-Coach summary for {exercise}:
+    Coach summary for {exercise}:
 
-Reps detected: {n_reps}
+    Reps detected: {n_reps}
+    {load_line}
+    {comparison_line}
 
-User note: {user_message}
+    User note: {user_message}
 
-Focus on:
+    Focus on:
 - Controlled tempo
 - Consistent range of motion
 - Stable bar path
@@ -136,14 +151,17 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
 
     user_message = str(payload.get("user_message") or "")
     exercise = str(payload.get("exercise") or analysis.get("exercise") or "unknown")
+    load_kg = payload.get("load_kg")
 
     # Provide compact "facts" object that the model must ground on
     facts = {
         "exercise": exercise,
+        "load_kg": load_kg,
         "user_message": user_message,
         "summary": summary or _safe_dict(analysis.get("set_summary_v1")),
         "rep_table": rep_table,
         "aggregates": aggregates,
+        "comparison_v1": _safe_dict(payload.get("comparison_v1")),
         "repeated_faults": _safe_list(aggregates.get("repeated_faults")),
         "artifact_refs": _safe_dict(payload.get("artifact_refs")),
         "history": history,
@@ -155,6 +173,8 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         "- Base ALL claims strictly on the numeric data provided in FACTS.\n"
         "- Never invent values.\n"
         "- When you mention a metric, include the number (and threshold if provided).\n"
+        "- If FACTS.load_kg is a number, treat the load as provided and do not say weight is missing.\n"
+        "- If FACTS.comparison_v1 is present, compare the current set against the previous set first and ground claims in the deltas.\n"
         "- If data is insufficient, say what is missing.\n"
         "- Output MUST follow the JSON schema exactly.\n"
     )
@@ -165,9 +185,11 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         + "\n\n"
         "Task:\n"
         "1) Identify up to 3 key issues using numeric evidence (rep_index + values).\n"
-        "2) Give 2 actionable cues.\n"
-        "3) Give an overall_score 0-100 grounded on consistency + faults.\n"
-        "4) summary_text: a short natural paragraph (<120 words) referencing the numbers.\n"
+        "2) If comparison_v1 exists, explain what improved, regressed, or stayed similar using numeric deltas.\n"
+        "3) Give 2 actionable cues.\n"
+        "4) Give an overall_score 0-100 grounded on consistency + faults.\n"
+        "5) If load_kg is present, you may reference it directly, but do not invent progression advice that requires missing context such as RPE, bodyweight, or training history.\n"
+        "6) summary_text: a short natural paragraph (<120 words) referencing the numbers and, when available, the comparison outcome.\n"
     )
 
     return [

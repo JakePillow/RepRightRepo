@@ -73,6 +73,18 @@ def _compact_response_snapshot(response: dict[str, Any] | None) -> dict[str, Any
     }
 
 
+def _compact_payload_snapshot(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    comparison = payload.get("comparison_v1")
+    if not isinstance(comparison, dict):
+        return None
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "comparison_v1": comparison,
+    }
+
+
 # ── Restore-status detection ──────────────────────────────────
 
 def _compute_restore_status(data: dict[str, Any]) -> str:
@@ -130,18 +142,22 @@ def save_thread(thread_id: str) -> None:
         st.session_state.get("last_analysis"))
     response_snap = _compact_response_snapshot(
         st.session_state.get("last_response"))
+    payload_snap = _compact_payload_snapshot(
+        st.session_state.get("last_payload"))
 
     record: dict[str, Any] = {
         "schema_version":    SCHEMA_VERSION,
         "thread_id":         thread_id,
         "title":             st.session_state.get("thread_title") or thread_title(created_at, canonical_exercise),
         "exercise":          canonical_exercise,
+        "load_kg":           st.session_state.get("last_analysis_load_kg"),
         "created_at":        created_at,
         "updated_at":        now_iso(),
         "history":           history,
         "analysis_ref":      ref,
         "analysis_snapshot": analysis_snap,
         "response_snapshot": response_snap,
+        "payload_snapshot":  payload_snap,
     }
     record["restore_status"] = _compute_restore_status(record)
     path.write_text(json.dumps(record, indent=2, default=str), encoding="utf-8")
@@ -159,6 +175,8 @@ def load_thread(thread_id: str) -> None:
     st.session_state.thread_title      = data.get("title", thread_id)
     st.session_state.thread_created_at = data.get("created_at", now_iso())
     st.session_state.exercise_choice   = data.get("exercise", "bench")
+    st.session_state.ui_load_kg        = data.get("load_kg") or 0.0
+    st.session_state.last_analysis_load_kg = data.get("load_kg")
     st.session_state.history           = data.get("history", [])
 
     # ── Restore analysis from snapshot (preferred) or file ref (fallback) ──
@@ -180,6 +198,8 @@ def load_thread(thread_id: str) -> None:
     # ── Restore coaching response from snapshot ──
     rsnap = data.get("response_snapshot")
     st.session_state.last_response = rsnap if isinstance(rsnap, dict) else None
+    psnap = data.get("payload_snapshot")
+    st.session_state.last_payload = psnap if isinstance(psnap, dict) else None
 
     # ── Restore overlay path (file ref only — bytes stay on disk) ──
     ref  = data.get("analysis_ref") or {}
@@ -191,9 +211,6 @@ def load_thread(thread_id: str) -> None:
 
     # ── Store restore status for UI callout ──
     st.session_state.restore_status = _compute_restore_status(data)
-
-    # Clear payload — no longer relevant to a restored thread
-    st.session_state.last_payload = None
 
 
 def _stub_analysis(data: dict[str, Any]) -> dict[str, Any]:

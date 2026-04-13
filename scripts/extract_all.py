@@ -147,6 +147,14 @@ def _transcode_with_ffmpeg(src: Path, dst: Path, args: list[str]) -> bool:
         return False
     return _valid_video_file(dst)
 
+def _completion_frame(rep: dict, exercise: str, signal_inverted: bool) -> int | None:
+    if exercise == "deadlift" and signal_inverted:
+        pf = rep.get("peak_frame")
+        if isinstance(pf, int):
+            return pf
+    ef = rep.get("end_frame")
+    return ef if isinstance(ef, int) else None
+
 def _build_offline_rep_ranges(analysis_json_path: Path | None) -> list[tuple[int, int]]:
     """Read rep start/end frames from analysis_v1 and return sorted inclusive ranges."""
     if analysis_json_path is None:
@@ -157,14 +165,16 @@ def _build_offline_rep_ranges(analysis_json_path: Path | None) -> list[tuple[int
             return []
         data = json.loads(p.read_text(encoding="utf-8"))
         reps = data.get("reps") if isinstance(data.get("reps"), list) else []
+        exercise = str(data.get("exercise") or "").strip().lower()
+        signal_inverted = bool((data.get("rep_debug") or {}).get("signal_inverted"))
         ranges: list[tuple[int, int]] = []
         for rep in reps:
             if not isinstance(rep, dict):
                 continue
             sf = rep.get("start_frame")
-            ef = rep.get("end_frame")
-            if isinstance(sf, int) and isinstance(ef, int) and ef >= sf:
-                ranges.append((sf, ef))
+            cf = _completion_frame(rep, exercise, signal_inverted)
+            if isinstance(sf, int) and isinstance(cf, int) and cf >= sf:
+                ranges.append((sf, cf))
         ranges.sort(key=lambda x: x[0])
         return ranges
     except Exception:
@@ -176,10 +186,10 @@ def _offline_reps_at_frame(frame_idx: int, rep_ranges: list[tuple[int, int]]) ->
     if not rep_ranges:
         return 0
     count = 0
-    for sf, ef in rep_ranges:
-        if frame_idx >= sf:
+    for _sf, cf in rep_ranges:
+        if frame_idx >= cf:
             count += 1
-        if frame_idx < sf:
+        if frame_idx < cf:
             break
     return count
 

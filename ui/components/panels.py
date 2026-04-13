@@ -1,7 +1,8 @@
 ﻿from __future__ import annotations
 from collections.abc import Callable
 import logging
-import os
+import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from ui.components.primitives import (
 )
 from ui.config.tokens import EMPTY_STATES, EXERCISES, EXERCISE_ICONS, TEXT
 from ui.view_models import (
-    artifact_analysis_json_path, quality_view_model, summary_metrics, top_fault_rows,
+    artifact_analysis_json_path, comparison_view_model, quality_view_model, summary_metrics, top_fault_rows,
 )
 
 AnalyzeCallback  = Callable[[str, float | None, object, str], None]
@@ -63,88 +64,113 @@ def render_recent_sessions_in_main() -> None:
     if not threads:
         return
     st.markdown(
-        f"<div style='font-size:16px;font-weight:700;color:#1e293b;"
-        f"margin:20px 0 10px;'>{TEXT['recent_sessions_title']}</div>",
+        f"<div class='rr-section-kicker' style='margin:20px 0 10px;'>{TEXT['recent_sessions_title']}</div>",
         unsafe_allow_html=True,
     )
     for thread in threads[:5]:
         title = thread.get("title") or thread.get("thread_id", "")
         st.markdown(
-            f"""<div style="background:#ffffff;border:1px solid #e2e8f0;
-                border-radius:12px;padding:14px 18px;margin-bottom:8px;
-                display:flex;justify-content:space-between;align-items:center;
-                font-size:14px;color:#334155;font-weight:500;
-                box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            f"""<div class="rr-session-row">
                 <span>{title}</span>
-                <span style="color:#94a3b8;">›</span>
+                <span class="rr-session-row__arrow">›</span>
             </div>""",
             unsafe_allow_html=True,
         )
 
 
-def _reencode_to_h264(src: "Path") -> bytes | None:
-    """
-    Re-encode video to H.264/MP4 using OpenCV so any browser can play it.
-    Returns raw MP4 bytes, or None if re-encoding fails.
-    """
-    cap = None
-    out = None
-    tmp_name = None
-    try:
-        import cv2
+def _probe_video_stream(src: Path) -> tuple[str | None, str | None]:
+    ffprobe = shutil.which("ffprobe")
+    if ffprobe is None:
+        return None, None
 
-        cap = cv2.VideoCapture(str(src))
-        if not cap.isOpened():
+    cmd = [
+        ffprobe,
+        "-v", "error",
+        "-select_streams", "v:0",
+        "-show_entries", "stream=codec_name,pix_fmt",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        str(src),
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        logging.warning("[FFPROBE FAILED] %s", proc.stderr.strip()[:240])
+        return None, None
+
+    lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    codec = lines[0] if len(lines) >= 1 else None
+    pix_fmt = lines[1] if len(lines) >= 2 else None
+    return codec, pix_fmt
+
+
+def _transcode_to_browser_mp4(src: Path) -> bytes | None:
+    ffmpeg = shutil.which("ffmpeg")
+    if ffmpeg is None:
+        return None
+
+    tmp_handle = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    tmp_handle.close()
+    tmp_path = Path(tmp_handle.name)
+    try:
+        cmd = [
+            ffmpeg,
+            "-y",
+            "-i", str(src),
+            "-map", "0:v:0",
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            str(tmp_path),
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode != 0:
+            logging.warning("[REENCODE FAILED] %s", proc.stderr.strip()[:240])
             return None
-        fps    = cap.get(cv2.CAP_PROP_FPS) or 30.0
-        width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        tmp    = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-        tmp.close()
-        tmp_name = tmp.name
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        out    = cv2.VideoWriter(tmp_name, fourcc, fps, (width, height))
-        try:
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                out.write(frame)
-        finally:
-            cap.release()
-            out.release()
-            cap = None
-            out = None
-        data = Path(tmp_name).read_bytes()
-        return data if len(data) > 1000 else None
-    except Exception as e:
-        logging.warning(f"[REENCODE FAILED] {e}")
+        if not tmp_path.exists() or tmp_path.stat().st_size <= 1000:
+            return None
+        return tmp_path.read_bytes()
+    except Exception as exc:
+        logging.warning("[REENCODE FAILED] %s", exc)
         return None
     finally:
-        if cap is not None:
-            cap.release()
-        if out is not None:
-            out.release()
-        if tmp_name:
-            try:
-                os.unlink(tmp_name)
-            except OSError:
-                pass
+        tmp_path.unlink(missing_ok=True)
 
 
 def render_overlay_panel(overlay_path) -> None:
     if overlay_path:
         p = Path(str(overlay_path))
         if p.exists() and p.stat().st_size > 0:
-            video_bytes = _reencode_to_h264(p)
-            if video_bytes:
-                st.video(video_bytes, format="video/mp4")
-            else:
+            suffix = p.suffix.lower()
+            codec, pix_fmt = _probe_video_stream(p)
+            logging.warning(
+                "[OVERLAY PANEL] path='%s' suffix='%s' codec='%s' pix_fmt='%s' size=%s",
+                p,
+                suffix,
+                codec,
+                pix_fmt,
+                p.stat().st_size,
+            )
+
+            if suffix == ".webm":
+                st.video(p.read_bytes(), format="video/webm")
+            elif suffix == ".mp4" and codec == "h264" and (pix_fmt is None or "420" in pix_fmt):
                 st.video(p.read_bytes(), format="video/mp4")
+            else:
+                video_bytes = _transcode_to_browser_mp4(p)
+                if video_bytes:
+                    st.video(video_bytes, format="video/mp4")
+                elif suffix == ".mp4":
+                    st.video(p.read_bytes(), format="video/mp4")
+                elif suffix == ".webm":
+                    st.video(p.read_bytes(), format="video/webm")
+                else:
+                    st.warning(f"Overlay video could not be transcoded for browser playback: {p.name}")
+                    render_empty_state_results()
         else:
             st.warning(f"Overlay file not found or empty at: {p}")
             render_empty_state_results()
     else:
+        if st.session_state.get("last_analysis") or st.session_state.get("last_payload"):
+            st.warning("Overlay artifact could not be resolved for this analysis.")
         render_empty_state_results()
 
 
@@ -162,14 +188,9 @@ def render_summary_metrics() -> None:
     for col, m in zip(cols, metrics):
         with col:
             st.markdown(
-                f"""<div style="text-align:center;background:#ffffff;
-                    border:1px solid #e2e8f0;border-radius:16px;padding:20px 12px;
-                    box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-                    <div style="font-size:11px;text-transform:uppercase;
-                                letter-spacing:0.08em;color:#94a3b8;
-                                font-weight:700;margin-bottom:8px;">{m.label}</div>
-                    <div style="font-size:28px;font-weight:900;
-                                color:#1e293b;">{m.value}</div>
+                f"""<div class="rr-metric-card">
+                    <div class="rr-metric-card__label">{m.label}</div>
+                    <div class="rr-metric-card__value">{m.value}</div>
                 </div>""",
                 unsafe_allow_html=True,
             )
@@ -184,10 +205,7 @@ def render_faults_panel() -> None:
             return
         for row in rows:
             st.markdown(
-                f"""<div style="padding:11px 16px;margin-bottom:6px;
-                    border-radius:12px;background:#f8fafc;
-                    border:1px solid #e2e8f0;font-size:14px;
-                    color:#334155;">{row}</div>""",
+                f"""<div class="rr-fault-row">{row}</div>""",
                 unsafe_allow_html=True,
             )
 
@@ -203,95 +221,334 @@ def render_artifacts_panel() -> None:
         )
 
 
-def render_chat_panel(on_followup: FollowupCallback) -> None:
-    busy = bool(st.session_state.get("ui_busy"))
-    if not st.session_state.history:
-        render_empty_state(EMPTY_STATES["chat"])
-    for msg in st.session_state.history:
-        role = "user" if msg.get("role") == "user" else "assistant"
-        with st.chat_message(role):
-            st.write(msg.get("content", ""))
-            ts = msg.get("timestamp")
-            if ts:
-                st.caption(ts[:16].replace("T", " "))
-    follow_up = st.chat_input(
-        TEXT["chat"]["follow_up"],
-        disabled=busy or not bool(st.session_state.last_analysis),
-    )
-    if follow_up and st.session_state.last_analysis:
-        on_followup(follow_up, st.session_state.get("ui_load_kg", 0.0))
+def render_comparison_panel() -> None:
+    vm = comparison_view_model(st.session_state.get("last_payload"))
+    if vm is None or not vm.metrics:
+        return
 
-
-def render_coaching_overview_panel() -> None:
-    t = TEXT["coaching_panel"]
-
-    # ── Blue gradient header card ──
-    coaching_text = (st.session_state.last_response or {}).get("response_text", "")
-    body_html = (
-        f"<p style='margin:0;font-size:14px;color:rgba(255,255,255,0.85);"
-        f"line-height:1.7;white-space:pre-line;'>{coaching_text}</p>"
-        if coaching_text else
-        f"<p style='margin:0;font-size:14px;color:rgba(255,255,255,0.8);"
-        f"line-height:1.7;'>{t['subtitle']}</p>"
-    )
     st.markdown(
-        f"""<div style="background:linear-gradient(135deg,#2563eb,#1e40af);
-            border-radius:18px;padding:22px 22px 20px;margin-bottom:14px;color:#fff;
-            box-shadow:0 4px 20px rgba(37,99,235,0.3);">
-            <div style="font-size:18px;font-weight:800;margin-bottom:10px;
-                        color:#ffffff;">{t['title']}</div>
-            {body_html}
+        f"""<div class="rr-comparison-shell">
+            <div class="rr-section-kicker">{vm.headline}</div>
+            <div class="rr-comparison-summary">{vm.summary}</div>
+            <div class="rr-comparison-note">
+                These cards show set-to-set change. The large value is the difference from the previous valid set to the current set.
+            </div>
         </div>""",
         unsafe_allow_html=True,
     )
 
-    # ── How it Works card — native components, no raw HTML in body ──
-    with st.container():
+    cols = st.columns(min(3, len(vm.metrics)))
+    for idx, metric in enumerate(vm.metrics):
+        with cols[idx % len(cols)]:
+            st.markdown(
+                f"""<div class="rr-comparison-metric rr-comparison-metric--{metric.tone}">
+                    <div class="rr-comparison-metric__label">{metric.label}</div>
+                    <div class="rr-comparison-metric__delta-label">Set change</div>
+                    <div class="rr-comparison-metric__delta">{metric.delta}</div>
+                    <div class="rr-comparison-metric__values">
+                        <span>Previous set: {metric.previous}</span>
+                        <span>Current set: {metric.current}</span>
+                    </div>
+                </div>""",
+                unsafe_allow_html=True,
+            )
+
+    if vm.fault_rows:
         st.markdown(
-            """<div style="background:#ffffff;border:1px solid #e2e8f0;
-                border-radius:16px;padding:18px 20px 8px;margin-bottom:14px;
-                box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+            "<div class='rr-section-kicker' style='margin:14px 0 8px;'>Fault Changes</div>",
+            unsafe_allow_html=True,
+        )
+        for row in vm.fault_rows:
+            st.markdown(f"""<div class="rr-fault-row rr-fault-row--comparison">{row}</div>""", unsafe_allow_html=True)
+
+
+def _analysis_score_value() -> float | None:
+    response = st.session_state.get("last_response") or {}
+    structured = response.get("structured") if isinstance(response, dict) else {}
+    if isinstance(structured, dict):
+        score = structured.get("overall_score")
+        if isinstance(score, (int, float)):
+            return float(score)
+
+    summary = (st.session_state.get("last_analysis") or {}).get("set_summary_v1") or {}
+    score = summary.get("quality_score") or summary.get("quality_score_pct")
+    return float(score) if isinstance(score, (int, float)) else None
+
+
+def _coach_summary_card() -> None:
+    analysis = st.session_state.get("last_analysis") or {}
+    summary = analysis.get("set_summary_v1") or {}
+    compare_vm = comparison_view_model(st.session_state.get("last_payload"))
+    exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "analysis").capitalize()
+    reps = summary.get("n_reps", "—")
+    avg_rom = summary.get("avg_rom")
+    avg_rom_label = f"{float(avg_rom):.2f}" if isinstance(avg_rom, (int, float)) else "n/a"
+    load_kg = st.session_state.get("ui_load_kg")
+    score = _analysis_score_value()
+    score_label = f"{score:.0f}" if isinstance(score, (int, float)) else "—"
+    load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "Load: n/a"
+
+    st.markdown(
+        f"""<div class="rr-hero-card rr-hero-card--analysis">
+            <div class="rr-hero-card__head">
+                <div>
+                    <div class="rr-kicker rr-kicker--light">Analysis Snapshot</div>
+                    <div class="rr-hero-card__title">{exercise}</div>
+                    <div class="rr-hero-card__copy">
+                        Open the full analysis for quality breakdown, rep metrics, recurring faults, and export tools.
+                    </div>
+                </div>
+                <div class="rr-hero-card__score">
+                    <div class="rr-kicker rr-kicker--light">Lift Quality</div>
+                    <div class="rr-hero-card__score-value">{score_label}</div>
+                    <div class="rr-hero-card__score-scale">/100</div>
+                </div>
+            </div>
+            <div class="rr-chip-row">
+                <span class="rr-chip rr-chip--hero">Reps: {reps}</span>
+                <span class="rr-chip rr-chip--hero">Avg ROM: {avg_rom_label}</span>
+                <span class="rr-chip rr-chip--hero">{load_label}</span>
+            </div>
+        </div>""",
+        unsafe_allow_html=True,
+    )
+    if compare_vm and compare_vm.metrics:
+        chips = "".join(
+            f"""<span class="rr-chip rr-chip--compare rr-chip--compare-{metric.tone}">
+                {metric.label}: {metric.delta}
+            </span>"""
+            for metric in compare_vm.metrics[:4]
+        )
+        st.markdown(
+            f"""<div class="rr-compare-strip">
+                <div class="rr-section-kicker">Latest Comparison</div>
+                <div class="rr-compare-strip__summary">{compare_vm.summary}</div>
+                <div class="rr-comparison-note">
+                    Showing the change from the previous valid set to this one.
+                </div>
+                <div class="rr-chip-row">{chips}</div>
             </div>""",
             unsafe_allow_html=True,
         )
-        how_col, view_col = st.columns([5, 1])
-        with how_col:
-            st.markdown(
-                f"<div style='font-size:15px;font-weight:700;color:#1e293b;"
-                f"margin-bottom:12px;'>{t['how_title']}</div>",
-                unsafe_allow_html=True,
-            )
-        with view_col:
-            st.markdown(
-                f"<div style='font-size:13px;color:#2563eb;font-weight:600;"
-                f"padding-top:2px;'>{t['view_all']}</div>",
-                unsafe_allow_html=True,
-            )
-        for icon, title, desc in t["steps"]:
-            ic, tx = st.columns([1, 6])
-            with ic:
-                st.markdown(
-                    f"<div style='width:36px;height:36px;border-radius:10px;"
-                    f"background:#f1f5f9;display:flex;align-items:center;"
-                    f"justify-content:center;font-size:16px;margin-top:2px;'>"
-                    f"{icon}</div>",
-                    unsafe_allow_html=True,
-                )
-            with tx:
-                st.markdown(
-                    f"<div style='font-size:14px;font-weight:700;color:#1e293b;"
-                    f"margin-bottom:2px;'>{title}</div>"
-                    f"<div style='font-size:13px;color:#64748b;'>{desc}</div>",
-                    unsafe_allow_html=True,
-                )
 
-    # ── Tip card ──
+
+def _coach_welcome_card() -> None:
+    t = TEXT["coaching_panel"]
+    steps = "".join(
+        f"""<div class="rr-hero-step">
+            <div class="rr-hero-step__icon">{icon}</div>
+            <div>
+                <div class="rr-hero-step__title">{title}</div>
+                <div class="rr-hero-step__desc">{desc}</div>
+            </div>
+        </div>"""
+        for icon, title, desc in t["steps"]
+    )
     st.markdown(
-        f"""<div style="background:#f8fafc;border:1px solid #e2e8f0;
-            border-radius:14px;padding:14px 18px;font-size:14px;
-            color:#475569;line-height:1.6;">{t['tip']}</div>""",
+        f"""<div class="rr-hero-card rr-hero-card--welcome">
+            <div class="rr-kicker rr-kicker--light">Coach Chat</div>
+            <div class="rr-hero-card__title">{t['title']}</div>
+            <div class="rr-hero-card__copy">{t['subtitle']}</div>
+            {steps}
+        </div>""",
         unsafe_allow_html=True,
     )
+    st.caption(t["tip"])
+
+
+def _render_analysis_dialog() -> None:
+    @st.dialog("Analysis Snapshot", width="large")
+    def _analysis_dialog() -> None:
+        analysis = st.session_state.get("last_analysis") or {}
+        response = st.session_state.get("last_response") or {}
+        exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "analysis").capitalize()
+        load_kg = st.session_state.get("ui_load_kg")
+        load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "n/a"
+        response_text = response.get("response_text", "") if isinstance(response, dict) else ""
+
+        st.markdown(
+            f"""<div class="rr-dialog-hero">
+                <div class="rr-dialog-hero__head">
+                    <div>
+                        <div class="rr-section-kicker">Detailed View</div>
+                        <div class="rr-dialog-hero__title">{exercise}</div>
+                    </div>
+                    <div class="rr-dialog-hero__load">Load: {load_label}</div>
+                </div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+        render_quality_header()
+        render_summary_metrics()
+        render_comparison_panel()
+        render_faults_panel()
+        render_artifacts_panel()
+
+        if response_text:
+            st.markdown("**Latest Coach Reply**")
+            st.markdown(
+                f"""<div class="rr-assistant-note">{response_text}</div>""",
+                unsafe_allow_html=True,
+            )
+
+        if st.button("Back To Chat", use_container_width=True, key="collapse_analysis_dialog"):
+            st.rerun()
+
+    _analysis_dialog()
+
+
+def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCallback) -> None:
+    busy = bool(st.session_state.get("ui_busy"))
+    has_analysis = bool(st.session_state.get("last_analysis"))
+    has_response = bool(st.session_state.get("last_response"))
+    exercise_locked = bool(has_analysis and (st.session_state.get("last_analysis") or {}).get("exercise"))
+
+    if st.session_state.get("clear_followup_draft_pending"):
+        st.session_state.coach_followup_draft = ""
+        st.session_state.clear_followup_draft_pending = False
+
+    with st.container(border=True):
+        st.markdown(
+            """<div class="rr-coach-shell-head">
+                <div>
+                    <div class="rr-section-kicker">Coach Workspace</div>
+                    <div class="rr-coach-shell-head__title">Chat With RepRight</div>
+                </div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+        if has_analysis or has_response:
+            with st.chat_message("assistant"):
+                _coach_summary_card()
+                action_cols = st.columns([1, 1])
+                with action_cols[0]:
+                    open_analysis = st.button(
+                        "Open analysis",
+                        key="open_analysis_dialog",
+                        use_container_width=True,
+                    )
+                with action_cols[1]:
+                    p = artifact_analysis_json_path(st.session_state.get("last_analysis"))
+                    if p:
+                        st.download_button(
+                            "Export JSON",
+                            data=p.read_text(encoding="utf-8"),
+                            file_name=p.name,
+                            mime="application/json",
+                            use_container_width=True,
+                            key="download_analysis_dialog_button",
+                        )
+                if open_analysis:
+                    _render_analysis_dialog()
+        else:
+            with st.chat_message("assistant"):
+                _coach_welcome_card()
+
+        chat_scroll = st.container(height=460)
+        with chat_scroll:
+            if not st.session_state.history:
+                render_empty_state(EMPTY_STATES["chat"])
+            for msg in st.session_state.history:
+                role = "user" if msg.get("role") == "user" else "assistant"
+                with st.chat_message(role):
+                    st.write(msg.get("content", ""))
+                    ts = msg.get("timestamp")
+                    if ts:
+                        st.caption(ts[:16].replace("T", " "))
+
+        notice = st.session_state.get("chat_upload_notice")
+        if isinstance(notice, dict) and notice.get("text"):
+            render_callout(notice.get("kind", "warning"), notice.get("text", ""))
+
+        st.markdown(
+            """<div class="rr-section-kicker" style="margin:16px 0 10px;">Session Input</div>""",
+            unsafe_allow_html=True,
+        )
+        if has_analysis:
+            st.caption("Upload another clip of this same exercise to compare it against the latest analysis, or just send a text follow-up.")
+        else:
+            st.caption("Choose an exercise, add the load if you want it considered, then upload your first set to start the chat.")
+        if exercise_locked:
+            locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
+            icon = EXERCISE_ICONS.get(locked_val, "")
+            st.selectbox(
+                TEXT["inputs"]["exercise"],
+                [f"{icon} {str(locked_val).capitalize()}"],
+                disabled=True,
+                key="coach_locked_exercise",
+            )
+            exercise = str(locked_val)
+        else:
+            labels = [f"{EXERCISE_ICONS.get(e, '')} {e.capitalize()}" for e in EXERCISES]
+            label_map = dict(zip(labels, EXERCISES))
+            current_exercise = st.session_state.get("exercise_choice") or EXERCISES[0]
+            current_label = next(
+                (label for label, value in label_map.items() if value == current_exercise),
+                labels[0],
+            )
+            selected = st.selectbox(
+                TEXT["inputs"]["exercise"],
+                labels,
+                key="coach_exercise_choice_label",
+                disabled=busy,
+                index=labels.index(current_label),
+            )
+            exercise = label_map[selected]
+            st.session_state.exercise_choice = exercise
+
+        load_kg = st.number_input(
+            TEXT["inputs"]["load"],
+            min_value=0.0,
+            step=2.5,
+            key="ui_load_kg",
+            disabled=busy,
+        )
+        upload_key = f"chat_video_upload_{int(st.session_state.get('chat_upload_nonce', 0))}"
+        upload = st.file_uploader(
+            TEXT["inputs"]["upload"],
+            type=["mp4", "mov", "avi", "mkv", "webm"],
+            key=upload_key,
+            disabled=busy,
+        )
+        prompt = st.text_area(
+            TEXT["chat"]["follow_up"],
+            key="coach_followup_draft",
+            height=96,
+            disabled=busy,
+            placeholder=(
+                "Upload a new set to compare against the last one, or ask about a rep, cue, tempo, or next-step fix."
+                if has_analysis else
+                "Upload your first set and optionally add context for the coach."
+            ),
+            label_visibility="collapsed",
+        )
+        action_label = (
+            "Analyze uploaded set"
+            if upload is not None else
+            ("Send follow-up" if has_analysis else TEXT["inputs"]["analyze"])
+        )
+        if st.button(
+            action_label,
+            key="coach_workspace_submit",
+            use_container_width=True,
+            type="primary",
+            disabled=busy,
+        ):
+            if upload is not None:
+                on_analyze(
+                    exercise,
+                    load_kg if load_kg > 0 else None,
+                    upload,
+                    prompt.strip(),
+                )
+            elif has_analysis and prompt.strip():
+                on_followup(prompt.strip(), load_kg)
+            elif not has_analysis:
+                render_callout("warning", TEXT["inputs"]["upload_warning"])
+            else:
+                render_callout("info", "Add a follow-up question or upload another video for comparison.")
 
 
 

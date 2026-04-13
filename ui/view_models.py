@@ -20,6 +20,24 @@ class SummaryMetric:
     value: str | int
 
 
+@dataclass
+class ComparisonMetricView:
+    label: str
+    previous: str
+    current: str
+    delta: str
+    trend: str
+    tone: str
+
+
+@dataclass
+class ComparisonViewModel:
+    headline: str
+    summary: str
+    metrics: list[ComparisonMetricView]
+    fault_rows: list[str]
+
+
 def canonical_lift_quality(analysis: dict[str, Any] | None) -> int | None:
     if not isinstance(analysis, dict):
         return None
@@ -76,6 +94,126 @@ def artifact_analysis_json_path(analysis) -> Path | None:
     if path and Path(str(path)).exists():
         return Path(str(path))
     return None
+
+
+def _as_float(value: Any) -> float | None:
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def _format_value(metric: str, value: Any) -> str:
+    if value is None:
+        return "n/a"
+    if metric in {"quality_score", "n_reps", "n_low_confidence"} and isinstance(value, (int, float)):
+        return str(int(round(float(value))))
+    if metric == "load_kg" and isinstance(value, (int, float)):
+        return f"{float(value):.1f} kg"
+    if metric in {"avg_rom", "avg_duration_sec", "avg_tempo_up_sec", "avg_tempo_down_sec"} and isinstance(value, (int, float)):
+        suffix = "°" if metric == "avg_rom" else "s"
+        return f"{float(value):.2f}{suffix}"
+    return str(value)
+
+
+def _format_delta(metric: str, delta: Any) -> str:
+    if not isinstance(delta, (int, float)):
+        return "n/a"
+    if abs(float(delta)) < 1e-6:
+        return "No change"
+    prefix = "+" if float(delta) > 0 else ""
+    if metric == "load_kg":
+        return f"{prefix}{float(delta):.1f} kg"
+    if metric == "avg_rom":
+        return f"{prefix}{float(delta):.2f}°"
+    if metric in {"avg_duration_sec", "avg_tempo_up_sec", "avg_tempo_down_sec"}:
+        return f"{prefix}{float(delta):.2f}s"
+    if metric in {"quality_score", "n_reps", "n_low_confidence"}:
+        return f"{prefix}{int(round(float(delta)))}"
+    return f"{prefix}{float(delta):.2f}"
+
+
+def _metric_tone(metric: str, trend: str) -> str:
+    if trend == "stable":
+        return "neutral"
+    if trend == "improved":
+        return "good"
+    if trend == "regressed":
+        return "bad"
+    return "neutral"
+
+
+def comparison_view_model(payload: dict[str, Any] | None) -> ComparisonViewModel | None:
+    if not isinstance(payload, dict):
+        return None
+    comparison = payload.get("comparison_v1")
+    if not isinstance(comparison, dict):
+        return None
+    if comparison.get("exercise_match") is False:
+        return None
+
+    previous = comparison.get("previous") if isinstance(comparison.get("previous"), dict) else {}
+    current = comparison.get("current") if isinstance(comparison.get("current"), dict) else {}
+    delta = comparison.get("delta") if isinstance(comparison.get("delta"), dict) else {}
+    trend = comparison.get("trend") if isinstance(comparison.get("trend"), dict) else {}
+
+    metric_specs = [
+        ("quality_score", "Quality"),
+        ("avg_rom", "Avg ROM"),
+        ("n_reps", "Reps"),
+        ("n_low_confidence", "Low conf."),
+        ("load_kg", "Load"),
+    ]
+    metrics: list[ComparisonMetricView] = []
+    for key, label in metric_specs:
+        prev_value = previous.get(key)
+        curr_value = current.get(key)
+        delta_value = delta.get(key)
+        if prev_value is None and curr_value is None and delta_value is None:
+            continue
+        metric_trend = str(trend.get(key) or "stable")
+        if key not in trend and isinstance(delta_value, (int, float)):
+            if abs(float(delta_value)) < 1e-6:
+                metric_trend = "stable"
+            else:
+                metric_trend = "improved" if float(delta_value) > 0 else "regressed"
+                if key == "n_low_confidence":
+                    metric_trend = "improved" if float(delta_value) < 0 else "regressed"
+        metrics.append(
+            ComparisonMetricView(
+                label=label,
+                previous=_format_value(key, prev_value),
+                current=_format_value(key, curr_value),
+                delta=_format_delta(key, delta_value),
+                trend=metric_trend,
+                tone=_metric_tone(key, metric_trend),
+            )
+        )
+
+    fault_rows: list[str] = []
+    for row in comparison.get("fault_changes") or []:
+        if not isinstance(row, dict):
+            continue
+        code = str(row.get("code") or "UNKNOWN")
+        prev_count = int(row.get("previous_count", 0) or 0)
+        curr_count = int(row.get("current_count", 0) or 0)
+        diff = int(row.get("delta", 0) or 0)
+        if diff == 0:
+            continue
+        if diff < 0:
+            direction = f"improved by {abs(diff)}"
+        else:
+            direction = f"worse by {diff}"
+        fault_rows.append(f"{code}: {prev_count} → {curr_count} ({direction})")
+
+    better = sum(1 for m in metrics if m.trend == "improved")
+    worse = sum(1 for m in metrics if m.trend == "regressed")
+    stable = sum(1 for m in metrics if m.trend == "stable")
+    headline = "Compared With Previous Set"
+    summary = f"{better} improved, {worse} regressed, {stable} stayed stable."
+    return ComparisonViewModel(
+        headline=headline,
+        summary=summary,
+        metrics=metrics,
+        fault_rows=fault_rows[:6],
+    )
 
 
 def _resolve_path(raw: Any) -> Path | None:

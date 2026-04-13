@@ -68,14 +68,14 @@ def _find_analysis_json(npz_path: Path, out_path: Path) -> Optional[Path]:
     return None
 
 
-def _load_reps_and_exercise(analysis_json: Optional[Path]) -> Tuple[List[Dict[str, Any]], str]:
+def _load_reps_and_exercise(analysis_json: Optional[Path]) -> Tuple[List[Dict[str, Any]], str, bool]:
     if not analysis_json or not analysis_json.exists():
-        return [], ""
+        return [], "", False
 
     try:
         data = json.loads(analysis_json.read_text(encoding="utf-8"))
     except Exception:
-        return [], ""
+        return [], "", False
 
     reps = data.get("reps") if isinstance(data, dict) else None
     if not isinstance(reps, list):
@@ -84,13 +84,14 @@ def _load_reps_and_exercise(analysis_json: Optional[Path]) -> Tuple[List[Dict[st
     ex = data.get("exercise", "")
     if not isinstance(ex, str):
         ex = ""
+    signal_inverted = bool((data.get("rep_debug") or {}).get("signal_inverted"))
 
     # Only keep dict reps
     reps_out: List[Dict[str, Any]] = []
     for r in reps:
         if isinstance(r, dict):
             reps_out.append(r)
-    return reps_out, ex
+    return reps_out, ex, signal_inverted
 
 
 def _safe_int(v: Any) -> Optional[int]:
@@ -105,13 +106,26 @@ def _safe_int(v: Any) -> Optional[int]:
         return None
 
 
-def _clamp_completed_frames(reps: List[Dict[str, Any]], max_frame: int) -> List[int]:
+def _completion_frame(rep: Dict[str, Any], exercise: str, signal_inverted: bool) -> Optional[int]:
+    if exercise == "deadlift" and signal_inverted:
+        pf = _safe_int(rep.get("peak_frame"))
+        if pf is not None:
+            return pf
+    return _safe_int(rep.get("end_frame"))
+
+
+def _clamp_completed_frames(
+    reps: List[Dict[str, Any]],
+    exercise: str,
+    signal_inverted: bool,
+    max_frame: int,
+) -> List[int]:
     """
-    Returns sorted list of completion frames (end_frame), clamped to [0, max_frame].
+    Returns sorted list of completion frames, clamped to [0, max_frame].
     """
     ends: List[int] = []
     for r in reps:
-        ef = _safe_int(r.get("end_frame"))
+        ef = _completion_frame(r, exercise, signal_inverted)
         if ef is None:
             continue
         if ef < 0:
@@ -170,7 +184,7 @@ def main():
 
     # Load reps from analysis_v1.json (auto-discovery)
     analysis_json = _find_analysis_json(npz_path, out_path)
-    reps, exercise = _load_reps_and_exercise(analysis_json)
+    reps, exercise, signal_inverted = _load_reps_and_exercise(analysis_json)
 
     # Max valid frame index for rep clamping:
     # - if video frame count is known, clamp to min(video, pose)-1
@@ -180,7 +194,7 @@ def main():
     else:
         max_valid = max(0, T - 1)
 
-    rep_end_frames = _clamp_completed_frames(reps, max_valid)
+    rep_end_frames = _clamp_completed_frames(reps, exercise, signal_inverted, max_valid)
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     tmp_out = out_path.with_name(out_path.stem + ".tmp_mp4v.mp4")

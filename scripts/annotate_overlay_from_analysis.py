@@ -33,17 +33,28 @@ def _transcode_with_ffmpeg(src: Path, dst: Path, args: list[str]) -> bool:
     return _valid_video_file(dst)
 
 
+def _completion_frame(rep: dict, exercise: str, signal_inverted: bool) -> int | None:
+    if exercise == "deadlift" and signal_inverted:
+        pf = rep.get("peak_frame")
+        if isinstance(pf, int):
+            return pf
+    ef = rep.get("end_frame")
+    return ef if isinstance(ef, int) else None
+
+
 def _build_rep_ranges(analysis: dict) -> list[tuple[int, int, int]]:
     reps = analysis.get("reps") if isinstance(analysis.get("reps"), list) else []
+    exercise = str(analysis.get("exercise") or "").strip().lower()
+    signal_inverted = bool((analysis.get("rep_debug") or {}).get("signal_inverted"))
     out: list[tuple[int, int, int]] = []
     for rep in reps:
         if not isinstance(rep, dict):
             continue
         idx = rep.get("rep_index")
         sf = rep.get("start_frame")
-        ef = rep.get("end_frame")
-        if isinstance(idx, int) and isinstance(sf, int) and isinstance(ef, int) and ef >= sf:
-            out.append((sf, ef, idx))
+        cf = _completion_frame(rep, exercise, signal_inverted)
+        if isinstance(idx, int) and isinstance(sf, int) and isinstance(cf, int) and cf >= sf:
+            out.append((sf, cf, idx))
     out.sort(key=lambda x: x[0])
     return out
 
