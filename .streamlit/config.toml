@@ -5,3 +5,11 @@ maxMessageSize = 250
 
 [client]
 showErrorDetails = "type"
+
+[theme]
+base = "light"
+primaryColor = "#0057B7"
+backgroundColor = "#EEF4FF"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#001E50"
+font = "sans serif"
