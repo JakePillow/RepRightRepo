@@ -74,7 +74,7 @@ def inject_global_css() -> None:
     st.markdown(
         f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
         :root {{
 {light_vars}
@@ -107,20 +107,22 @@ def inject_global_css() -> None:
             z-index: 1000 !important;
         }}
 
+        /* Wii sidebar toggle button — blue bubble */
         [data-testid="collapsedControl"] > button,
         [data-testid="stSidebarCollapsedControl"] > button {{
-            background: linear-gradient(180deg, rgba(59,130,246,0.94), rgba(29,78,216,1)) !important;
+            background: linear-gradient(180deg, #0066CC, #003F8A) !important;
             color: #ffffff !important;
-            border: 1px solid rgba(255,255,255,0.14) !important;
-            border-radius: 0 14px 14px 0 !important;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18) !important;
+            border: 1px solid rgba(255,255,255,0.18) !important;
+            border-radius: 0 20px 20px 0 !important;
+            box-shadow: 0 8px 20px rgba(0, 30, 80, 0.28), inset 0 1px 0 rgba(255,255,255,0.28) !important;
         }}
 
         [data-testid="collapsedControl"] > button:hover,
         [data-testid="stSidebarCollapsedControl"] > button:hover {{
-            background: linear-gradient(180deg, rgba(96,165,250,0.98), rgba(37,99,235,1)) !important;
+            background: linear-gradient(180deg, #4DB3FF, #0057B7) !important;
         }}
 
+        /* === Wii Menu background: crisp white-to-light-blue === */
         html,
         body,
         [data-testid="stAppViewContainer"],
@@ -128,54 +130,56 @@ def inject_global_css() -> None:
         section[data-testid="stMain"],
         section[data-testid="stMain"] > div {{
             background:
-                radial-gradient(circle at top left, var(--rr-stage-glow-a), transparent 36%),
-                radial-gradient(circle at top right, var(--rr-stage-glow-b), transparent 32%),
-                linear-gradient(180deg, var(--rr-page-bg-alt), var(--rr-page-bg)) !important;
+                radial-gradient(ellipse at top left, rgba(255,255,255,0.95), transparent 48%),
+                radial-gradient(ellipse at top right, rgba(77,179,255,0.18), transparent 40%),
+                linear-gradient(180deg, var(--rr-page-bg-alt) 0%, var(--rr-page-bg) 100%) !important;
             color: var(--rr-text) !important;
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
             overflow-y: auto !important;
         }}
 
+        /* === Wii Channel grid main container === */
         .block-container {{
             position: relative !important;
             padding-top: 28px !important;
             padding-left: 32px !important;
             padding-right: 32px !important;
             max-width: 100% !important;
-            background:
-                linear-gradient(180deg, var(--rr-stage-bg), var(--rr-stage-bg-alt)) !important;
-            border: 1px solid var(--rr-stage-border) !important;
-            border-radius: 34px !important;
+            background: linear-gradient(180deg, var(--rr-stage-bg), var(--rr-stage-bg-alt)) !important;
+            border: 1.5px solid var(--rr-stage-border) !important;
+            border-radius: 36px !important;
             box-shadow:
-                0 28px 70px var(--rr-glass-shadow-strong),
-                inset 0 1px 0 rgba(255,255,255,0.48) !important;
+                0 24px 64px var(--rr-glass-shadow-strong),
+                inset 0 2px 0 rgba(255,255,255,0.70),
+                inset 0 -1px 0 rgba(0,87,183,0.08) !important;
             overflow: visible !important;
-            backdrop-filter: blur(22px) saturate(140%);
+            backdrop-filter: blur(20px) saturate(130%);
             margin-top: 12px !important;
             margin-bottom: 16px !important;
         }}
 
+        /* Wii scanline + gloss overlay */
         .block-container::before {{
             content: "";
             position: absolute;
             inset: 0;
+            border-radius: 36px;
             pointer-events: none;
             background:
-                radial-gradient(circle at 18% 8%, var(--rr-stage-glow-a), transparent 30%),
-                radial-gradient(circle at 88% 2%, var(--rr-stage-glow-b), transparent 24%),
-                linear-gradient(180deg, rgba(255,255,255,0.18), transparent 24%, transparent 76%, rgba(255,255,255,0.12)),
-                repeating-linear-gradient(135deg, var(--rr-pattern-line) 0 2px, transparent 2px 20px);
-            opacity: 0.95;
+                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, transparent 18%, transparent 82%, rgba(255,255,255,0.14) 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,87,183,0.025) 3px, rgba(0,87,183,0.025) 4px);
+            z-index: 0;
         }}
 
         .block-container::after {{
             content: "";
             position: absolute;
-            inset: 22px;
+            inset: 20px;
             border-radius: 28px;
             border: 1px solid var(--rr-stage-inner-border);
             pointer-events: none;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.32);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.50);
+            z-index: 0;
         }}
 
         .block-container > * {{
@@ -183,12 +187,13 @@ def inject_global_css() -> None:
             z-index: 1;
         }}
 
+        /* === Wii Settings sidebar: deep navy === */
         [data-testid="stSidebar"] {{
             background:
-                radial-gradient(circle at top, rgba(255,255,255,0.10), transparent 32%),
-                linear-gradient(180deg, var(--rr-sidebar-bg), color-mix(in srgb, var(--rr-sidebar-bg) 82%, black)) !important;
+                radial-gradient(ellipse at top, rgba(0,102,204,0.22), transparent 42%),
+                linear-gradient(180deg, var(--rr-sidebar-bg) 0%, #000D2A 100%) !important;
             border-right: none !important;
-            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06) !important;
+            box-shadow: inset -1px 0 0 rgba(77,179,255,0.12) !important;
         }}
 
         [data-testid="stSidebar"] * {{
@@ -197,40 +202,45 @@ def inject_global_css() -> None:
 
         [data-testid="stSidebar"] .stMarkdown p {{
             font-size: 11px !important;
-            font-weight: 700 !important;
+            font-weight: 800 !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.08em !important;
+            letter-spacing: 0.10em !important;
             color: var(--rr-sidebar-muted) !important;
             margin: 16px 0 6px !important;
         }}
 
+        /* Wii menu sidebar buttons — translucent white bubbles on navy */
         [data-testid="stSidebar"] .stButton > button {{
             background: var(--rr-sidebar-button) !important;
             color: var(--rr-sidebar-text) !important;
-            border: 1px solid rgba(255,255,255,0.08) !important;
-            border-radius: 16px !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            border-radius: 22px !important;
             font-size: 13px !important;
-            font-weight: 700 !important;
+            font-weight: 800 !important;
+            font-family: "Nunito", sans-serif !important;
             text-align: center !important;
             padding: 11px 14px !important;
             margin: 0 0 6px 0 !important;
             width: 100% !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.12) !important;
-            transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.18),
+                0 2px 8px rgba(0,0,0,0.18) !important;
+            transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease !important;
         }}
 
         [data-testid="stSidebar"] .stButton > button:hover {{
             background: var(--rr-sidebar-button-hover) !important;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.16) !important;
+            transform: translateY(-1px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.22) !important;
         }}
 
         [data-testid="stSidebar"] .stButton > button:disabled,
         button[kind="primary"]:disabled {{
-            opacity: 0.55 !important;
+            opacity: 0.50 !important;
             cursor: not-allowed !important;
         }}
 
+        /* === Wii input fields: white, rounded, blue focus ring === */
         .stTextInput > div > div > input,
         .stNumberInput > div > div > input,
         .stTextArea textarea,
@@ -238,10 +248,12 @@ def inject_global_css() -> None:
         .stSelectbox > div > div {{
             background: var(--rr-glass-bg-strong) !important;
             border: 1.5px solid var(--rr-border) !important;
-            border-radius: 16px !important;
+            border-radius: 20px !important;
             color: var(--rr-text) !important;
             font-size: 15px !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.22) !important;
+            font-family: "Nunito", sans-serif !important;
+            font-weight: 600 !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -1px 0 rgba(0,87,183,0.06) !important;
         }}
 
         .stTextInput > div > div > input:focus,
@@ -250,7 +262,7 @@ def inject_global_css() -> None:
         div[data-baseweb="select"] > div:focus-within,
         .stSelectbox > div > div:focus-within {{
             border-color: var(--rr-accent) !important;
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.16), inset 0 1px 0 rgba(255,255,255,0.70) !important;
         }}
 
         .stTextInput > label,
@@ -259,19 +271,21 @@ def inject_global_css() -> None:
         .stFileUploader > label,
         .stTextArea > label {{
             font-size: 11px !important;
-            font-weight: 700 !important;
+            font-weight: 800 !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.08em !important;
+            letter-spacing: 0.10em !important;
             color: var(--rr-text-muted) !important;
+            font-family: "Nunito", sans-serif !important;
         }}
 
+        /* === Wii file uploader: white with dashed blue border === */
         div[data-testid="stFileUploader"] section,
         div[data-testid="stFileUploaderDropzone"] {{
-            background: var(--rr-glass-bg) !important;
-            border: 1.5px dashed var(--rr-border) !important;
-            border-radius: 18px !important;
+            background: var(--rr-glass-bg-strong) !important;
+            border: 2px dashed var(--rr-accent) !important;
+            border-radius: 22px !important;
             color: var(--rr-text-soft) !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.20) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.60), 0 4px 16px rgba(0,87,183,0.08) !important;
         }}
 
         div[data-testid="stFileUploader"] small,
@@ -280,47 +294,57 @@ def inject_global_css() -> None:
             color: var(--rr-text-muted) !important;
         }}
 
+        /* === Wii primary button: blue bubble with gloss shimmer === */
         button[kind="primary"] {{
             background:
-                linear-gradient(180deg, color-mix(in srgb, var(--rr-accent) 78%, white), var(--rr-accent)) !important;
+                linear-gradient(180deg, #0066CC 0%, #003F8A 100%) !important;
             color: #ffffff !important;
             border: none !important;
-            border-radius: 16px !important;
-            font-weight: 800 !important;
+            border-radius: 24px !important;
+            font-weight: 900 !important;
             font-size: 15px !important;
-            box-shadow: 0 10px 26px color-mix(in srgb, var(--rr-accent) 26%, transparent) !important;
-            transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease !important;
+            font-family: "Nunito", sans-serif !important;
+            letter-spacing: 0.01em !important;
+            box-shadow:
+                0 8px 22px rgba(0,63,138,0.32),
+                inset 0 1px 0 rgba(255,255,255,0.36),
+                inset 0 -1px 0 rgba(0,0,0,0.14) !important;
+            transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease !important;
         }}
 
         button[kind="primary"]:hover {{
-            background: var(--rr-accent-hover) !important;
-            transform: translateY(-1px);
-            box-shadow: 0 14px 30px color-mix(in srgb, var(--rr-accent-hover) 30%, transparent) !important;
+            background: linear-gradient(180deg, #4DB3FF 0%, #0057B7 100%) !important;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow:
+                0 14px 30px rgba(0,87,183,0.36),
+                inset 0 1px 0 rgba(255,255,255,0.40) !important;
         }}
 
+        /* === Wii channel card: white frosted, blue border, gloss === */
         div[data-testid="stVerticalBlockBorderWrapper"] {{
-            background: var(--rr-glass-bg) !important;
-            border: 1px solid var(--rr-glass-border) !important;
-            border-radius: 24px !important;
+            background: var(--rr-glass-bg-strong) !important;
+            border: 1.5px solid var(--rr-glass-border) !important;
+            border-radius: 26px !important;
             box-shadow:
-                0 22px 48px var(--rr-glass-shadow),
-                inset 0 1px 0 rgba(255,255,255,0.24) !important;
-            backdrop-filter: blur(24px) saturate(150%);
-            transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease !important;
+                0 18px 44px var(--rr-glass-shadow),
+                inset 0 2px 0 rgba(255,255,255,0.70),
+                inset 0 -1px 0 rgba(0,87,183,0.06) !important;
+            backdrop-filter: blur(20px) saturate(140%);
+            transition: transform 200ms ease, box-shadow 200ms ease !important;
         }}
 
         div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow:
-                0 26px 54px var(--rr-glass-shadow-strong),
-                inset 0 1px 0 rgba(255,255,255,0.28) !important;
+                0 24px 52px var(--rr-glass-shadow-strong),
+                inset 0 2px 0 rgba(255,255,255,0.74) !important;
         }}
 
         div[data-testid="stExpander"] {{
             background: var(--rr-card-bg-alt) !important;
-            border: 1px solid var(--rr-border) !important;
-            border-radius: 18px !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 10px 24px var(--rr-glass-shadow) !important;
+            border: 1.5px solid var(--rr-border) !important;
+            border-radius: 20px !important;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.60), 0 8px 20px var(--rr-glass-shadow) !important;
         }}
 
         div[data-testid="stExpander"] summary,
@@ -329,7 +353,8 @@ def inject_global_css() -> None:
             font-size: 12px !important;
             font-weight: 800 !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.08em !important;
+            letter-spacing: 0.10em !important;
+            font-family: "Nunito", sans-serif !important;
         }}
 
         div[data-testid="stExpanderDetails"] p,
@@ -337,12 +362,15 @@ def inject_global_css() -> None:
             color: var(--rr-text-soft) !important;
         }}
 
+        /* === Wii chat bubble style === */
         div[data-testid="stChatMessage"] {{
-            background: var(--rr-card-bg) !important;
-            border: 1px solid var(--rr-border) !important;
-            border-radius: 20px !important;
-            box-shadow: 0 12px 24px var(--rr-glass-shadow) !important;
-            backdrop-filter: blur(18px) saturate(145%);
+            background: var(--rr-glass-bg-strong) !important;
+            border: 1.5px solid var(--rr-glass-border) !important;
+            border-radius: 22px !important;
+            box-shadow:
+                0 10px 24px var(--rr-glass-shadow),
+                inset 0 1px 0 rgba(255,255,255,0.60) !important;
+            backdrop-filter: blur(16px) saturate(140%);
         }}
 
         div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
@@ -352,45 +380,52 @@ def inject_global_css() -> None:
 
         div[data-testid="stChatMessage"][data-testid*="ChatMessage-user"],
         div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) {{
-            background: color-mix(in srgb, var(--rr-accent-soft) 72%, var(--rr-card-bg)) !important;
+            background: rgba(0,102,204,0.08) !important;
+            border-color: rgba(0,87,183,0.18) !important;
         }}
 
         div[data-testid="stChatInput"] > div {{
             background: var(--rr-glass-bg-strong) !important;
             border: 1.5px solid var(--rr-border) !important;
-            border-radius: 18px !important;
+            border-radius: 22px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.60) !important;
         }}
 
         div[data-testid="stChatInput"] textarea {{
             color: var(--rr-text) !important;
-            background: var(--rr-card-bg) !important;
+            background: transparent !important;
+            font-family: "Nunito", sans-serif !important;
         }}
 
         .stDownloadButton > button {{
             background: var(--rr-glass-bg-strong) !important;
             color: var(--rr-accent) !important;
-            border: 1.5px solid var(--rr-accent-soft) !important;
-            border-radius: 16px !important;
-            font-weight: 700 !important;
+            border: 1.5px solid var(--rr-border) !important;
+            border-radius: 20px !important;
+            font-weight: 800 !important;
             font-size: 13px !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18) !important;
+            font-family: "Nunito", sans-serif !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.60) !important;
         }}
 
         .stCaptionContainer,
         .stCaptionContainer p {{
             color: var(--rr-text-muted) !important;
+            font-family: "Nunito", sans-serif !important;
         }}
 
         .stSpinner > div {{
             border-top-color: var(--rr-accent) !important;
         }}
 
+        /* === Wii typography: Nunito rounded headings === */
         .rr-section-kicker,
         .rr-kicker {{
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-section-kicker {{
@@ -399,10 +434,11 @@ def inject_global_css() -> None:
         }}
 
         .rr-kicker--light {{
-            color: rgba(255,255,255,0.74);
+            color: rgba(255,255,255,0.80);
             margin-bottom: 8px;
         }}
 
+        /* === Wii-style card components === */
         .rr-session-row,
         .rr-metric-card,
         .rr-fault-row,
@@ -410,10 +446,10 @@ def inject_global_css() -> None:
         .rr-empty-card,
         .rr-callout,
         .rr-dialog-hero {{
-            background: var(--rr-card-bg) !important;
-            border: 1px solid var(--rr-border) !important;
-            box-shadow: 0 16px 30px var(--rr-glass-shadow), inset 0 1px 0 rgba(255,255,255,0.22);
-            backdrop-filter: blur(18px) saturate(150%);
+            background: var(--rr-glass-bg-strong) !important;
+            border: 1.5px solid var(--rr-glass-border) !important;
+            box-shadow: 0 12px 28px var(--rr-glass-shadow), inset 0 1px 0 rgba(255,255,255,0.60);
+            backdrop-filter: blur(16px) saturate(140%);
         }}
 
         .rr-session-row {{
@@ -423,48 +459,53 @@ def inject_global_css() -> None:
             gap: 12px;
             padding: 14px 18px;
             margin-bottom: 8px;
-            border-radius: 16px;
+            border-radius: 20px;
             color: var(--rr-text-soft);
             font-size: 14px;
             font-weight: 700;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-session-row__arrow {{
-            color: var(--rr-text-muted);
+            color: var(--rr-accent);
             font-size: 17px;
         }}
 
         .rr-metric-card {{
             text-align: center;
-            border-radius: 18px;
-            padding: 20px 12px;
+            border-radius: 22px;
+            padding: 22px 12px;
         }}
 
         .rr-metric-card__label {{
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.10em;
             color: var(--rr-text-muted);
             font-weight: 800;
             margin-bottom: 8px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-metric-card__value {{
             font-size: 28px;
             font-weight: 900;
             color: var(--rr-text);
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-fault-row {{
             padding: 11px 16px;
             margin-bottom: 6px;
-            border-radius: 14px;
+            border-radius: 18px;
             font-size: 14px;
             color: var(--rr-text-soft);
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-fault-row--comparison {{
-            background: color-mix(in srgb, var(--rr-accent-soft) 34%, var(--rr-card-bg));
+            background: rgba(0,102,204,0.07) !important;
+            border-color: rgba(0,87,183,0.16) !important;
         }}
 
         .rr-glass-card,
@@ -474,25 +515,40 @@ def inject_global_css() -> None:
             overflow: hidden;
         }}
 
+        /* === Wii hero card: blue channel bubble with gloss shimmer === */
         .rr-hero-card {{
             background:
-                radial-gradient(circle at top left, var(--rr-hero-highlight), transparent 30%),
-                linear-gradient(135deg, var(--rr-hero-from), var(--rr-hero-via) 56%, var(--rr-hero-to));
-            border-radius: 24px;
-            padding: 20px 20px 18px;
+                linear-gradient(135deg, var(--rr-hero-from), var(--rr-hero-via) 54%, var(--rr-hero-to));
+            border-radius: 26px;
+            padding: 22px 22px 18px;
             color: #ffffff;
-            box-shadow: 0 22px 40px color-mix(in srgb, var(--rr-accent) 20%, transparent);
+            box-shadow:
+                0 20px 44px rgba(0,63,138,0.30),
+                inset 0 1px 0 rgba(255,255,255,0.40);
             margin-bottom: 14px;
-            border: 1px solid rgba(255,255,255,0.14);
+            border: 1.5px solid rgba(255,255,255,0.18);
+        }}
+
+        /* Wii gloss shimmer on hero card */
+        .rr-hero-card::before {{
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            border-radius: 26px 26px 60% 60% / 26px 26px 30px 30px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, transparent 100%);
+            pointer-events: none;
         }}
 
         .rr-hero-card::after {{
             content: "";
             position: absolute;
             inset: 0;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.12), transparent 32%, transparent 72%, rgba(255,255,255,0.10));
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.08) 100%);
             pointer-events: none;
+            border-radius: 26px;
         }}
 
         .rr-hero-card__head {{
@@ -507,14 +563,16 @@ def inject_global_css() -> None:
             font-size: 22px;
             font-weight: 900;
             line-height: 1.1;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-hero-card__copy {{
             font-size: 14px;
-            color: rgba(255,255,255,0.84);
+            color: rgba(255,255,255,0.88);
             line-height: 1.65;
             max-width: 46ch;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-hero-card__score {{
@@ -526,6 +584,7 @@ def inject_global_css() -> None:
             font-size: 38px;
             font-weight: 900;
             line-height: 0.95;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-hero-card__score-scale {{
@@ -543,54 +602,57 @@ def inject_global_css() -> None:
 
         .rr-chip {{
             border-radius: 999px;
-            padding: 6px 12px;
+            padding: 6px 14px;
             font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.01em;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-chip--hero {{
-            background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.22);
             color: #ffffff;
         }}
 
         .rr-chip--compare {{
-            background: var(--rr-card-bg);
-            border: 1px solid var(--rr-border);
+            background: var(--rr-glass-bg-strong);
+            border: 1.5px solid var(--rr-border);
             color: var(--rr-text-soft);
         }}
 
         .rr-chip--compare-good {{
-            background: color-mix(in srgb, #16a34a 18%, var(--rr-card-bg));
-            color: #166534;
-            border-color: color-mix(in srgb, #16a34a 24%, transparent);
+            background: rgba(58,140,58,0.10);
+            color: #2A6B2A;
+            border-color: rgba(58,140,58,0.22);
         }}
 
         .rr-chip--compare-bad {{
-            background: color-mix(in srgb, #dc2626 14%, var(--rr-card-bg));
-            color: #991b1b;
-            border-color: color-mix(in srgb, #dc2626 24%, transparent);
+            background: rgba(192,57,43,0.10);
+            color: #8B1A10;
+            border-color: rgba(192,57,43,0.22);
         }}
 
         .rr-chip--compare-neutral {{
-            background: color-mix(in srgb, var(--rr-accent-soft) 36%, var(--rr-card-bg));
+            background: rgba(0,102,204,0.08);
             color: var(--rr-text-soft);
+            border-color: rgba(0,87,183,0.18);
         }}
 
+        /* === Wii comparison cards === */
         .rr-compare-strip,
         .rr-comparison-shell,
         .rr-comparison-metric {{
-            background: var(--rr-card-bg);
-            border: 1px solid var(--rr-border);
-            box-shadow: 0 16px 30px var(--rr-glass-shadow), inset 0 1px 0 rgba(255,255,255,0.22);
-            backdrop-filter: blur(18px) saturate(150%);
+            background: var(--rr-glass-bg-strong);
+            border: 1.5px solid var(--rr-glass-border);
+            box-shadow: 0 12px 28px var(--rr-glass-shadow), inset 0 1px 0 rgba(255,255,255,0.60);
+            backdrop-filter: blur(16px) saturate(140%);
         }}
 
         .rr-compare-strip {{
             margin: 0 0 14px;
             padding: 14px 16px 16px;
-            border-radius: 18px;
+            border-radius: 22px;
         }}
 
         .rr-compare-strip__summary,
@@ -599,6 +661,7 @@ def inject_global_css() -> None:
             font-size: 14px;
             line-height: 1.55;
             margin-bottom: 10px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-comparison-note {{
@@ -606,16 +669,17 @@ def inject_global_css() -> None:
             font-size: 12px;
             line-height: 1.5;
             margin-bottom: 10px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-comparison-shell {{
             padding: 16px 18px;
-            border-radius: 18px;
+            border-radius: 22px;
             margin: 12px 0 12px;
         }}
 
         .rr-comparison-metric {{
-            border-radius: 18px;
+            border-radius: 22px;
             padding: 16px 14px;
             margin-bottom: 10px;
         }}
@@ -623,10 +687,11 @@ def inject_global_css() -> None:
         .rr-comparison-metric__label {{
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.10em;
             color: var(--rr-text-muted);
             font-weight: 800;
             margin-bottom: 8px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-comparison-metric__delta {{
@@ -635,15 +700,17 @@ def inject_global_css() -> None:
             line-height: 1;
             margin-bottom: 8px;
             color: var(--rr-text);
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-comparison-metric__delta-label {{
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.10em;
             color: var(--rr-text-muted);
             font-weight: 800;
             margin-bottom: 6px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-comparison-metric__values {{
@@ -652,14 +719,15 @@ def inject_global_css() -> None:
             gap: 2px;
             color: var(--rr-text-soft);
             font-size: 13px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-comparison-metric--good .rr-comparison-metric__delta {{
-            color: #15803d;
+            color: #2A7A2A;
         }}
 
         .rr-comparison-metric--bad .rr-comparison-metric__delta {{
-            color: #b91c1c;
+            color: #C0392B;
         }}
 
         .rr-comparison-metric--neutral .rr-comparison-metric__delta {{
@@ -673,36 +741,42 @@ def inject_global_css() -> None:
             margin-top: 10px;
         }}
 
+        /* Wii icon button bubble */
         .rr-hero-step__icon {{
-            width: 30px;
-            height: 30px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.14);
+            width: 32px;
+            height: 32px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.22);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 15px;
             flex-shrink: 0;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.28);
         }}
 
         .rr-hero-step__title {{
             font-size: 13px;
             font-weight: 800;
             color: #ffffff;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-hero-step__desc {{
             font-size: 12px;
-            color: rgba(255,255,255,0.78);
+            color: rgba(255,255,255,0.82);
             line-height: 1.5;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-dialog-hero {{
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 18px 18px 16px;
             margin-bottom: 16px;
             background:
-                linear-gradient(180deg, color-mix(in srgb, var(--rr-accent-soft) 45%, var(--rr-card-bg)), var(--rr-card-bg));
+                linear-gradient(180deg, rgba(0,102,204,0.10) 0%, var(--rr-glass-bg-strong) 100%) !important;
+            border-color: var(--rr-glass-border) !important;
         }}
 
         .rr-dialog-hero__head {{
@@ -714,12 +788,14 @@ def inject_global_css() -> None:
 
         .rr-dialog-hero__title {{
             color: var(--rr-text);
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-dialog-hero__load {{
             font-size: 13px;
             font-weight: 800;
             color: var(--rr-accent);
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-quality-badge {{
@@ -728,17 +804,18 @@ def inject_global_css() -> None:
             align-items: center;
             text-align: center;
             padding: 28px 20px 22px;
-            border-radius: 22px;
+            border-radius: 24px;
             margin-bottom: 14px;
         }}
 
         .rr-quality-badge__title {{
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             color: var(--rr-text-muted);
             font-weight: 800;
             margin-bottom: 16px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-quality-badge__ring {{
@@ -760,6 +837,7 @@ def inject_global_css() -> None:
             font-size: 30px;
             font-weight: 900;
             line-height: 1;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-quality-badge__scale {{
@@ -774,15 +852,17 @@ def inject_global_css() -> None:
             padding: 4px 18px;
             font-size: 13px;
             font-weight: 700;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-empty-card {{
             padding: 48px 24px;
             text-align: center;
-            border-radius: 18px;
+            border-radius: 22px;
             color: var(--rr-text-muted);
             font-size: 14px;
             line-height: 1.7;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-empty-card--results {{
@@ -805,6 +885,7 @@ def inject_global_css() -> None:
             font-weight: 800;
             color: var(--rr-text);
             margin-bottom: 8px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-empty-card__body {{
@@ -813,19 +894,21 @@ def inject_global_css() -> None:
             max-width: 42ch;
             margin: 0 auto;
             line-height: 1.7;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-callout {{
-            background: color-mix(in srgb, var(--rr-callout-bg) 68%, var(--rr-card-bg));
-            border: 1.5px solid color-mix(in srgb, var(--rr-callout-color) 32%, transparent);
-            border-radius: 16px;
+            background: rgba(var(--rr-callout-bg), 0.68) !important;
+            border: 1.5px solid color-mix(in srgb, var(--rr-callout-color) 28%, transparent);
+            border-radius: 20px;
             padding: 12px 16px;
             margin: 8px 0;
             color: var(--rr-callout-color);
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             display: flex;
             gap: 10px;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-callout__body {{
@@ -844,18 +927,19 @@ def inject_global_css() -> None:
             font-size: 21px;
             font-weight: 900;
             color: var(--rr-text);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-coach-composer-intro,
         .rr-coach-history-intro {{
             margin: 8px 0 10px;
             padding: 16px 18px;
-            border-radius: 20px;
-            border: 1px solid var(--rr-stage-inner-border);
+            border-radius: 22px;
+            border: 1.5px solid var(--rr-stage-inner-border);
             background:
-                linear-gradient(180deg, rgba(255,255,255,0.36), rgba(255,255,255,0.14));
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.30);
+                linear-gradient(180deg, rgba(255,255,255,0.70) 0%, rgba(238,244,255,0.50) 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.70), 0 4px 12px rgba(0,87,183,0.06);
         }}
 
         .rr-coach-history-intro {{
@@ -867,7 +951,8 @@ def inject_global_css() -> None:
             font-size: 17px;
             font-weight: 800;
             color: var(--rr-text);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-coach-composer-intro__copy,
@@ -876,35 +961,48 @@ def inject_global_css() -> None:
             color: var(--rr-text-soft);
             font-size: 13px;
             line-height: 1.6;
+            font-family: "Nunito", sans-serif;
         }}
 
         .rr-assistant-note {{
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 16px 18px;
             color: var(--rr-text-soft);
             line-height: 1.7;
             white-space: pre-line;
+            font-family: "Nunito", sans-serif;
         }}
 
+        /* === Wii scrollbar: blue, rounded === */
         ::-webkit-scrollbar {{
-            width: 6px;
+            width: 7px;
+        }}
+
+        ::-webkit-scrollbar-track {{
+            background: rgba(0,87,183,0.04);
+            border-radius: 999px;
         }}
 
         ::-webkit-scrollbar-thumb {{
-            background: var(--rr-border);
+            background: rgba(0,87,183,0.22);
             border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.50);
+        }}
+
+        ::-webkit-scrollbar-thumb:hover {{
+            background: rgba(0,102,204,0.40);
         }}
 
         @media (max-width: 900px) {{
             .block-container {{
                 padding-left: 18px !important;
                 padding-right: 18px !important;
-                border-radius: 24px !important;
+                border-radius: 26px !important;
             }}
 
             .block-container::after {{
                 inset: 14px;
-                border-radius: 18px;
+                border-radius: 20px;
             }}
 
             .rr-hero-card__head,
@@ -937,9 +1035,9 @@ def render_sidebar() -> None:
             """
             <div style="display:flex;align-items:center;gap:10px;padding:20px 0 18px;">
                 <div style="width:34px;height:34px;border-radius:50%;
-                            background:linear-gradient(135deg,#f97316,#ea580c);
+                            background:linear-gradient(135deg,#0066CC,#003F8A);
                             display:flex;align-items:center;justify-content:center;
-                            font-size:16px;">🏋</div>
+                            font-size:16px;box-shadow:0 4px 12px rgba(0,63,138,0.40),inset 0 1px 0 rgba(255,255,255,0.28);">🏋</div>
                 <span style="font-size:17px;font-weight:900;
                              color:#ffffff;letter-spacing:-0.02em;">RepRight</span>
             </div>
@@ -1038,7 +1136,7 @@ def on_analyze(exercise, use_load, upload, note) -> None:
         return
 
     should_rerun = False
-    previous_analysis = st.session_state.get("last_analysis") if st.session_state.get("last_analysis") else None
+    previous_analysis = st.session_state.get("last_analysis") or None
     previous_load_kg = st.session_state.get("last_analysis_load_kg")
     comparison_mode = bool(previous_analysis)
     set_ui_busy(True)
@@ -1140,7 +1238,7 @@ def main() -> None:
     with hcol:
         st.markdown(
             (
-                "<h1 style='font-size:26px;font-weight:900;color:#1e293b;"
+                "<h1 style='font-size:26px;font-weight:900;color:#001E50;font-family:Nunito,sans-serif;"
                 "letter-spacing:-0.02em;margin:0 0 22px;'>"
                 f"{TEXT['main_title']}</h1>"
             ),

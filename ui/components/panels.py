@@ -141,7 +141,7 @@ def render_overlay_panel(overlay_path) -> None:
         if p.exists() and p.stat().st_size > 0:
             suffix = p.suffix.lower()
             codec, pix_fmt = _probe_video_stream(p)
-            logging.warning(
+            logging.debug(
                 "[OVERLAY PANEL] path='%s' suffix='%s' codec='%s' pix_fmt='%s' size=%s",
                 p,
                 suffix,

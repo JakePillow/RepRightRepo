@@ -200,7 +200,7 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
 
 def _call_openai(messages: list[dict[str, Any]]) -> Tuple[dict[str, Any], dict[str, Any]]:
     """
-    Calls OpenAI Responses API using urllib (no SDK dependency).
+    Calls OpenAI Chat Completions API using urllib (no SDK dependency).
     Returns: (response_json, debug_raw)
     """
     api_key = os.getenv("OPENAI_API_KEY")
@@ -209,10 +209,10 @@ def _call_openai(messages: list[dict[str, Any]]) -> Tuple[dict[str, Any], dict[s
 
     body = {
         "model": DEFAULT_MODEL,
-        "input": messages,
-        "text": {
-            "format": {
-                "type": "json_schema",
+        "messages": messages,
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
                 "name": "coach_response",
                 "strict": True,
                 "schema": {
@@ -231,7 +231,7 @@ def _call_openai(messages: list[dict[str, Any]]) -> Tuple[dict[str, Any], dict[s
     }
 
     req = urllib.request.Request(
-        "https://api.openai.com/v1/responses",
+        "https://api.openai.com/v1/chat/completions",
         data=json.dumps(body).encode("utf-8"),
         headers={
             "Content-Type": "application/json",
@@ -250,27 +250,27 @@ def _call_openai(messages: list[dict[str, Any]]) -> Tuple[dict[str, Any], dict[s
 
 def _extract_structured_from_responses_api(resp_json: dict[str, Any]) -> dict[str, Any]:
     """
-    Responses API typically returns:
-      resp_json["output"][0]["content"][0]["text"]  (string)
-    With json_schema format, that string should be JSON.
+    Chat Completions API returns:
+      resp_json["choices"][0]["message"]["content"]  (string)
+    With json_schema response_format, that string is JSON.
     """
-    out = _safe_list(resp_json.get("output"))
-    if not out:
-        raise RuntimeError("openai_parse_error: missing_output")
+    choices = _safe_list(resp_json.get("choices"))
+    if not choices:
+        raise RuntimeError("openai_parse_error: missing_choices")
 
-    for block in out:
-        if not isinstance(block, dict):
+    for choice in choices:
+        if not isinstance(choice, dict):
             continue
-        content = _safe_list(block.get("content"))
-        for c in content:
-            if isinstance(c, dict) and c.get("type") in ("output_text", "text"):
-                txt = c.get("text")
-                if isinstance(txt, str) and txt.strip():
-                    try:
-                        return json.loads(txt)
-                    except Exception as e:
-                        raise RuntimeError(f"openai_parse_error: invalid_json_text ({e})")
-    raise RuntimeError("openai_parse_error: no_output_text_found")
+        message = choice.get("message")
+        if not isinstance(message, dict):
+            continue
+        txt = message.get("content")
+        if isinstance(txt, str) and txt.strip():
+            try:
+                return json.loads(txt)
+            except Exception as e:
+                raise RuntimeError(f"openai_parse_error: invalid_json_text ({e})")
+    raise RuntimeError("openai_parse_error: no_message_content_found")
 
 
 def _render_text(structured: dict[str, Any]) -> str:
