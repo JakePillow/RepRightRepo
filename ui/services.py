@@ -13,6 +13,7 @@ from repright.analyzer import RepRightAnalyzer
 from repright.coach_payload import build_coach_payload
 from repright.llm_wrapper import run_coach
 from ui.config.tokens import TEXT
+from ui.runtime import demo_force_stub
 
 
 def safe_tmp_video(upload) -> Path:
@@ -57,6 +58,7 @@ def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: flo
 
         response = run_coach(payload)
 
+<<<<<<< Updated upstream
         progress_status.caption(TEXT["progress"]["done"])
         progress.progress(100)
         time.sleep(0.1)
@@ -68,6 +70,17 @@ def run_analysis_pipeline(upload, exercise: str, user_message: str, load_kg: flo
             tmp_path.unlink(missing_ok=True)
         except OSError:
             pass
+=======
+    response = run_coach(payload, mode="stub" if demo_force_stub() else "auto")
+
+    progress_status.caption(TEXT["progress"]["done"])
+    progress.progress(100)
+    time.sleep(0.1)
+    progress.empty()
+    progress_status.empty()
+
+    return analysis, payload, response
+>>>>>>> Stashed changes
 
 
 def run_followup_coaching(analysis: dict[str, Any], follow_up: str, load_kg: float, history: list[dict[str, Any]]):
@@ -77,5 +90,5 @@ def run_followup_coaching(analysis: dict[str, Any], follow_up: str, load_kg: flo
         load_kg=load_kg,
         history=history[-8:],
     )
-    response = run_coach(payload)
+    response = run_coach(payload, mode="stub" if demo_force_stub() else "auto")
     return payload, response

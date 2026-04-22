@@ -12,7 +12,9 @@ Thumbs.db
 .DS_Store
 
 # --- Streamlit ---
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
+!.streamlit/secrets.toml.example
 
 # --- Data (RAW/TRAIN/PROCESSED/UPLOADS/BACKUPS) ---
 data/**

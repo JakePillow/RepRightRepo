@@ -1,0 +1,7 @@
+[server]
+headless = true
+maxUploadSize = 250
+maxMessageSize = 250
+
+[client]
+showErrorDetails = "type"
