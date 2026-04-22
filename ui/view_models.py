@@ -206,8 +206,8 @@ def comparison_view_model(payload: dict[str, Any] | None) -> ComparisonViewModel
     better = sum(1 for m in metrics if m.trend == "improved")
     worse = sum(1 for m in metrics if m.trend == "regressed")
     stable = sum(1 for m in metrics if m.trend == "stable")
-    headline = "Compared With Previous Set"
-    summary = f"{better} improved, {worse} regressed, {stable} stayed stable."
+    headline = "Set-to-Set Comparison"
+    summary = f"Compared with the previous valid set: {better} improved, {worse} regressed, {stable} stayed the same."
     return ComparisonViewModel(
         headline=headline,
         summary=summary,
@@ -239,6 +239,13 @@ def _resolve_path(raw: Any) -> Path | None:
                 return p
         except Exception:
             continue
+    return None
+
+
+def _fallback_path(raw_candidates: list[Any]) -> Path | None:
+    for raw in raw_candidates:
+        if raw:
+            return Path(str(raw))
     return None
 
 
@@ -288,4 +295,4 @@ def resolve_overlay_path(payload, analysis) -> Path | None:
         if p is not None:
             return p
 
-    return None
+    return _fallback_path(raw_candidates)

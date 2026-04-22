@@ -1,0 +1,10 @@
+# Direct runtime dependencies for the RepRight UI and analysis pipeline.
+# MediaPipe 0.10.31+ removed the legacy `mp.solutions` API used throughout this repo,
+# so we pin a compatible release and the matching core stack it expects.
+mediapipe==0.10.21
+numpy==1.26.4
+opencv-contrib-python==4.11.0.86
+protobuf==4.25.8
+streamlit==1.56.0
+pandas==2.3.3
+matplotlib==3.10.8

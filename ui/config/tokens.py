@@ -1,17 +1,17 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 EXERCISES = ["bench", "deadlift", "squat", "curl"]
 
 EXERCISE_ICONS = {
-    "bench":    "🏋️",
+    "bench": "🏋️",
     "deadlift": "⬆️",
-    "squat":    "🦵",
-    "curl":     "💪",
+    "squat": "🦵",
+    "curl": "💪",
 }
 
 PAGE = {
-    "title":   "RepRight",
-    "layout":  "wide",
+    "title": "RepRight",
+    "layout": "wide",
     "columns": [1.5, 1],
 }
 
@@ -48,6 +48,12 @@ THEME = {
     "sidebar_button_hover": "rgba(255, 255, 255, 0.15)",
     "sidebar_text": "#eff4ff",
     "sidebar_muted": "#9bb2d0",
+    "warning": "#b45309",
+    "warning_bg": "#fef3c7",
+    "success": "#15803d",
+    "success_bg": "#dcfce7",
+    "error": "#b91c1c",
+    "error_bg": "#fee2e2",
 }
 
 DARK_THEME = {
@@ -83,47 +89,56 @@ DARK_THEME = {
     "sidebar_button_hover": "rgba(255, 255, 255, 0.12)",
     "sidebar_text": "#eff4ff",
     "sidebar_muted": "#8fa9cc",
+    "warning": "#f59e0b",
+    "warning_bg": "rgba(245, 158, 11, 0.16)",
+    "success": "#4ade80",
+    "success_bg": "rgba(74, 222, 128, 0.16)",
+    "error": "#f87171",
+    "error_bg": "rgba(248, 113, 113, 0.16)",
 }
 
 TEXT = {
     "sidebar": {
-        "new_chat":          "+ New Session",
-        "new_chat_help":     "Start a fresh draft without removing saved sessions.",
-        "clear_chat":        "Clear messages",
-        "clear_chat_help":   "Clear the current conversation while keeping the latest analysis.",
-        "sessions_header":   "Sessions",
-        "recent_header":     "Recent Sessions",
+        "new_chat": "+ New Session",
+        "new_chat_help": "Start a fresh draft without removing saved sessions.",
+        "clear_chat": "Clear messages",
+        "clear_chat_help": "Clear the current conversation while keeping the latest analysis.",
+        "sessions_header": "Sessions",
+        "recent_header": "Recent Sessions",
     },
     "inputs": {
-        "exercise":       "Exercise",
-        "load":           "Load (KG)",
-        "upload":         "Upload Set Video",
-        "coach_note":     "Note to Coach (Optional)",
-        "analyze":        "Analyze set →",
+        "exercise": "Exercise",
+        "exercise_locked": "Exercise is locked to this analyzed set. Start a new session to analyze a different lift.",
+        "load": "Load (KG)",
+        "upload": "Upload Set Video",
+        "coach_note": "Note to Coach (Optional)",
+        "analyze": "Analyze set →",
         "upload_warning": "Please upload a video before analyzing.",
+        "busy_help": "Analysis is running. Controls will unlock when it finishes.",
     },
     "results": {
         "quality_title": "Lift Quality",
-        "reps":          "Reps",
-        "avg_rom":       "Avg ROM",
-        "low_confidence":"Low conf. reps",
-        "why_score":     "Form Breakdown",
-        "no_faults":     "No recurring faults detected — clean set.",
+        "reps": "Reps",
+        "avg_rom": "Avg ROM",
+        "low_confidence": "Low conf. reps",
+        "why_score": "Form Breakdown",
+        "no_faults": "No recurring faults detected — clean set.",
         "download_json": "⬇  Export analysis JSON",
     },
     "chat": {
         "follow_up": "Ask your coach anything...",
+        "follow_up_disabled": "Run an analysis to ask follow-up questions.",
     },
     "states": {
-        "empty_title":   "No analysis results yet.",
-        "empty_body":    "Upload a video of a set and get feedback on your form, metrics, and potential improvements.",
+        "empty_title": "No analysis results yet.",
+        "empty_body": "Upload a video of a set and get feedback on your form, metrics, and potential improvements.",
         "empty_results": "Upload a video and run an analysis to see your form score, detailed metrics, and AI coaching in this pane.",
     },
     "progress": {
         "tracking": "Tracking pose…",
-        "context":  "Building coach context…",
-        "coach":    "Generating coaching response…",
-        "done":     "Done.",
+        "context": "Building coach context…",
+        "coach": "Generating coaching response…",
+        "done": "Done.",
     },
     "errors": {
         "analysis_failed": "Analysis failed. Please try again with another upload or review the error details below.",
@@ -131,15 +146,15 @@ TEXT = {
         "details_prefix": "Details:",
     },
     "coaching_panel": {
-        "title":       "Coaching Overview",
-        "subtitle":    "Upload a video and run an analysis\nto see your form score, detailed\nmetrics, and AI coaching in this pane.",
-        "how_title":   "How it Works",
-        "view_all":    "View all",
-        "tip":         "Tip: Side views work best for analyzing most exercises.",
+        "title": "Coaching Overview",
+        "subtitle": "Upload a video and run an analysis\nto see your form score, detailed\nmetrics, and AI coaching in this pane.",
+        "how_title": "How it Works",
+        "view_all": "View all",
+        "tip": "Tip: Side views work best for analyzing most exercises.",
         "steps": [
             ("📷", "Camera Pose Estimation", "AI analyzes your movement."),
-            ("✅", "Form Assessment",         "Get rep breakdown and metrics."),
-            ("💬", "Coaching Feedback",       "Receive personalized AI guidance."),
+            ("✅", "Form Assessment", "Get rep breakdown and metrics."),
+            ("💬", "Coaching Feedback", "Receive personalized AI guidance."),
         ],
     },
     "main_title": "Analyze Your Set",
@@ -147,31 +162,31 @@ TEXT = {
 }
 
 QUALITY_ZONES = {
-    "none":   {"color": "#64748b", "label": "No data",    "bg": "#f1f5f9", "ring": "#cbd5e1"},
-    "green":  {"color": "#16a34a", "label": "Good form",  "bg": "#dcfce7", "ring": "#86efac"},
+    "none": {"color": "#64748b", "label": "No data", "bg": "#f1f5f9", "ring": "#cbd5e1"},
+    "green": {"color": "#16a34a", "label": "Good form", "bg": "#dcfce7", "ring": "#86efac"},
     "yellow": {"color": "#d97706", "label": "Needs work", "bg": "#fef3c7", "ring": "#fcd34d"},
-    "red":    {"color": "#dc2626", "label": "Poor form",  "bg": "#fee2e2", "ring": "#fca5a5"},
+    "red": {"color": "#dc2626", "label": "Poor form", "bg": "#fee2e2", "ring": "#fca5a5"},
 }
 
 FAULT_SEVERITY_COLORS = {
     "critical": ("#dc2626", "#fee2e2"),
-    "high":     ("#ea580c", "#ffedd5"),
-    "medium":   ("#d97706", "#fef3c7"),
-    "warning":  ("#d97706", "#fef3c7"),
-    "info":     ("#64748b", "#f1f5f9"),
+    "high": ("#ea580c", "#ffedd5"),
+    "medium": ("#d97706", "#fef3c7"),
+    "warning": ("#d97706", "#fef3c7"),
+    "info": ("#64748b", "#f1f5f9"),
 }
 
 EMPTY_STATES = {
     "video": "No overlay yet. Run an analysis to generate a pose-annotated replay.",
-    "chat":  "Ask about your form after running an analysis.",
+    "chat": "Ask about your form after running an analysis.",
 }
 
 SECTION_FLAGS = {
-    "left_input_panel":      True,
-    "left_overlay_panel":    True,
-    "right_results_header":  True,
+    "left_input_panel": True,
+    "left_overlay_panel": True,
+    "right_results_header": True,
     "right_results_metrics": True,
-    "right_faults":          True,
-    "right_artifacts":       True,
-    "right_chat":            True,
+    "right_faults": True,
+    "right_artifacts": True,
+    "right_chat": True,
 }

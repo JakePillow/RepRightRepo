@@ -29,6 +29,7 @@ from ui.state import (
     set_ui_busy,
     set_ui_message,
 )
+from ui.runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
 from ui.view_models import resolve_overlay_path
 
 
@@ -846,6 +847,37 @@ def inject_global_css() -> None:
             letter-spacing: -0.02em;
         }}
 
+        .rr-coach-composer-intro,
+        .rr-coach-history-intro {{
+            margin: 8px 0 10px;
+            padding: 16px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--rr-stage-inner-border);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.36), rgba(255,255,255,0.14));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.30);
+        }}
+
+        .rr-coach-history-intro {{
+            margin-top: 18px;
+        }}
+
+        .rr-coach-composer-intro__title,
+        .rr-coach-history-intro__title {{
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--rr-text);
+            letter-spacing: -0.02em;
+        }}
+
+        .rr-coach-composer-intro__copy,
+        .rr-coach-history-intro__copy {{
+            margin-top: 4px;
+            color: var(--rr-text-soft);
+            font-size: 13px;
+            line-height: 1.6;
+        }}
+
         .rr-assistant-note {{
             border-radius: 16px;
             padding: 16px 18px;
@@ -884,6 +916,11 @@ def inject_global_css() -> None:
             .rr-hero-card__score {{
                 text-align: left;
             }}
+
+            .rr-coach-composer-intro,
+            .rr-coach-history-intro {{
+                padding: 14px 15px;
+            }}
         }}
         </style>
         """,
@@ -909,6 +946,13 @@ def render_sidebar() -> None:
             """,
             unsafe_allow_html=True,
         )
+
+        if demo_mode_enabled():
+            render_callout("info", demo_banner_text())
+            st.caption(
+                f"Coach mode: {coach_runtime_label()} | OpenAI key: {'present' if openai_key_present() else 'missing'}"
+            )
+            st.caption("Demo tip: keep backup clips short, stable, and already tested on this app.")
 
         if st.button(
             TEXT["sidebar"]["new_chat"],
@@ -1106,6 +1150,9 @@ def main() -> None:
     ui_message = st.session_state.get("ui_message")
     if isinstance(ui_message, dict) and ui_message.get("text"):
         render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
+
+    if demo_mode_enabled():
+        render_callout("info", demo_banner_text())
 
     centre, right = st.columns([1.55, 1])
 
