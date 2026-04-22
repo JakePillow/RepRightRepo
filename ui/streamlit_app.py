@@ -1,4 +1,6 @@
 ﻿from __future__ import annotations
+
+import importlib
 import logging
 import sys
 from pathlib import Path
@@ -12,48 +14,84 @@ if str(ROOT) not in sys.path:
 from ui.chat_store import load_thread, new_thread_id, now_iso, save_thread, thread_title
 from ui.components import panels
 from ui.components.primitives import render_callout, render_restore_status_badge
-from ui.config.tokens import TEXT, THEME
+from ui.config.tokens import DARK_THEME, TEXT, THEME
 from ui.services import run_analysis_pipeline, run_followup_coaching
 from ui.state import (
     append_history,
+    bump_chat_upload_nonce,
+    clear_chat_upload_notice,
     clear_ui_message,
     initialize_session_state,
+    request_followup_draft_clear,
     reset_draft_session,
     reset_group,
-    request_coach_note_clear,
+    set_chat_upload_notice,
     set_ui_busy,
     set_ui_message,
 )
 from ui.runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
 from ui.view_models import resolve_overlay_path
 
+
+def _live_panels_module():
+    try:
+        return importlib.reload(panels)
+    except Exception:
+        logging.exception("Failed to reload ui.components.panels")
+        return panels
+
+
+def _render_right_workspace(on_analyze, on_followup) -> None:
+    panels_mod = _live_panels_module()
+    coach_workspace = getattr(panels_mod, "render_coach_workspace", None)
+    if callable(coach_workspace):
+        coach_workspace(on_analyze, on_followup)
+        return
+
+    logging.warning("render_coach_workspace missing; using compatibility fallback")
+    render_overview = getattr(panels_mod, "render_coaching_overview_panel", None)
+    render_chat = getattr(panels_mod, "render_chat_panel", None)
+
+    if callable(render_overview):
+        render_overview()
+    if callable(render_chat):
+        render_chat(on_followup)
+        return
+
+    st.error("Coach workspace could not be loaded. Please refresh the app.")
+
+
+def _css_vars(theme: dict[str, str]) -> str:
+    return "\n".join(
+        f"            --rr-{key.replace('_', '-')}: {value};"
+        for key, value in theme.items()
+    )
+
+
 def inject_global_css() -> None:
+    light_vars = _css_vars(THEME)
+    dark_vars = _css_vars(DARK_THEME)
     st.markdown(
         f"""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
         :root {{
-            --rr-page-bg: {THEME['page_bg']};
-            --rr-card-bg: {THEME['card_bg']};
-            --rr-card-alt-bg: {THEME['card_bg_alt']};
-            --rr-text: {THEME['text']};
-            --rr-text-soft: {THEME['text_soft']};
-            --rr-text-muted: {THEME['text_muted']};
-            --rr-border: {THEME['border']};
-            --rr-accent: {THEME['accent']};
-            --rr-accent-hover: {THEME['accent_hover']};
-            --rr-accent-soft: {THEME['accent_soft']};
-            --rr-sidebar-bg: {THEME['sidebar_bg']};
-            --rr-sidebar-button: {THEME['sidebar_button']};
-            --rr-sidebar-button-hover: {THEME['sidebar_button_hover']};
-            --rr-sidebar-text: {THEME['sidebar_text']};
-            --rr-sidebar-muted: {THEME['sidebar_muted']};
+{light_vars}
+        }}
+
+        @media (prefers-color-scheme: dark) {{
+            :root {{
+{dark_vars}
+            }}
         }}
 
         #MainMenu,
         footer,
-        [data-testid="stDecoration"], .stDeployButton {{ display:none !important; }}
+        [data-testid="stDecoration"],
+        .stDeployButton {{
+            display: none !important;
+        }}
 
         header[data-testid="stHeader"] {{
             background: transparent !important;
@@ -62,26 +100,6 @@ def inject_global_css() -> None:
         [data-testid="stToolbar"] {{
             visibility: visible !important;
             opacity: 1 !important;
-        }}
-
-        html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"],
-        section[data-testid="stMain"] > div {{
-            background: var(--rr-page-bg) !important;
-            color: var(--rr-text) !important;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        }}
-
-        .block-container {{
-            padding-top: 28px !important;
-            padding-left: 32px !important;
-            padding-right: 32px !important;
-            max-width: 100% !important;
-        }}
-
-        [data-testid="stSidebar"] {{
-            background: var(--rr-sidebar-bg) !important;
-            border-right: none !important;
-            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06) !important;
         }}
 
         [data-testid="collapsedControl"],
@@ -96,13 +114,81 @@ def inject_global_css() -> None:
             border: 1px solid rgba(255,255,255,0.14) !important;
             border-radius: 0 14px 14px 0 !important;
             box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18) !important;
-            transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease !important;
         }}
 
         [data-testid="collapsedControl"] > button:hover,
         [data-testid="stSidebarCollapsedControl"] > button:hover {{
             background: linear-gradient(180deg, rgba(96,165,250,0.98), rgba(37,99,235,1)) !important;
-            transform: translateX(1px) !important;
+        }}
+
+        html,
+        body,
+        [data-testid="stAppViewContainer"],
+        [data-testid="stApp"],
+        section[data-testid="stMain"],
+        section[data-testid="stMain"] > div {{
+            background:
+                radial-gradient(circle at top left, var(--rr-stage-glow-a), transparent 36%),
+                radial-gradient(circle at top right, var(--rr-stage-glow-b), transparent 32%),
+                linear-gradient(180deg, var(--rr-page-bg-alt), var(--rr-page-bg)) !important;
+            color: var(--rr-text) !important;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+            overflow-y: auto !important;
+        }}
+
+        .block-container {{
+            position: relative !important;
+            padding-top: 28px !important;
+            padding-left: 32px !important;
+            padding-right: 32px !important;
+            max-width: 100% !important;
+            background:
+                linear-gradient(180deg, var(--rr-stage-bg), var(--rr-stage-bg-alt)) !important;
+            border: 1px solid var(--rr-stage-border) !important;
+            border-radius: 34px !important;
+            box-shadow:
+                0 28px 70px var(--rr-glass-shadow-strong),
+                inset 0 1px 0 rgba(255,255,255,0.48) !important;
+            overflow: visible !important;
+            backdrop-filter: blur(22px) saturate(140%);
+            margin-top: 12px !important;
+            margin-bottom: 16px !important;
+        }}
+
+        .block-container::before {{
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 18% 8%, var(--rr-stage-glow-a), transparent 30%),
+                radial-gradient(circle at 88% 2%, var(--rr-stage-glow-b), transparent 24%),
+                linear-gradient(180deg, rgba(255,255,255,0.18), transparent 24%, transparent 76%, rgba(255,255,255,0.12)),
+                repeating-linear-gradient(135deg, var(--rr-pattern-line) 0 2px, transparent 2px 20px);
+            opacity: 0.95;
+        }}
+
+        .block-container::after {{
+            content: "";
+            position: absolute;
+            inset: 22px;
+            border-radius: 28px;
+            border: 1px solid var(--rr-stage-inner-border);
+            pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.32);
+        }}
+
+        .block-container > * {{
+            position: relative;
+            z-index: 1;
+        }}
+
+        [data-testid="stSidebar"] {{
+            background:
+                radial-gradient(circle at top, rgba(255,255,255,0.10), transparent 32%),
+                linear-gradient(180deg, var(--rr-sidebar-bg), color-mix(in srgb, var(--rr-sidebar-bg) 82%, black)) !important;
+            border-right: none !important;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06) !important;
         }}
 
         [data-testid="stSidebar"] * {{
@@ -122,17 +208,21 @@ def inject_global_css() -> None:
             background: var(--rr-sidebar-button) !important;
             color: var(--rr-sidebar-text) !important;
             border: 1px solid rgba(255,255,255,0.08) !important;
-            border-radius: 12px !important;
+            border-radius: 16px !important;
             font-size: 13px !important;
-            font-weight: 600 !important;
+            font-weight: 700 !important;
             text-align: center !important;
-            padding: 10px 14px !important;
+            padding: 11px 14px !important;
             margin: 0 0 6px 0 !important;
             width: 100% !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.12) !important;
+            transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease !important;
         }}
 
         [data-testid="stSidebar"] .stButton > button:hover {{
             background: var(--rr-sidebar-button-hover) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.16) !important;
         }}
 
         [data-testid="stSidebar"] .stButton > button:disabled,
@@ -146,11 +236,12 @@ def inject_global_css() -> None:
         .stTextArea textarea,
         div[data-baseweb="select"] > div,
         .stSelectbox > div > div {{
-            background: var(--rr-card-bg) !important;
+            background: var(--rr-glass-bg-strong) !important;
             border: 1.5px solid var(--rr-border) !important;
-            border-radius: 12px !important;
+            border-radius: 16px !important;
             color: var(--rr-text) !important;
             font-size: 15px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.22) !important;
         }}
 
         .stTextInput > div > div > input:focus,
@@ -162,8 +253,10 @@ def inject_global_css() -> None:
             box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
         }}
 
-        .stTextInput > label, .stNumberInput > label,
-        .stSelectbox > label, .stFileUploader > label,
+        .stTextInput > label,
+        .stNumberInput > label,
+        .stSelectbox > label,
+        .stFileUploader > label,
         .stTextArea > label {{
             font-size: 11px !important;
             font-weight: 700 !important;
@@ -174,10 +267,11 @@ def inject_global_css() -> None:
 
         div[data-testid="stFileUploader"] section,
         div[data-testid="stFileUploaderDropzone"] {{
-            background: var(--rr-card-bg) !important;
+            background: var(--rr-glass-bg) !important;
             border: 1.5px dashed var(--rr-border) !important;
-            border-radius: 14px !important;
+            border-radius: 18px !important;
             color: var(--rr-text-soft) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.20) !important;
         }}
 
         div[data-testid="stFileUploader"] small,
@@ -187,29 +281,46 @@ def inject_global_css() -> None:
         }}
 
         button[kind="primary"] {{
-            background: var(--rr-accent) !important;
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--rr-accent) 78%, white), var(--rr-accent)) !important;
             color: #ffffff !important;
             border: none !important;
-            border-radius: 12px !important;
+            border-radius: 16px !important;
             font-weight: 800 !important;
             font-size: 15px !important;
-            box-shadow: 0 4px 16px rgba(37,99,235,0.25) !important;
+            box-shadow: 0 10px 26px color-mix(in srgb, var(--rr-accent) 26%, transparent) !important;
+            transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease !important;
         }}
 
         button[kind="primary"]:hover {{
             background: var(--rr-accent-hover) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px color-mix(in srgb, var(--rr-accent-hover) 30%, transparent) !important;
         }}
 
         div[data-testid="stVerticalBlockBorderWrapper"] {{
-            background: var(--rr-card-bg) !important;
-            border-color: var(--rr-border) !important;
+            background: var(--rr-glass-bg) !important;
+            border: 1px solid var(--rr-glass-border) !important;
+            border-radius: 24px !important;
+            box-shadow:
+                0 22px 48px var(--rr-glass-shadow),
+                inset 0 1px 0 rgba(255,255,255,0.24) !important;
+            backdrop-filter: blur(24px) saturate(150%);
+            transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease !important;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+            transform: translateY(-1px);
+            box-shadow:
+                0 26px 54px var(--rr-glass-shadow-strong),
+                inset 0 1px 0 rgba(255,255,255,0.28) !important;
         }}
 
         div[data-testid="stExpander"] {{
-            background: var(--rr-card-bg) !important;
+            background: var(--rr-card-bg-alt) !important;
             border: 1px solid var(--rr-border) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+            border-radius: 18px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 10px 24px var(--rr-glass-shadow) !important;
         }}
 
         div[data-testid="stExpander"] summary,
@@ -229,7 +340,9 @@ def inject_global_css() -> None:
         div[data-testid="stChatMessage"] {{
             background: var(--rr-card-bg) !important;
             border: 1px solid var(--rr-border) !important;
-            border-radius: 14px !important;
+            border-radius: 20px !important;
+            box-shadow: 0 12px 24px var(--rr-glass-shadow) !important;
+            backdrop-filter: blur(18px) saturate(145%);
         }}
 
         div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
@@ -237,10 +350,15 @@ def inject_global_css() -> None:
             color: var(--rr-text) !important;
         }}
 
+        div[data-testid="stChatMessage"][data-testid*="ChatMessage-user"],
+        div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) {{
+            background: color-mix(in srgb, var(--rr-accent-soft) 72%, var(--rr-card-bg)) !important;
+        }}
+
         div[data-testid="stChatInput"] > div {{
-            background: var(--rr-card-bg) !important;
+            background: var(--rr-glass-bg-strong) !important;
             border: 1.5px solid var(--rr-border) !important;
-            border-radius: 14px !important;
+            border-radius: 18px !important;
         }}
 
         div[data-testid="stChatInput"] textarea {{
@@ -249,15 +367,17 @@ def inject_global_css() -> None:
         }}
 
         .stDownloadButton > button {{
-            background: var(--rr-card-bg) !important;
+            background: var(--rr-glass-bg-strong) !important;
             color: var(--rr-accent) !important;
             border: 1.5px solid var(--rr-accent-soft) !important;
-            border-radius: 12px !important;
+            border-radius: 16px !important;
             font-weight: 700 !important;
             font-size: 13px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18) !important;
         }}
 
-        .stCaptionContainer, .stCaptionContainer p {{
+        .stCaptionContainer,
+        .stCaptionContainer p {{
             color: var(--rr-text-muted) !important;
         }}
 
@@ -265,10 +385,6 @@ def inject_global_css() -> None:
             border-top-color: var(--rr-accent) !important;
         }}
 
-<<<<<<< Updated upstream
-        ::-webkit-scrollbar {{ width: 6px; }}
-        ::-webkit-scrollbar-thumb {{ background: var(--rr-border); border-radius: 999px; }}
-=======
         .rr-section-kicker,
         .rr-kicker {{
             font-size: 11px;
@@ -778,12 +894,27 @@ def inject_global_css() -> None:
             background: var(--rr-border);
             border-radius: 999px;
         }}
->>>>>>> Stashed changes
 
         @media (max-width: 900px) {{
             .block-container {{
                 padding-left: 18px !important;
                 padding-right: 18px !important;
+                border-radius: 24px !important;
+            }}
+
+            .block-container::after {{
+                inset: 14px;
+                border-radius: 18px;
+            }}
+
+            .rr-hero-card__head,
+            .rr-dialog-hero__head {{
+                flex-direction: column;
+                align-items: flex-start;
+            }}
+
+            .rr-hero-card__score {{
+                text-align: left;
             }}
 
             .rr-coach-composer-intro,
@@ -799,9 +930,11 @@ def inject_global_css() -> None:
 
 def render_sidebar() -> None:
     from ui.chat_store import list_threads
+
     busy = bool(st.session_state.get("ui_busy"))
     with st.sidebar:
-        st.markdown(f"""
+        st.markdown(
+            """
             <div style="display:flex;align-items:center;gap:10px;padding:20px 0 18px;">
                 <div style="width:34px;height:34px;border-radius:50%;
                             background:linear-gradient(135deg,#f97316,#ea580c);
@@ -809,7 +942,10 @@ def render_sidebar() -> None:
                             font-size:16px;">🏋</div>
                 <span style="font-size:17px;font-weight:900;
                              color:#ffffff;letter-spacing:-0.02em;">RepRight</span>
-            </div>""", unsafe_allow_html=True)
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         if demo_mode_enabled():
             render_callout("info", demo_banner_text())
@@ -822,7 +958,7 @@ def render_sidebar() -> None:
             TEXT["sidebar"]["new_chat"],
             use_container_width=True,
             disabled=busy,
-            help=TEXT["sidebar"]["new_chat_help"],
+            help=TEXT["sidebar"].get("new_chat_help"),
         ):
             start_new_chat(st.session_state.get("exercise_choice") or "bench")
             st.rerun()
@@ -830,8 +966,11 @@ def render_sidebar() -> None:
         if st.button(
             TEXT["sidebar"]["clear_chat"],
             use_container_width=True,
-            disabled=busy or (not st.session_state.get("history") and not st.session_state.get("last_response")),
-            help=TEXT["sidebar"]["clear_chat_help"],
+            disabled=busy or (
+                not st.session_state.get("history")
+                and not st.session_state.get("last_response")
+            ),
+            help=TEXT["sidebar"].get("clear_chat_help"),
         ):
             reset_group("chat")
             clear_ui_message()
@@ -852,6 +991,7 @@ def render_sidebar() -> None:
                 ):
                     load_thread(tid)
                     st.rerun()
+
         if len(all_threads) > 6:
             st.markdown(TEXT["sidebar"]["recent_header"])
             for thread in all_threads[6:12]:
@@ -871,7 +1011,11 @@ def start_new_chat(exercise: str) -> None:
 
 
 def _sync_thread_identity(analysis: dict) -> None:
-    canonical_exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "bench")
+    canonical_exercise = str(
+        analysis.get("exercise")
+        or st.session_state.get("exercise_choice")
+        or "bench"
+    )
     created_at = st.session_state.get("thread_created_at") or now_iso()
     if not st.session_state.get("thread_id"):
         st.session_state.thread_id = new_thread_id(canonical_exercise)
@@ -880,13 +1024,26 @@ def _sync_thread_identity(analysis: dict) -> None:
     st.session_state.exercise_choice = canonical_exercise
 
 
+def _analysis_history_message(exercise: str, load_kg: float | None, note: str, comparison_mode: bool) -> str:
+    exercise_label = str(exercise or "set").capitalize()
+    load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "load n/a"
+    prefix = "Uploaded follow-up set for comparison" if comparison_mode else "Uploaded set for analysis"
+    if note:
+        return f"{prefix}: {exercise_label} ({load_label}). Note: {note}"
+    return f"{prefix}: {exercise_label} ({load_label})."
+
+
 def on_analyze(exercise, use_load, upload, note) -> None:
     if st.session_state.get("ui_busy"):
         return
 
     should_rerun = False
+    previous_analysis = st.session_state.get("last_analysis") if st.session_state.get("last_analysis") else None
+    previous_load_kg = st.session_state.get("last_analysis_load_kg")
+    comparison_mode = bool(previous_analysis)
     set_ui_busy(True)
     clear_ui_message()
+    clear_chat_upload_notice()
     try:
         analysis, payload, response = run_analysis_pipeline(
             upload=upload,
@@ -894,24 +1051,43 @@ def on_analyze(exercise, use_load, upload, note) -> None:
             user_message=note,
             load_kg=use_load,
             history=st.session_state.history,
+            previous_analysis=previous_analysis,
+            previous_load_kg=previous_load_kg,
         )
         _sync_thread_identity(analysis)
         st.session_state.last_analysis = analysis
+        st.session_state.last_analysis_load_kg = use_load
         st.session_state.last_payload = payload
         st.session_state.last_response = response
         st.session_state.restore_status = None
-        request_coach_note_clear()
-        if note:
-            append_history("user", note, now_iso())
+        request_followup_draft_clear()
+        append_history(
+            "user",
+            _analysis_history_message(exercise, use_load, note, comparison_mode),
+            now_iso(),
+        )
         append_history("assistant", response.get("response_text", ""), now_iso())
         save_thread(st.session_state.thread_id)
         should_rerun = True
-    except Exception as e:
+    except Exception as exc:
         logging.exception("Analysis pipeline failed")
-        set_ui_message("error", f"{TEXT['errors']['analysis_failed']} {TEXT['errors']['details_prefix']} {e}")
+        set_chat_upload_notice(
+            "error",
+            (
+                "This upload could not be analyzed, so your current chat and last valid analysis were kept intact. "
+                f"{TEXT['errors']['details_prefix']} {exc}"
+            ),
+        )
+        if not comparison_mode:
+            set_ui_message(
+                "error",
+                f"{TEXT['errors']['analysis_failed']} {TEXT['errors']['details_prefix']} {exc}",
+            )
         should_rerun = True
     finally:
+        bump_chat_upload_nonce()
         set_ui_busy(False)
+
     if should_rerun:
         st.rerun()
 
@@ -922,6 +1098,7 @@ def on_followup(follow_up, load_kg) -> None:
 
     set_ui_busy(True)
     clear_ui_message()
+    clear_chat_upload_notice()
     try:
         payload, response = run_followup_coaching(
             analysis=st.session_state.last_analysis,
@@ -933,12 +1110,18 @@ def on_followup(follow_up, load_kg) -> None:
         st.session_state.last_response = response
         append_history("user", follow_up, now_iso())
         append_history("assistant", response.get("response_text", ""), now_iso())
-        save_thread(st.session_state.thread_id)
-    except Exception as e:
+        request_followup_draft_clear()
+        if st.session_state.thread_id:
+            save_thread(st.session_state.thread_id)
+    except Exception as exc:
         logging.exception("Follow-up coaching failed")
-        set_ui_message("error", f"{TEXT['errors']['followup_failed']} {TEXT['errors']['details_prefix']} {e}")
+        set_ui_message(
+            "error",
+            f"{TEXT['errors']['followup_failed']} {TEXT['errors']['details_prefix']} {exc}",
+        )
     finally:
         set_ui_busy(False)
+
     st.rerun()
 
 
@@ -951,16 +1134,16 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css()
-
     render_sidebar()
 
-    # Page header
     hcol, _ = st.columns([10, 1])
     with hcol:
         st.markdown(
-            f"<h1 style='font-size:26px;font-weight:900;color:#1e293b;"
-            f"letter-spacing:-0.02em;margin:0 0 22px;'>"
-            f"{TEXT['main_title']}</h1>",
+            (
+                "<h1 style='font-size:26px;font-weight:900;color:#1e293b;"
+                "letter-spacing:-0.02em;margin:0 0 22px;'>"
+                f"{TEXT['main_title']}</h1>"
+            ),
             unsafe_allow_html=True,
         )
 
@@ -974,31 +1157,19 @@ def main() -> None:
     centre, right = st.columns([1.55, 1])
 
     with centre:
-        # Input card — white rounded card, no stray open divs
         with st.container(border=True):
-            panels.render_analysis_controls(on_analyze)
-
-        # Empty state / overlay
-        overlay_path = resolve_overlay_path(
-            st.session_state.last_payload, st.session_state.last_analysis,
-        )
-        panels.render_overlay_panel(overlay_path)
-
-        # Recent sessions
-        panels.render_recent_sessions_in_main()
+            overlay_path = resolve_overlay_path(
+                st.session_state.last_payload,
+                st.session_state.last_analysis,
+            )
+            panels.render_overlay_panel(overlay_path)
+            panels.render_recent_sessions_in_main()
 
     with right:
-        render_restore_status_badge(st.session_state.get('restore_status'))
-        panels.render_coaching_overview_panel()
-
-        if st.session_state.last_analysis or st.session_state.last_response:
-            panels.render_quality_header()
-            panels.render_summary_metrics()
-            panels.render_faults_panel()
-            panels.render_artifacts_panel()
-
-        panels.render_chat_panel(on_followup)
+        render_restore_status_badge(st.session_state.get("restore_status"))
+        _render_right_workspace(on_analyze, on_followup)
 
 
 if __name__ == "__main__":
     main()
+
