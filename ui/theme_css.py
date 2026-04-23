@@ -968,6 +968,380 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-bottom: 1px solid var(--rr-border);
     }}
 
+    /* Refined app shell: calmer hierarchy, replay-first layout, lighter inline surfaces */
+    [data-testid="stToolbar"],
+    [data-testid="stToolbarActions"],
+    .stAppToolbar {{
+        display: none !important;
+    }}
+
+    .stButton > button,
+    .stDownloadButton > button {{
+        border-radius: 14px !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }}
+
+    .stButton > button:hover,
+    .stDownloadButton > button:hover {{
+        box-shadow: none !important;
+        transform: none !important;
+    }}
+
+    button[kind="primary"] {{
+        background: var(--rr-accent) !important;
+        box-shadow: none !important;
+    }}
+
+    button[kind="primary"]:hover {{
+        background: var(--rr-accent-hover) !important;
+        box-shadow: none !important;
+    }}
+
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stTextArea textarea,
+    div[data-baseweb="select"] > div,
+    .stSelectbox > div > div,
+    div[data-testid="stChatInput"] > div {{
+        box-shadow: none !important;
+        border-radius: 14px !important;
+    }}
+
+    div[data-testid="stFileUploader"] section,
+    div[data-testid="stFileUploaderDropzone"] {{
+        border-radius: 16px !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head) {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) {{
+        background: linear-gradient(180deg, rgba(7,17,31,0.98), rgba(10,20,36,0.94)) !important;
+        border: 1px solid rgba(148,163,184,0.14) !important;
+        border-radius: 28px !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head) {{
+        background: var(--rr-card-bg) !important;
+        border: 1px solid var(--rr-glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: none !important;
+        backdrop-filter: blur(10px) saturate(120%);
+    }}
+
+    div[data-testid="stExpander"] {{
+        background: var(--rr-card-bg) !important;
+        border: 1px solid var(--rr-glass-border) !important;
+        border-radius: 20px !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stExpander"] summary,
+    div[data-testid="stExpander"] summary p {{
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.08em !important;
+        text-transform: uppercase !important;
+        color: var(--rr-text-muted) !important;
+    }}
+
+    .rr-app-header {{
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 0 0 16px;
+        margin: 0 0 18px;
+        border-bottom: 1px solid rgba(148,163,184,0.14);
+    }}
+
+    .rr-app-header__title {{
+        font-family: "Manrope", sans-serif;
+        font-size: clamp(24px, 3vw, 34px);
+        font-weight: 800;
+        line-height: 1.04;
+        letter-spacing: -0.04em;
+        color: var(--rr-text);
+        margin: 4px 0 6px;
+    }}
+
+    .rr-app-header__copy {{
+        max-width: 64ch;
+        font-size: 14px;
+        line-height: 1.65;
+        color: var(--rr-text-muted);
+    }}
+
+    .rr-app-header__meta {{
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+        min-width: 220px;
+    }}
+
+    .rr-app-header__status,
+    .rr-app-header__submeta {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }}
+
+    .rr-app-header__status {{
+        background: rgba(37,99,235,0.10);
+        border: 1px solid rgba(37,99,235,0.16);
+        color: var(--rr-accent);
+    }}
+
+    .rr-app-header__submeta {{
+        background: rgba(148,163,184,0.08);
+        border: 1px solid rgba(148,163,184,0.12);
+        color: var(--rr-text-muted);
+    }}
+
+    .rr-pane-head {{
+        margin-bottom: 14px;
+    }}
+
+    .rr-pane-head--stage {{
+        margin-bottom: 18px;
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__title {{
+        font-size: clamp(20px, 2.8vw, 30px);
+        line-height: 1.05;
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__copy {{
+        max-width: 52ch;
+        color: #94a3b8;
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__eyebrow {{
+        color: #7dd3fc;
+    }}
+
+    .rr-library-copy {{
+        margin: 2px 0 14px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--rr-text-muted);
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"] {{
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: clamp(340px, 54vh, 720px) !important;
+        aspect-ratio: 16 / 9;
+        background: #08111d !important;
+        border: 1px solid rgba(148,163,184,0.14) !important;
+        border-radius: 22px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        padding: 12px !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"] video {{
+        width: 100% !important;
+        max-height: min(70vh, 760px) !important;
+        object-fit: contain !important;
+        background: #020617 !important;
+        border-radius: 16px !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card--results {{
+        min-height: clamp(340px, 54vh, 720px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(8,17,29,0.98), rgba(8,17,29,0.92));
+        border: 1px solid rgba(148,163,184,0.14);
+        box-shadow: none;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card__title {{
+        color: #f8fafc;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card__body {{
+        color: #94a3b8;
+    }}
+
+    .rr-analysis-bar-head,
+    .rr-coach-history-intro {{
+        margin: 0 0 12px;
+        padding: 0 0 12px;
+        border-bottom: 1px solid rgba(148,163,184,0.12);
+    }}
+
+    .rr-analysis-bar-head__title,
+    .rr-coach-history-intro__title {{
+        font-family: "Manrope", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--rr-text);
+    }}
+
+    .rr-analysis-bar-head__copy,
+    .rr-coach-history-intro__copy {{
+        margin-top: 6px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--rr-text-muted);
+    }}
+
+    .rr-coach-shell-head {{
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(148,163,184,0.12);
+    }}
+
+    .rr-coach-shell-head__title {{
+        font-size: 22px;
+    }}
+
+    .rr-session-row,
+    .rr-fault-row,
+    .rr-assistant-note,
+    .rr-mini-empty,
+    .rr-callout,
+    div[data-testid="stChatMessage"] {{
+        box-shadow: none !important;
+    }}
+
+    .rr-session-row {{
+        padding: 12px 0;
+        margin-bottom: 2px;
+        border: none;
+        border-bottom: 1px solid rgba(148,163,184,0.12);
+        border-radius: 0;
+        background: transparent;
+    }}
+
+    .rr-mini-empty {{
+        padding: 14px 0 2px;
+        border: none;
+        border-top: 1px dashed rgba(148,163,184,0.16);
+        border-radius: 0;
+        background: transparent;
+    }}
+
+    .rr-metric-card,
+    .rr-quality-badge,
+    .rr-comparison-shell,
+    .rr-comparison-metric,
+    .rr-compare-strip,
+    .rr-dialog-hero {{
+        background: var(--rr-card-bg-alt);
+        border: 1px solid rgba(148,163,184,0.14);
+        box-shadow: none;
+    }}
+
+    .rr-fault-row,
+    .rr-assistant-note {{
+        background: rgba(148,163,184,0.06);
+        border: 1px solid rgba(148,163,184,0.12);
+    }}
+
+    .rr-callout {{
+        gap: 10px;
+        background: var(--rr-callout-bg);
+        border: 1px solid rgba(148,163,184,0.10);
+        border-left: 3px solid var(--rr-callout-color);
+        border-radius: 14px;
+    }}
+
+    .rr-hero-card {{
+        background:
+            linear-gradient(180deg, rgba(37,99,235,0.04), transparent 55%),
+            var(--rr-card-bg-alt);
+        border: 1px solid rgba(148,163,184,0.14);
+        box-shadow: none;
+        color: var(--rr-text);
+    }}
+
+    .rr-hero-card::before {{
+        background:
+            linear-gradient(90deg, rgba(37,99,235,0.08), transparent 42%);
+    }}
+
+    .rr-hero-card__copy,
+    .rr-hero-step__desc,
+    .rr-comparison-summary,
+    .rr-compare-strip__summary,
+    .rr-comparison-note {{
+        color: var(--rr-text-soft);
+    }}
+
+    .rr-kicker--light {{
+        color: var(--rr-text-muted);
+    }}
+
+    .rr-hero-card__score {{
+        min-width: 0;
+        text-align: left;
+    }}
+
+    .rr-hero-card__score-value,
+    .rr-hero-card__score-scale,
+    .rr-hero-card__title,
+    .rr-hero-step__title {{
+        color: var(--rr-text);
+    }}
+
+    .rr-hero-step__icon {{
+        background: rgba(37,99,235,0.08);
+        border: 1px solid rgba(37,99,235,0.14);
+        color: var(--rr-accent);
+    }}
+
+    .rr-chip--hero {{
+        background: rgba(37,99,235,0.08);
+        border: 1px solid rgba(37,99,235,0.14);
+        color: var(--rr-text-soft);
+    }}
+
+    div[data-testid="stChatMessage"] {{
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 0 12px !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {{
+        padding: 12px 14px !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(148,163,184,0.12) !important;
+        background: rgba(148,163,184,0.06) !important;
+    }}
+
+    div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) [data-testid="stMarkdownContainer"] {{
+        background: rgba(37,99,235,0.10) !important;
+        border-color: rgba(37,99,235,0.16) !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {{
+        margin-bottom: 0 !important;
+    }}
+
     ::-webkit-scrollbar {{
         width: 8px;
         height: 8px;
@@ -979,27 +1353,54 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     @media (max-width: 1100px) {{
-        .rr-page-hero {{
+        .rr-app-header {{
             flex-direction: column;
-            padding: 24px;
+            align-items: flex-start;
         }}
 
-        .rr-page-hero__meta {{
+        .rr-app-header__meta {{
+            align-items: flex-start;
             min-width: 0;
-            max-width: none;
         }}
     }}
 
     @media (max-width: 900px) {{
         .block-container {{
-            padding-top: 20px !important;
-            padding-left: 18px !important;
-            padding-right: 18px !important;
+            padding-top: 18px !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
         }}
 
-        .rr-page-hero {{
-            border-radius: 24px;
-            padding: 22px 20px;
+        div[data-testid="stHorizontalBlock"] {{
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }}
+
+        div[data-testid="stHorizontalBlock"] > div {{
+            min-width: 100% !important;
+            width: 100% !important;
+        }}
+
+        .rr-app-header {{
+            gap: 14px;
+            margin-bottom: 14px;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage),
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head),
+        div[data-testid="stExpander"] {{
+            border-radius: 18px !important;
+            backdrop-filter: none !important;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"],
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card--results {{
+            min-height: 240px !important;
+            aspect-ratio: auto;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"] video {{
+            max-height: 52vh !important;
         }}
 
         .rr-hero-card__head,
@@ -1008,8 +1409,10 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
             align-items: flex-start;
         }}
 
-        .rr-hero-card__score {{
-            text-align: left;
+        .rr-pane-head__copy,
+        .rr-analysis-bar-head__copy,
+        .rr-coach-history-intro__copy {{
+            max-width: none;
         }}
     }}
     </style>

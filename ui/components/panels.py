@@ -409,83 +409,91 @@ def _render_coach_composer(
     exercise_locked: bool,
 ) -> tuple[str, str] | None:
     caption = (
-        "Upload another clip of this same exercise to compare it against the latest analysis, or just send a text follow-up."
+        "Upload another clip of this same exercise to compare it against the latest analysis, or send a quick follow-up."
         if has_analysis else
-        "Choose an exercise, add the load if you want it considered, then upload your first set to start the chat."
+        "Choose the lift, add the load if it matters, then upload the set to start the workflow."
     )
     title = (
-        "Upload a comparison or send a follow-up"
+        "Compare the next set or ask a follow-up"
         if has_analysis else
-        "Start with your set"
+        "Analyze a set"
     )
 
     st.markdown(
-        f"""<div class="rr-coach-composer-intro">
+        f"""<div class="rr-analysis-bar-head">
             <div class="rr-section-kicker">Session Input</div>
-            <div class="rr-coach-composer-intro__title">{title}</div>
-            <div class="rr-coach-composer-intro__copy">{caption}</div>
+            <div class="rr-analysis-bar-head__title">{title}</div>
+            <div class="rr-analysis-bar-head__copy">{caption}</div>
         </div>""",
         unsafe_allow_html=True,
     )
 
-    if exercise_locked:
-        locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
-        icon = EXERCISE_ICONS.get(locked_val, "")
-        st.selectbox(
-            TEXT["inputs"]["exercise"],
-            [f"{icon} {str(locked_val).capitalize()}"],
-            disabled=True,
-            key="coach_locked_exercise",
-        )
-        exercise = str(locked_val)
-    else:
-        labels = [f"{EXERCISE_ICONS.get(e, '')} {e.capitalize()}" for e in EXERCISES]
-        label_map = dict(zip(labels, EXERCISES))
-        current_exercise = st.session_state.get("exercise_choice") or EXERCISES[0]
-        current_label = next(
-            (label for label, value in label_map.items() if value == current_exercise),
-            labels[0],
-        )
-        selected = st.selectbox(
-            TEXT["inputs"]["exercise"],
-            labels,
-            key="coach_exercise_choice_label",
-            disabled=busy,
-            index=labels.index(current_label),
-        )
-        exercise = label_map[selected]
-        st.session_state.exercise_choice = exercise
+    exercise_col, load_col = st.columns([1.45, 0.75], gap="small")
+    with exercise_col:
+        if exercise_locked:
+            locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
+            icon = EXERCISE_ICONS.get(locked_val, "")
+            st.selectbox(
+                TEXT["inputs"]["exercise"],
+                [f"{icon} {str(locked_val).capitalize()}"],
+                disabled=True,
+                key="coach_locked_exercise",
+            )
+            exercise = str(locked_val)
+        else:
+            labels = [f"{EXERCISE_ICONS.get(e, '')} {e.capitalize()}" for e in EXERCISES]
+            label_map = dict(zip(labels, EXERCISES))
+            current_exercise = st.session_state.get("exercise_choice") or EXERCISES[0]
+            current_label = next(
+                (label for label, value in label_map.items() if value == current_exercise),
+                labels[0],
+            )
+            selected = st.selectbox(
+                TEXT["inputs"]["exercise"],
+                labels,
+                key="coach_exercise_choice_label",
+                disabled=busy,
+                index=labels.index(current_label),
+            )
+            exercise = label_map[selected]
+            st.session_state.exercise_choice = exercise
 
-    load_kg = st.number_input(
-        TEXT["inputs"]["load"],
-        min_value=0.0,
-        step=2.5,
-        key="ui_load_kg",
-        disabled=busy,
-    )
+    with load_col:
+        load_kg = st.number_input(
+            TEXT["inputs"]["load"],
+            min_value=0.0,
+            step=2.5,
+            key="ui_load_kg",
+            disabled=busy,
+        )
+
     upload_key = f"chat_video_upload_{int(st.session_state.get('chat_upload_nonce', 0))}"
-    upload = st.file_uploader(
-        TEXT["inputs"]["upload"],
-        type=["mp4", "mov", "avi", "mkv", "webm"],
-        key=upload_key,
-        disabled=busy,
-    )
-    prompt = st.text_area(
-        TEXT["chat"]["follow_up"],
-        key="coach_followup_draft",
-        height=96,
-        disabled=busy,
-        placeholder=(
-            "Upload a new set to compare against the last one, or ask about a rep, cue, tempo, or next-step fix."
-            if has_analysis else
-            "Upload your first set and optionally add context for the coach."
-        ),
-        label_visibility="collapsed",
-    )
+    upload_col, prompt_col = st.columns([1.05, 1], gap="small")
+    with upload_col:
+        upload = st.file_uploader(
+            TEXT["inputs"]["upload"],
+            type=["mp4", "mov", "avi", "mkv", "webm"],
+            key=upload_key,
+            disabled=busy,
+        )
+    with prompt_col:
+        prompt = st.text_area(
+            TEXT["chat"]["follow_up"],
+            key="coach_followup_draft",
+            height=110,
+            disabled=busy,
+            placeholder=(
+                "Ask about a rep, cue, tempo, or what to change next."
+                if has_analysis else
+                "Optional context for the coach."
+            ),
+            label_visibility="collapsed",
+        )
+
     action_label = (
-        "Analyze uploaded set"
+        ("Analyze comparison" if has_analysis else "Analyze set")
         if upload is not None else
-        ("Send follow-up" if has_analysis else TEXT["inputs"]["analyze"])
+        ("Send follow-up" if has_analysis else "Analyze set")
     )
     if st.button(
         action_label,
@@ -552,13 +560,13 @@ def _render_coach_history() -> None:
     st.markdown(
         """<div class="rr-coach-history-intro">
             <div class="rr-section-kicker">Conversation</div>
-            <div class="rr-coach-history-intro__title">Latest exchange</div>
-            <div class="rr-coach-history-intro__copy">Your uploads, follow-ups, and coach replies stay here for the current session.</div>
+            <div class="rr-coach-history-intro__title">Session thread</div>
+            <div class="rr-coach-history-intro__copy">Uploads, questions, and coach replies stay together here.</div>
         </div>""",
         unsafe_allow_html=True,
     )
 
-    chat_scroll = st.container(height=460)
+    chat_scroll = st.container()
     with chat_scroll:
         if not st.session_state.history:
             render_empty_state(EMPTY_STATES["chat"])

@@ -1048,30 +1048,26 @@ def render_page_hero() -> None:
     analysis = st.session_state.get("last_analysis") or {}
     exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "first set").capitalize()
     has_analysis = bool(analysis)
+    session_count = len(list_threads())
     status_value = f"Reviewing {exercise}" if has_analysis else "Ready for first upload"
     status_copy = (
-        "Use the coach panel to upload another set or ask a follow-up without losing the last analysis."
+        "Upload another clip, compare it against the last set, or continue the coaching thread."
         if has_analysis
-        else "Start from the coach panel on the right, then use the replay surface to review the overlay and progress."
+        else "Upload from the coach pane, then review the replay and metrics from the main stage."
     )
+    session_label = f"{session_count} saved session{'s' if session_count != 1 else ''}"
 
     st.markdown(
         f"""
-        <section class="rr-page-hero">
-            <div class="rr-page-hero__body">
-                <div class="rr-page-hero__eyebrow">Performance Review Workspace</div>
-                <div class="rr-page-hero__title">{TEXT['main_title']}</div>
-                <div class="rr-page-hero__copy">{TEXT.get('main_subtitle', '')}</div>
-                <div class="rr-page-hero__pills">
-                    <span class="rr-page-hero__pill">Replay overlay</span>
-                    <span class="rr-page-hero__pill">Set comparison</span>
-                    <span class="rr-page-hero__pill">Coach follow-up</span>
-                </div>
+        <section class="rr-app-header">
+            <div class="rr-app-header__main">
+                <div class="rr-section-kicker">Performance Review Workspace</div>
+                <div class="rr-app-header__title">{TEXT['main_title']}</div>
+                <div class="rr-app-header__copy">{status_copy}</div>
             </div>
-            <div class="rr-page-hero__meta">
-                <div class="rr-page-hero__status-label">Session status</div>
-                <div class="rr-page-hero__status-value">{status_value}</div>
-                <div class="rr-page-hero__status-copy">{status_copy}</div>
+            <div class="rr-app-header__meta">
+                <div class="rr-app-header__status">{status_value}</div>
+                <div class="rr-app-header__submeta">{session_label}</div>
             </div>
         </section>
         """,
@@ -1079,10 +1075,10 @@ def render_page_hero() -> None:
     )
 
 
-def render_surface_head(kicker: str, title: str, copy: str) -> None:
+def render_surface_head(kicker: str, title: str, copy: str, *, variant: str = "section") -> None:
     st.markdown(
         f"""
-        <div class="rr-pane-head">
+        <div class="rr-pane-head rr-pane-head--{variant}">
             <div class="rr-pane-head__eyebrow">{kicker}</div>
             <div class="rr-pane-head__title">{title}</div>
             <div class="rr-pane-head__copy">{copy}</div>
@@ -1307,7 +1303,7 @@ def main() -> None:
 
     recent_threads = list_threads()
     has_analysis = bool(st.session_state.get("last_analysis"))
-    centre, right = st.columns([1.55, 1], gap="large")
+    centre, right = st.columns([1.7, 1], gap="medium")
 
     with centre:
         with st.container(border=True):
@@ -1315,10 +1311,11 @@ def main() -> None:
                 "Replay",
                 "Movement Replay",
                 (
-                    "Review the analyzed overlay here, then compare what changed set to set."
+                    "Review the replay here, inspect form changes, and keep the video stage front and center."
                     if has_analysis
-                    else "Your overlay replay appears here after the first analysis runs."
+                    else "Your analyzed replay appears here after the first upload finishes."
                 ),
+                variant="stage",
             )
             overlay_path = resolve_overlay_path(
                 st.session_state.last_payload,
@@ -1326,15 +1323,14 @@ def main() -> None:
             )
             panels.render_overlay_panel(overlay_path)
 
-        with st.container(border=True):
-            render_surface_head(
-                "Library",
-                TEXT["recent_sessions_title"],
+        with st.expander(TEXT["recent_sessions_title"], expanded=False):
+            st.markdown(
                 (
-                    "Jump back into earlier sessions without losing the current thread."
+                    '<div class="rr-library-copy">Jump back into earlier sessions without leaving the current workflow.</div>'
                     if recent_threads
-                    else "Recent sessions will show up here after you analyze your first set."
+                    else '<div class="rr-library-copy">Saved sessions will appear here after the first successful analysis.</div>'
                 ),
+                unsafe_allow_html=True,
             )
             panels.render_recent_sessions_in_main()
 
