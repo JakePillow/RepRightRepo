@@ -62,11 +62,13 @@ def render_recent_sessions_in_main() -> None:
     from ui.chat_store import list_threads
     threads = list_threads()
     if not threads:
+        st.markdown(
+            """<div class="rr-mini-empty">
+                No saved sessions yet. Once you analyze a set, the latest sessions will appear here for quick recall.
+            </div>""",
+            unsafe_allow_html=True,
+        )
         return
-    st.markdown(
-        f"<div class='rr-section-kicker' style='margin:20px 0 10px;'>{TEXT['recent_sessions_title']}</div>",
-        unsafe_allow_html=True,
-    )
     for thread in threads[:5]:
         title = thread.get("title") or thread.get("thread_id", "")
         st.markdown(

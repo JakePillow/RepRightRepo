@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from ui.chat_store import load_thread, new_thread_id, now_iso, save_thread, thread_title
+from ui.chat_store import list_threads, load_thread, new_thread_id, now_iso, save_thread, thread_title
 from ui.components import panels
 from ui.components.primitives import render_callout, render_restore_status_badge
 from ui.config.tokens import DARK_THEME, TEXT, THEME
@@ -30,6 +30,7 @@ from ui.state import (
     set_ui_message,
 )
 from ui.runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
+from ui.theme_css import build_global_css
 from ui.view_models import resolve_overlay_path
 
 
@@ -1037,20 +1038,71 @@ def inject_global_css() -> None:
     )
 
 
-def render_sidebar() -> None:
-    from ui.chat_store import list_threads
+def inject_global_css_modern() -> None:
+    light_vars = _css_vars(THEME)
+    dark_vars = _css_vars(DARK_THEME)
+    st.markdown(build_global_css(light_vars, dark_vars), unsafe_allow_html=True)
 
+
+def render_page_hero() -> None:
+    analysis = st.session_state.get("last_analysis") or {}
+    exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "first set").capitalize()
+    has_analysis = bool(analysis)
+    status_value = f"Reviewing {exercise}" if has_analysis else "Ready for first upload"
+    status_copy = (
+        "Use the coach panel to upload another set or ask a follow-up without losing the last analysis."
+        if has_analysis
+        else "Start from the coach panel on the right, then use the replay surface to review the overlay and progress."
+    )
+
+    st.markdown(
+        f"""
+        <section class="rr-page-hero">
+            <div class="rr-page-hero__body">
+                <div class="rr-page-hero__eyebrow">Performance Review Workspace</div>
+                <div class="rr-page-hero__title">{TEXT['main_title']}</div>
+                <div class="rr-page-hero__copy">{TEXT.get('main_subtitle', '')}</div>
+                <div class="rr-page-hero__pills">
+                    <span class="rr-page-hero__pill">Replay overlay</span>
+                    <span class="rr-page-hero__pill">Set comparison</span>
+                    <span class="rr-page-hero__pill">Coach follow-up</span>
+                </div>
+            </div>
+            <div class="rr-page-hero__meta">
+                <div class="rr-page-hero__status-label">Session status</div>
+                <div class="rr-page-hero__status-value">{status_value}</div>
+                <div class="rr-page-hero__status-copy">{status_copy}</div>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_surface_head(kicker: str, title: str, copy: str) -> None:
+    st.markdown(
+        f"""
+        <div class="rr-pane-head">
+            <div class="rr-pane-head__eyebrow">{kicker}</div>
+            <div class="rr-pane-head__title">{title}</div>
+            <div class="rr-pane-head__copy">{copy}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_sidebar() -> None:
     busy = bool(st.session_state.get("ui_busy"))
     with st.sidebar:
         st.markdown(
             """
-            <div style="display:flex;align-items:center;gap:10px;padding:20px 0 18px;">
-                <div style="width:34px;height:34px;border-radius:50%;
-                            background:linear-gradient(135deg,#0066CC,#003F8A);
-                            display:flex;align-items:center;justify-content:center;
-                            font-size:16px;box-shadow:0 4px 12px rgba(0,63,138,0.40),inset 0 1px 0 rgba(255,255,255,0.28);">🏋</div>
-                <span style="font-size:17px;font-weight:900;
-                             color:#ffffff;letter-spacing:-0.02em;">RepRight</span>
+            <div class="rr-sidebar-brand">
+                <div class="rr-sidebar-brand__mark">RR</div>
+                <div>
+                    <div class="rr-sidebar-brand__name">RepRight</div>
+                    <div class="rr-sidebar-brand__copy">Video form review and coaching in one workspace.</div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -1242,17 +1294,9 @@ def main() -> None:
         initial_sidebar_state="expanded",
     )
     initialize_session_state()
-    inject_global_css()
+    inject_global_css_modern()
     render_sidebar()
-
-    st.markdown(
-        (
-            "<div class='rr-page-title'>"
-            f"{TEXT['main_title']}"
-            "</div>"
-        ),
-        unsafe_allow_html=True,
-    )
+    render_page_hero()
 
     ui_message = st.session_state.get("ui_message")
     if isinstance(ui_message, dict) and ui_message.get("text"):
@@ -1261,15 +1305,37 @@ def main() -> None:
     if demo_mode_enabled():
         render_callout("info", demo_banner_text())
 
-    centre, right = st.columns([1.55, 1])
+    recent_threads = list_threads()
+    has_analysis = bool(st.session_state.get("last_analysis"))
+    centre, right = st.columns([1.55, 1], gap="large")
 
     with centre:
         with st.container(border=True):
+            render_surface_head(
+                "Replay",
+                "Movement Replay",
+                (
+                    "Review the analyzed overlay here, then compare what changed set to set."
+                    if has_analysis
+                    else "Your overlay replay appears here after the first analysis runs."
+                ),
+            )
             overlay_path = resolve_overlay_path(
                 st.session_state.last_payload,
                 st.session_state.last_analysis,
             )
             panels.render_overlay_panel(overlay_path)
+
+        with st.container(border=True):
+            render_surface_head(
+                "Library",
+                TEXT["recent_sessions_title"],
+                (
+                    "Jump back into earlier sessions without losing the current thread."
+                    if recent_threads
+                    else "Recent sessions will show up here after you analyze your first set."
+                ),
+            )
             panels.render_recent_sessions_in_main()
 
     with right:
