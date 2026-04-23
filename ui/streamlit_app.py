@@ -122,7 +122,7 @@ def inject_global_css() -> None:
             background: linear-gradient(180deg, #4DB3FF, #0057B7) !important;
         }}
 
-        /* === Wii Menu background: crisp white-to-light-blue === */
+        /* === Final dark dashboard background === */
         html,
         body,
         [data-testid="stAppViewContainer"],
@@ -130,55 +130,57 @@ def inject_global_css() -> None:
         section[data-testid="stMain"],
         section[data-testid="stMain"] > div {{
             background:
-                radial-gradient(ellipse at top left, rgba(255,255,255,0.95), transparent 48%),
-                radial-gradient(ellipse at top right, rgba(77,179,255,0.18), transparent 40%),
-                linear-gradient(180deg, var(--rr-page-bg-alt) 0%, var(--rr-page-bg) 100%) !important;
+                radial-gradient(circle at 12% 0%, rgba(59,130,246,0.25), transparent 34%),
+                radial-gradient(circle at 92% 0%, rgba(14,165,233,0.18), transparent 30%),
+                linear-gradient(180deg, #020817 0%, #06122d 55%, #030c20 100%) !important;
             color: var(--rr-text) !important;
-            font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
             overflow-y: auto !important;
         }}
 
-        /* === Wii Channel grid main container === */
+        /* === Dashboard shell === */
         .block-container {{
             position: relative !important;
             padding-top: 28px !important;
-            padding-left: 32px !important;
-            padding-right: 32px !important;
-            max-width: 100% !important;
-            background: linear-gradient(180deg, var(--rr-stage-bg), var(--rr-stage-bg-alt)) !important;
-            border: 1.5px solid var(--rr-stage-border) !important;
-            border-radius: 36px !important;
+            padding-left: 30px !important;
+            padding-right: 30px !important;
+            max-width: 1320px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            background: linear-gradient(180deg, rgba(5,15,35,0.96), rgba(3,11,28,0.98)) !important;
+            border: 1px solid rgba(96,165,250,0.24) !important;
+            border-radius: 22px !important;
             box-shadow:
-                0 24px 64px var(--rr-glass-shadow-strong),
-                inset 0 2px 0 rgba(255,255,255,0.70),
-                inset 0 -1px 0 rgba(0,87,183,0.08) !important;
+                0 24px 64px rgba(2,6,23,0.72),
+                inset 0 1px 0 rgba(255,255,255,0.10) !important;
             overflow: visible !important;
-            backdrop-filter: blur(20px) saturate(130%);
+            backdrop-filter: blur(14px) saturate(116%);
             margin-top: 12px !important;
-            margin-bottom: 16px !important;
+            margin-bottom: 20px !important;
         }}
 
-        /* Wii scanline + gloss overlay */
+        /* Subtle glow overlay */
         .block-container::before {{
             content: "";
             position: absolute;
             inset: 0;
-            border-radius: 36px;
+            border-radius: 22px;
             pointer-events: none;
             background:
-                linear-gradient(180deg, rgba(255,255,255,0.32) 0%, transparent 18%, transparent 82%, rgba(255,255,255,0.14) 100%),
-                repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,87,183,0.025) 3px, rgba(0,87,183,0.025) 4px);
+                radial-gradient(circle at 18% 8%, rgba(59,130,246,0.20), transparent 30%),
+                radial-gradient(circle at 88% 2%, rgba(14,165,233,0.14), transparent 26%),
+                linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 22%, transparent 82%, rgba(255,255,255,0.03) 100%);
             z-index: 0;
         }}
 
         .block-container::after {{
             content: "";
             position: absolute;
-            inset: 20px;
-            border-radius: 28px;
-            border: 1px solid var(--rr-stage-inner-border);
+            inset: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(96,165,250,0.18);
             pointer-events: none;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.50);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
             z-index: 0;
         }}
 
@@ -240,20 +242,20 @@ def inject_global_css() -> None:
             cursor: not-allowed !important;
         }}
 
-        /* === Wii input fields: white, rounded, blue focus ring === */
+        /* === Dashboard input controls === */
         .stTextInput > div > div > input,
         .stNumberInput > div > div > input,
         .stTextArea textarea,
         div[data-baseweb="select"] > div,
         .stSelectbox > div > div {{
-            background: var(--rr-glass-bg-strong) !important;
-            border: 1.5px solid var(--rr-border) !important;
-            border-radius: 20px !important;
-            color: var(--rr-text) !important;
+            background: rgba(30, 41, 59, 0.72) !important;
+            border: 1px solid rgba(96,165,250,0.24) !important;
+            border-radius: 10px !important;
+            color: #e2e8f0 !important;
             font-size: 15px !important;
-            font-family: "Nunito", sans-serif !important;
-            font-weight: 600 !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -1px 0 rgba(0,87,183,0.06) !important;
+            font-family: "Inter", sans-serif !important;
+            font-weight: 500 !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08) !important;
         }}
 
         .stTextInput > div > div > input:focus,
@@ -262,7 +264,7 @@ def inject_global_css() -> None:
         div[data-baseweb="select"] > div:focus-within,
         .stSelectbox > div > div:focus-within {{
             border-color: var(--rr-accent) !important;
-            box-shadow: 0 0 0 3px rgba(0,102,204,0.16), inset 0 1px 0 rgba(255,255,255,0.70) !important;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.22), inset 0 1px 0 rgba(255,255,255,0.10) !important;
         }}
 
         .stTextInput > label,
@@ -294,30 +296,29 @@ def inject_global_css() -> None:
             color: var(--rr-text-muted) !important;
         }}
 
-        /* === Wii primary button: blue bubble with gloss shimmer === */
+        /* === Dashboard primary button === */
         button[kind="primary"] {{
             background:
-                linear-gradient(180deg, #0066CC 0%, #003F8A 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 24px !important;
-            font-weight: 900 !important;
+                linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(96,165,250,0.32) !important;
+            border-radius: 10px !important;
+            font-weight: 800 !important;
             font-size: 15px !important;
-            font-family: "Nunito", sans-serif !important;
+            font-family: "Inter", sans-serif !important;
             letter-spacing: 0.01em !important;
             box-shadow:
-                0 8px 22px rgba(0,63,138,0.32),
-                inset 0 1px 0 rgba(255,255,255,0.36),
-                inset 0 -1px 0 rgba(0,0,0,0.14) !important;
+                0 8px 22px rgba(37,99,235,0.35),
+                inset 0 1px 0 rgba(255,255,255,0.20) !important;
             transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease !important;
         }}
 
         button[kind="primary"]:hover {{
-            background: linear-gradient(180deg, #4DB3FF 0%, #0057B7 100%) !important;
+            background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%) !important;
             transform: translateY(-2px) scale(1.01);
             box-shadow:
-                0 14px 30px rgba(0,87,183,0.36),
-                inset 0 1px 0 rgba(255,255,255,0.40) !important;
+                0 14px 30px rgba(37,99,235,0.44),
+                inset 0 1px 0 rgba(255,255,255,0.22) !important;
         }}
 
         /* === Wii channel card: white frosted, blue border, gloss === */
@@ -419,13 +420,23 @@ def inject_global_css() -> None:
         }}
 
         /* === Wii typography: Nunito rounded headings === */
+        .rr-page-title {{
+            text-align: center;
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin: 2px 0 28px;
+            color: #f8fafc;
+            text-shadow: 0 0 24px rgba(59,130,246,0.22);
+        }}
+
         .rr-section-kicker,
         .rr-kicker {{
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            font-family: "Nunito", sans-serif;
+            font-family: "Inter", sans-serif;
         }}
 
         .rr-section-kicker {{
@@ -446,9 +457,9 @@ def inject_global_css() -> None:
         .rr-empty-card,
         .rr-callout,
         .rr-dialog-hero {{
-            background: var(--rr-glass-bg-strong) !important;
-            border: 1.5px solid var(--rr-glass-border) !important;
-            box-shadow: 0 12px 28px var(--rr-glass-shadow), inset 0 1px 0 rgba(255,255,255,0.60);
+            background: linear-gradient(180deg, rgba(15,23,42,0.78), rgba(9,16,30,0.90)) !important;
+            border: 1px solid rgba(96,165,250,0.24) !important;
+            box-shadow: 0 10px 26px rgba(2,6,23,0.46), inset 0 1px 0 rgba(255,255,255,0.10);
             backdrop-filter: blur(16px) saturate(140%);
         }}
 
@@ -1234,16 +1245,14 @@ def main() -> None:
     inject_global_css()
     render_sidebar()
 
-    hcol, _ = st.columns([10, 1])
-    with hcol:
-        st.markdown(
-            (
-                "<h1 style='font-size:26px;font-weight:900;color:#001E50;font-family:Nunito,sans-serif;"
-                "letter-spacing:-0.02em;margin:0 0 22px;'>"
-                f"{TEXT['main_title']}</h1>"
-            ),
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        (
+            "<div class='rr-page-title'>"
+            f"{TEXT['main_title']}"
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
 
     ui_message = st.session_state.get("ui_message")
     if isinstance(ui_message, dict) and ui_message.get("text"):
@@ -1270,4 +1279,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
