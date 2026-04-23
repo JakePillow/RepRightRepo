@@ -1692,5 +1692,274 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
             border-radius: 20px;
         }}
     }}
+
+    /* Bolder visual shift: remove the giant frame, open the replay stage, and make the coach pane warmer */
+    .block-container::before {{
+        display: none !important;
+    }}
+
+    .block-container {{
+        max-width: 1480px !important;
+        padding-top: 24px !important;
+        padding-left: 34px !important;
+        padding-right: 34px !important;
+        background: transparent !important;
+    }}
+
+    .rr-app-header {{
+        align-items: flex-start;
+        padding: 2px 2px 18px;
+        margin: 0 0 26px;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+    }}
+
+    .rr-app-header::before {{
+        display: none;
+    }}
+
+    .rr-app-header__title {{
+        font-size: clamp(34px, 4vw, 52px);
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+        margin: 8px 0 10px;
+    }}
+
+    .rr-app-header__copy {{
+        max-width: 46ch;
+        font-size: 16px;
+        line-height: 1.72;
+        color: #c6d5ea;
+    }}
+
+    .rr-app-header__tags {{
+        margin-top: 18px;
+    }}
+
+    .rr-app-header__tag {{
+        min-height: 34px;
+        padding: 0 14px;
+        background: rgba(20, 33, 58, 0.72);
+        border-color: rgba(122, 150, 194, 0.18);
+        color: #d3e4ff;
+        backdrop-filter: blur(10px);
+    }}
+
+    .rr-app-header__meta {{
+        gap: 12px;
+        min-width: 0;
+        padding-top: 10px;
+    }}
+
+    .rr-app-header__status,
+    .rr-app-header__submeta {{
+        min-height: 40px;
+        padding: 0 15px;
+        font-size: 12.5px;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-stage-shell),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        overflow: visible !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-stage-shell)::before {{
+        display: none !important;
+    }}
+
+    .rr-pane-head--stage {{
+        padding: 8px 6px 0;
+        margin-bottom: 18px;
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__title {{
+        font-size: clamp(26px, 3.3vw, 40px);
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__copy {{
+        max-width: 42ch;
+        font-size: 16px;
+        line-height: 1.7;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"],
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card--results {{
+        min-height: clamp(380px, 58vh, 760px) !important;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(56,189,248,0.10), transparent 24%),
+            radial-gradient(circle at 82% 100%, rgba(251,146,60,0.08), transparent 24%),
+            linear-gradient(180deg, rgba(8,15,28,0.98), rgba(6,12,22,0.98)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.16) !important;
+        border-radius: 32px !important;
+        box-shadow:
+            0 28px 56px rgba(2,6,23,0.24),
+            inset 0 1px 0 rgba(255,255,255,0.05),
+            inset 0 0 0 1px rgba(255,255,255,0.02) !important;
+        padding: 18px !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"] video {{
+        border-radius: 22px !important;
+    }}
+
+    div[data-testid="stExpander"] {{
+        background: rgba(15, 25, 44, 0.42) !important;
+        border: 1px solid rgba(122, 150, 194, 0.14) !important;
+        border-radius: 999px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stExpanderDetails"] {{
+        padding: 0 18px 14px 18px !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head) {{
+        background:
+            radial-gradient(circle at top right, rgba(96,165,250,0.14), transparent 26%),
+            radial-gradient(circle at left bottom, rgba(14,165,233,0.06), transparent 20%),
+            linear-gradient(180deg, rgba(14,24,43,0.97), rgba(9,17,31,0.95)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.16) !important;
+        border-radius: 30px !important;
+        box-shadow:
+            0 30px 60px rgba(2,6,23,0.22),
+            inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    }}
+
+    .rr-coach-shell-head {{
+        padding: 4px 4px 14px;
+        margin-bottom: 18px;
+    }}
+
+    .rr-coach-shell-head__title {{
+        font-size: 25px;
+        letter-spacing: -0.04em;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+        margin: 6px 0 18px;
+        padding: 20px 20px 12px;
+        border-radius: 28px;
+        border: 1px solid rgba(122, 150, 194, 0.14);
+        background:
+            radial-gradient(circle at top left, rgba(96,165,250,0.10), transparent 28%),
+            linear-gradient(180deg, rgba(20, 36, 64, 0.72), rgba(12, 23, 42, 0.82));
+        box-shadow:
+            0 18px 34px rgba(2,6,23,0.16),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+    }}
+
+    .rr-analysis-bar-head__title {{
+        font-size: 20px;
+    }}
+
+    .rr-analysis-bar-head__copy {{
+        max-width: 50ch;
+        color: #bfcee6;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-context-shell) {{
+        margin-top: 8px;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(122, 150, 194, 0.10);
+    }}
+
+    .rr-session-row {{
+        padding: 13px 16px;
+        border-radius: 18px;
+        background:
+            linear-gradient(180deg, rgba(17, 29, 50, 0.74), rgba(12, 22, 39, 0.70));
+    }}
+
+    .rr-mini-empty {{
+        padding: 18px 16px;
+        border-radius: 18px;
+        background:
+            linear-gradient(180deg, rgba(17, 29, 50, 0.54), rgba(12, 22, 39, 0.44));
+    }}
+
+    .rr-callout,
+    .rr-fault-row,
+    .rr-assistant-note,
+    .rr-metric-card,
+    .rr-quality-badge,
+    .rr-comparison-shell,
+    .rr-comparison-metric,
+    .rr-compare-strip,
+    .rr-dialog-hero {{
+        border-color: rgba(122, 150, 194, 0.12);
+    }}
+
+    .rr-hero-card {{
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 28%),
+            linear-gradient(180deg, rgba(255,255,255,0.02), transparent 24%),
+            rgba(13, 24, 44, 0.92);
+    }}
+
+    button[kind="primary"] {{
+        border-radius: 18px !important;
+        min-height: 56px !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {{
+        padding: 14px 16px !important;
+        border-radius: 22px 22px 22px 14px !important;
+        background:
+            linear-gradient(180deg, rgba(16, 28, 48, 0.90), rgba(12, 22, 39, 0.84)) !important;
+    }}
+
+    div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) [data-testid="stMarkdownContainer"] {{
+        border-radius: 22px 22px 14px 22px !important;
+        background:
+            linear-gradient(180deg, rgba(73, 125, 230, 0.30), rgba(47, 87, 175, 0.24)) !important;
+    }}
+
+    @media (max-width: 1100px) {{
+        .rr-app-header {{
+            gap: 16px;
+        }}
+
+        .rr-app-header__meta {{
+            padding-top: 0;
+        }}
+    }}
+
+    @media (max-width: 900px) {{
+        .block-container {{
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+        }}
+
+        .rr-app-header {{
+            padding: 4px 0 14px;
+            margin-bottom: 18px;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"],
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card--results {{
+            min-height: 280px !important;
+            border-radius: 24px !important;
+            padding: 12px !important;
+        }}
+
+        div[data-testid="stExpander"] {{
+            border-radius: 22px !important;
+        }}
+    }}
     </style>
     """
