@@ -419,102 +419,104 @@ def _render_coach_composer(
         "Analyze a set"
     )
 
-    st.markdown(
-        f"""<div class="rr-analysis-bar-head">
-            <div class="rr-section-kicker">Session Input</div>
-            <div class="rr-analysis-bar-head__title">{title}</div>
-            <div class="rr-analysis-bar-head__copy">{caption}</div>
-        </div>""",
-        unsafe_allow_html=True,
-    )
+    with st.container():
+        st.markdown('<div class="rr-analysis-bar-shell"></div>', unsafe_allow_html=True)
+        st.markdown(
+            f"""<div class="rr-analysis-bar-head">
+                <div class="rr-section-kicker">Session Input</div>
+                <div class="rr-analysis-bar-head__title">{title}</div>
+                <div class="rr-analysis-bar-head__copy">{caption}</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
-    exercise_col, load_col = st.columns([1.45, 0.75], gap="small")
-    with exercise_col:
-        if exercise_locked:
-            locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
-            icon = EXERCISE_ICONS.get(locked_val, "")
-            st.selectbox(
-                TEXT["inputs"]["exercise"],
-                [f"{icon} {str(locked_val).capitalize()}"],
-                disabled=True,
-                key="coach_locked_exercise",
-            )
-            exercise = str(locked_val)
-        else:
-            labels = [f"{EXERCISE_ICONS.get(e, '')} {e.capitalize()}" for e in EXERCISES]
-            label_map = dict(zip(labels, EXERCISES))
-            current_exercise = st.session_state.get("exercise_choice") or EXERCISES[0]
-            current_label = next(
-                (label for label, value in label_map.items() if value == current_exercise),
-                labels[0],
-            )
-            selected = st.selectbox(
-                TEXT["inputs"]["exercise"],
-                labels,
-                key="coach_exercise_choice_label",
+        exercise_col, load_col = st.columns([1.45, 0.75], gap="small")
+        with exercise_col:
+            if exercise_locked:
+                locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
+                icon = EXERCISE_ICONS.get(locked_val, "")
+                st.selectbox(
+                    TEXT["inputs"]["exercise"],
+                    [f"{icon} {str(locked_val).capitalize()}"],
+                    disabled=True,
+                    key="coach_locked_exercise",
+                )
+                exercise = str(locked_val)
+            else:
+                labels = [f"{EXERCISE_ICONS.get(e, '')} {e.capitalize()}" for e in EXERCISES]
+                label_map = dict(zip(labels, EXERCISES))
+                current_exercise = st.session_state.get("exercise_choice") or EXERCISES[0]
+                current_label = next(
+                    (label for label, value in label_map.items() if value == current_exercise),
+                    labels[0],
+                )
+                selected = st.selectbox(
+                    TEXT["inputs"]["exercise"],
+                    labels,
+                    key="coach_exercise_choice_label",
+                    disabled=busy,
+                    index=labels.index(current_label),
+                )
+                exercise = label_map[selected]
+                st.session_state.exercise_choice = exercise
+
+        with load_col:
+            load_kg = st.number_input(
+                TEXT["inputs"]["load"],
+                min_value=0.0,
+                step=2.5,
+                key="ui_load_kg",
                 disabled=busy,
-                index=labels.index(current_label),
             )
-            exercise = label_map[selected]
-            st.session_state.exercise_choice = exercise
 
-    with load_col:
-        load_kg = st.number_input(
-            TEXT["inputs"]["load"],
-            min_value=0.0,
-            step=2.5,
-            key="ui_load_kg",
-            disabled=busy,
-        )
-
-    upload_key = f"chat_video_upload_{int(st.session_state.get('chat_upload_nonce', 0))}"
-    upload_col, prompt_col = st.columns([1.05, 1], gap="small")
-    with upload_col:
-        upload = st.file_uploader(
-            TEXT["inputs"]["upload"],
-            type=["mp4", "mov", "avi", "mkv", "webm"],
-            key=upload_key,
-            disabled=busy,
-        )
-    with prompt_col:
-        prompt = st.text_area(
-            TEXT["chat"]["follow_up"],
-            key="coach_followup_draft",
-            height=110,
-            disabled=busy,
-            placeholder=(
-                "Ask about a rep, cue, tempo, or what to change next."
-                if has_analysis else
-                "Optional context for the coach."
-            ),
-            label_visibility="collapsed",
-        )
-
-    action_label = (
-        ("Analyze comparison" if has_analysis else "Analyze set")
-        if upload is not None else
-        ("Send follow-up" if has_analysis else "Analyze set")
-    )
-    if st.button(
-        action_label,
-        key="coach_workspace_submit",
-        use_container_width=True,
-        type="primary",
-        disabled=busy,
-    ):
-        if upload is not None:
-            on_analyze(
-                exercise,
-                load_kg if load_kg > 0 else None,
-                upload,
-                prompt.strip(),
+        upload_key = f"chat_video_upload_{int(st.session_state.get('chat_upload_nonce', 0))}"
+        upload_col, prompt_col = st.columns([1.05, 1], gap="small")
+        with upload_col:
+            upload = st.file_uploader(
+                TEXT["inputs"]["upload"],
+                type=["mp4", "mov", "avi", "mkv", "webm"],
+                key=upload_key,
+                disabled=busy,
             )
-        elif has_analysis and prompt.strip():
-            on_followup(prompt.strip(), load_kg)
-        elif not has_analysis:
-            return ("warning", TEXT["inputs"]["upload_warning"])
-        else:
-            return ("info", "Add a follow-up question or upload another video for comparison.")
+        with prompt_col:
+            prompt = st.text_area(
+                TEXT["chat"]["follow_up"],
+                key="coach_followup_draft",
+                height=110,
+                disabled=busy,
+                placeholder=(
+                    "Ask about a rep, cue, tempo, or what to change next."
+                    if has_analysis else
+                    "Optional context for the coach."
+                ),
+                label_visibility="collapsed",
+            )
+
+        action_label = (
+            ("Analyze comparison" if has_analysis else "Analyze set")
+            if upload is not None else
+            ("Send follow-up" if has_analysis else "Analyze set")
+        )
+        if st.button(
+            action_label,
+            key="coach_workspace_submit",
+            use_container_width=True,
+            type="primary",
+            disabled=busy,
+        ):
+            if upload is not None:
+                on_analyze(
+                    exercise,
+                    load_kg if load_kg > 0 else None,
+                    upload,
+                    prompt.strip(),
+                )
+            elif has_analysis and prompt.strip():
+                on_followup(prompt.strip(), load_kg)
+            elif not has_analysis:
+                return ("warning", TEXT["inputs"]["upload_warning"])
+            else:
+                return ("info", "Add a follow-up question or upload another video for comparison.")
 
     return None
 
@@ -529,54 +531,58 @@ def _render_coach_notices(local_notice: tuple[str, str] | None) -> None:
 
 
 def _render_coach_context_card(*, has_analysis: bool, has_response: bool) -> None:
-    if has_analysis or has_response:
-        _coach_summary_card()
-        action_cols = st.columns([1, 1])
-        with action_cols[0]:
-            open_analysis = st.button(
-                "Open analysis",
-                key="open_analysis_dialog",
-                use_container_width=True,
-            )
-        with action_cols[1]:
-            p = artifact_analysis_json_path(st.session_state.get("last_analysis"))
-            if p:
-                st.download_button(
-                    "Export JSON",
-                    data=p.read_text(encoding="utf-8"),
-                    file_name=p.name,
-                    mime="application/json",
+    with st.container():
+        st.markdown('<div class="rr-context-shell"></div>', unsafe_allow_html=True)
+        if has_analysis or has_response:
+            _coach_summary_card()
+            action_cols = st.columns([1, 1])
+            with action_cols[0]:
+                open_analysis = st.button(
+                    "Open analysis",
+                    key="open_analysis_dialog",
                     use_container_width=True,
-                    key="download_analysis_dialog_button",
                 )
-        if open_analysis:
-            _render_analysis_dialog()
-        return
+            with action_cols[1]:
+                p = artifact_analysis_json_path(st.session_state.get("last_analysis"))
+                if p:
+                    st.download_button(
+                        "Export JSON",
+                        data=p.read_text(encoding="utf-8"),
+                        file_name=p.name,
+                        mime="application/json",
+                        use_container_width=True,
+                        key="download_analysis_dialog_button",
+                    )
+            if open_analysis:
+                _render_analysis_dialog()
+            return
 
-    _coach_welcome_card()
+        _coach_welcome_card()
 
 
 def _render_coach_history() -> None:
-    st.markdown(
-        """<div class="rr-coach-history-intro">
-            <div class="rr-section-kicker">Conversation</div>
-            <div class="rr-coach-history-intro__title">Session thread</div>
-            <div class="rr-coach-history-intro__copy">Uploads, questions, and coach replies stay together here.</div>
-        </div>""",
-        unsafe_allow_html=True,
-    )
+    with st.container():
+        st.markdown('<div class="rr-history-shell"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """<div class="rr-coach-history-intro">
+                <div class="rr-section-kicker">Conversation</div>
+                <div class="rr-coach-history-intro__title">Session thread</div>
+                <div class="rr-coach-history-intro__copy">Uploads, questions, and coach replies stay together here.</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
-    chat_scroll = st.container()
-    with chat_scroll:
-        if not st.session_state.history:
-            render_empty_state(EMPTY_STATES["chat"])
-        for msg in st.session_state.history:
-            role = "user" if msg.get("role") == "user" else "assistant"
-            with st.chat_message(role):
-                st.write(msg.get("content", ""))
-                ts = msg.get("timestamp")
-                if ts:
-                    st.caption(ts[:16].replace("T", " "))
+        chat_scroll = st.container()
+        with chat_scroll:
+            if not st.session_state.history:
+                render_empty_state(EMPTY_STATES["chat"])
+            for msg in st.session_state.history:
+                role = "user" if msg.get("role") == "user" else "assistant"
+                with st.chat_message(role):
+                    st.write(msg.get("content", ""))
+                    ts = msg.get("timestamp")
+                    if ts:
+                        st.caption(ts[:16].replace("T", " "))
 
 
 def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCallback) -> None:

@@ -975,9 +975,112 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         display: none !important;
     }}
 
+    :root,
+    html,
+    body,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stApp"],
+    section[data-testid="stMain"] {{
+        color-scheme: only dark !important;
+    }}
+
+    html,
+    body,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stApp"],
+    section[data-testid="stMain"],
+    section[data-testid="stMain"] > div {{
+        background:
+            radial-gradient(circle at 15% 0%, rgba(67, 97, 238, 0.18), transparent 28%),
+            radial-gradient(circle at 78% 2%, rgba(56, 189, 248, 0.10), transparent 22%),
+            linear-gradient(180deg, #0a1630 0%, #081223 48%, #060f1d 100%) !important;
+        background-color: #081223 !important;
+    }}
+
+    .block-container {{
+        position: relative;
+        max-width: 1420px !important;
+        padding-top: 26px !important;
+        padding-bottom: 32px !important;
+    }}
+
+    .block-container::before {{
+        content: "";
+        position: absolute;
+        inset: 14px 10px 14px 12px;
+        border-radius: 34px;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.02), transparent 30%),
+            rgba(8, 17, 31, 0.42);
+        border: 1px solid rgba(148,163,184,0.08);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        pointer-events: none;
+    }}
+
+    .block-container > * {{
+        position: relative;
+        z-index: 1;
+    }}
+
+    [data-testid="stSidebar"] {{
+        background:
+            radial-gradient(circle at 16% 0%, rgba(96,165,250,0.16), transparent 26%),
+            linear-gradient(180deg, #0a1530 0%, #081122 100%) !important;
+        box-shadow:
+            inset -1px 0 0 rgba(255,255,255,0.05),
+            18px 0 40px rgba(2,6,23,0.12) !important;
+    }}
+
+    .rr-sidebar-brand {{
+        padding: 14px 14px 16px;
+        margin: 2px 0 18px;
+        border-radius: 24px;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.03), transparent 36%),
+            rgba(8, 17, 31, 0.36);
+        border: 1px solid rgba(116, 147, 195, 0.12);
+    }}
+
+    .rr-sidebar-brand__mark {{
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        background:
+            radial-gradient(circle at 30% 25%, rgba(255,255,255,0.24), transparent 26%),
+            linear-gradient(135deg, #5b8cff, #1d4ed8 62%, #0f172a);
+        box-shadow:
+            0 14px 28px rgba(37,99,235,0.20),
+            inset 0 1px 0 rgba(255,255,255,0.18);
+    }}
+
+    [data-testid="stSidebar"] .stButton > button {{
+        background: rgba(9, 18, 33, 0.74) !important;
+        border: 1px solid rgba(116, 147, 195, 0.12) !important;
+        border-radius: 18px !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    }}
+
+    [data-testid="stSidebar"] .stButton > button:hover {{
+        background: rgba(12, 22, 40, 0.86) !important;
+        border-color: rgba(148, 163, 184, 0.18) !important;
+        box-shadow:
+            0 12px 24px rgba(2,6,23,0.14),
+            inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    }}
+
+    .stTextInput > label,
+    .stNumberInput > label,
+    .stSelectbox > label,
+    .stFileUploader > label,
+    .stTextArea > label {{
+        font-size: 10.5px !important;
+        letter-spacing: 0.10em !important;
+        color: #91a6c7 !important;
+    }}
+
     .stButton > button,
     .stDownloadButton > button {{
-        border-radius: 14px !important;
+        border-radius: 16px !important;
         box-shadow: none !important;
         transform: none !important;
     }}
@@ -989,13 +1092,21 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     button[kind="primary"] {{
-        background: var(--rr-accent) !important;
-        box-shadow: none !important;
+        background:
+            linear-gradient(135deg, #7bb0ff 0%, #5f97fb 45%, #4d87f6 100%) !important;
+        color: #f8fbff !important;
+        border: 1px solid rgba(147, 197, 253, 0.26) !important;
+        box-shadow:
+            0 16px 32px rgba(37,99,235,0.20),
+            inset 0 1px 0 rgba(255,255,255,0.26) !important;
     }}
 
     button[kind="primary"]:hover {{
-        background: var(--rr-accent-hover) !important;
-        box-shadow: none !important;
+        background:
+            linear-gradient(135deg, #8abcff 0%, #6aa0ff 45%, #5b92ff 100%) !important;
+        box-shadow:
+            0 18px 36px rgba(37,99,235,0.22),
+            inset 0 1px 0 rgba(255,255,255,0.30) !important;
     }}
 
     .stTextInput > div > div > input,
@@ -1004,14 +1115,45 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     div[data-baseweb="select"] > div,
     .stSelectbox > div > div,
     div[data-testid="stChatInput"] > div {{
-        box-shadow: none !important;
-        border-radius: 14px !important;
+        background: #0e1930 !important;
+        background-color: #0e1930 !important;
+        border: 1px solid rgba(125, 149, 189, 0.18) !important;
+        color: #e7eefb !important;
+        -webkit-text-fill-color: #e7eefb !important;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.04),
+            0 0 0 1px rgba(6,15,29,0.12) !important;
+        border-radius: 16px !important;
+    }}
+
+    .stTextArea textarea,
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input {{
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+    }}
+
+    .stTextArea textarea::placeholder,
+    .stTextInput input::placeholder {{
+        color: #7f93b6 !important;
+        -webkit-text-fill-color: #7f93b6 !important;
+    }}
+
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] svg,
+    .stSelectbox * {{
+        color: #e7eefb !important;
     }}
 
     div[data-testid="stFileUploader"] section,
     div[data-testid="stFileUploaderDropzone"] {{
-        border-radius: 16px !important;
-        box-shadow: none !important;
+        min-height: 108px !important;
+        background: linear-gradient(180deg, rgba(14,25,48,0.98), rgba(12,21,39,0.96)) !important;
+        border: 1px solid rgba(91, 132, 208, 0.28) !important;
+        border-radius: 18px !important;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.04),
+            0 10px 20px rgba(2, 6, 23, 0.12) !important;
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head),
@@ -1022,71 +1164,164 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         backdrop-filter: none !important;
     }}
 
+    .rr-stage-shell,
+    .rr-library-shell,
+    .rr-analysis-bar-shell,
+    .rr-context-shell,
+    .rr-history-shell {{
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-stage-shell),
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) {{
-        background: linear-gradient(180deg, rgba(7,17,31,0.98), rgba(10,20,36,0.94)) !important;
-        border: 1px solid rgba(148,163,184,0.14) !important;
-        border-radius: 28px !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
+        position: relative;
+        background:
+            radial-gradient(circle at 12% 0%, rgba(96,165,250,0.12), transparent 34%),
+            linear-gradient(180deg, rgba(10,19,35,0.98), rgba(8,16,29,0.96)) !important;
+        border: 1px solid rgba(116, 147, 195, 0.14) !important;
+        border-radius: 30px !important;
+        box-shadow:
+            0 24px 54px rgba(2, 6, 23, 0.22),
+            inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        backdrop-filter: blur(8px) saturate(120%);
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-stage-shell)::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 78% 18%, rgba(59,130,246,0.08), transparent 24%),
+            linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%);
+        pointer-events: none;
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head) {{
-        background: var(--rr-card-bg) !important;
-        border: 1px solid var(--rr-glass-border) !important;
-        border-radius: 24px !important;
-        box-shadow: none !important;
+        position: relative;
+        background:
+            radial-gradient(circle at top right, rgba(96,165,250,0.10), transparent 26%),
+            linear-gradient(180deg, rgba(11,21,39,0.96), rgba(8,17,31,0.94)) !important;
+        border: 1px solid rgba(116, 147, 195, 0.14) !important;
+        border-radius: 28px !important;
+        box-shadow:
+            0 22px 50px rgba(2, 6, 23, 0.18),
+            inset 0 1px 0 rgba(255,255,255,0.05) !important;
         backdrop-filter: blur(10px) saturate(120%);
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head)::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.03), transparent 20%),
+            radial-gradient(circle at 78% 4%, rgba(59,130,246,0.08), transparent 18%);
+        pointer-events: none;
     }}
 
     div[data-testid="stExpander"] {{
-        background: var(--rr-card-bg) !important;
-        border: 1px solid var(--rr-glass-border) !important;
+        background:
+            linear-gradient(180deg, rgba(14,23,41,0.96), rgba(10,18,33,0.96)) !important;
+        border: 1px solid rgba(116, 147, 195, 0.14) !important;
         border-radius: 20px !important;
-        box-shadow: none !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
     }}
 
     div[data-testid="stExpander"] summary,
     div[data-testid="stExpander"] summary p {{
         font-size: 12px !important;
         font-weight: 700 !important;
-        letter-spacing: 0.08em !important;
+        letter-spacing: 0.10em !important;
         text-transform: uppercase !important;
         color: var(--rr-text-muted) !important;
     }}
 
     .rr-app-header {{
+        position: relative;
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        padding: 0 0 16px;
-        margin: 0 0 18px;
-        border-bottom: 1px solid rgba(148,163,184,0.14);
+        gap: 24px;
+        padding: 20px 22px;
+        margin: 0 0 22px;
+        border-radius: 28px;
+        border: 1px solid rgba(116, 147, 195, 0.14);
+        background:
+            radial-gradient(circle at 0% 0%, rgba(96,165,250,0.12), transparent 26%),
+            linear-gradient(180deg, rgba(12,22,41,0.96), rgba(9,18,34,0.92));
+        box-shadow:
+            0 24px 50px rgba(2, 6, 23, 0.18),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+        overflow: hidden;
+    }}
+
+    .rr-app-header::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 82% 10%, rgba(59,130,246,0.10), transparent 18%),
+            linear-gradient(90deg, rgba(255,255,255,0.04), transparent 35%);
+        pointer-events: none;
+    }}
+
+    .rr-app-header__main,
+    .rr-app-header__meta {{
+        position: relative;
+        z-index: 1;
     }}
 
     .rr-app-header__title {{
         font-family: "Manrope", sans-serif;
-        font-size: clamp(24px, 3vw, 34px);
+        font-size: clamp(28px, 3.2vw, 40px);
         font-weight: 800;
         line-height: 1.04;
         letter-spacing: -0.04em;
         color: var(--rr-text);
-        margin: 4px 0 6px;
+        margin: 6px 0 8px;
     }}
 
     .rr-app-header__copy {{
         max-width: 64ch;
-        font-size: 14px;
-        line-height: 1.65;
-        color: var(--rr-text-muted);
+        font-size: 15px;
+        line-height: 1.7;
+        color: #b6c5dd;
+    }}
+
+    .rr-app-header__tags {{
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+    }}
+
+    .rr-app-header__tag {{
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(116, 147, 195, 0.16);
+        background: rgba(11, 22, 41, 0.72);
+        color: #bfd3f7;
+        font-size: 12px;
+        font-weight: 700;
     }}
 
     .rr-app-header__meta {{
         display: flex;
-        flex-direction: column;
-        gap: 8px;
-        align-items: flex-end;
-        min-width: 220px;
+        flex-direction: row;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 260px;
+        flex-wrap: wrap;
     }}
 
     .rr-app-header__status,
@@ -1103,15 +1338,15 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-app-header__status {{
-        background: rgba(37,99,235,0.10);
-        border: 1px solid rgba(37,99,235,0.16);
-        color: var(--rr-accent);
+        background: rgba(76, 132, 255, 0.12);
+        border: 1px solid rgba(96, 165, 250, 0.18);
+        color: #9cc3ff;
     }}
 
     .rr-app-header__submeta {{
-        background: rgba(148,163,184,0.08);
-        border: 1px solid rgba(148,163,184,0.12);
-        color: var(--rr-text-muted);
+        background: rgba(11, 22, 41, 0.78);
+        border: 1px solid rgba(116, 147, 195, 0.14);
+        color: #a6b7d4;
     }}
 
     .rr-pane-head {{
@@ -1119,28 +1354,28 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-pane-head--stage {{
-        margin-bottom: 18px;
+        margin-bottom: 20px;
     }}
 
     .rr-pane-head--stage .rr-pane-head__title {{
-        font-size: clamp(20px, 2.8vw, 30px);
-        line-height: 1.05;
+        font-size: clamp(22px, 3vw, 34px);
+        line-height: 1.02;
     }}
 
     .rr-pane-head--stage .rr-pane-head__copy {{
         max-width: 52ch;
-        color: #94a3b8;
+        color: #b4c4dd;
     }}
 
     .rr-pane-head--stage .rr-pane-head__eyebrow {{
-        color: #7dd3fc;
+        color: #9ed7ff;
     }}
 
     .rr-library-copy {{
         margin: 2px 0 14px;
         font-size: 13px;
         line-height: 1.6;
-        color: var(--rr-text-muted);
+        color: #aab9d2;
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"] {{
@@ -1149,20 +1384,24 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         justify-content: center !important;
         min-height: clamp(340px, 54vh, 720px) !important;
         aspect-ratio: 16 / 9;
-        background: #08111d !important;
-        border: 1px solid rgba(148,163,184,0.14) !important;
-        border-radius: 22px !important;
-        box-shadow: none !important;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(59,130,246,0.08), transparent 28%),
+            #08101c !important;
+        border: 1px solid rgba(116, 147, 195, 0.14) !important;
+        border-radius: 24px !important;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.03),
+            0 18px 32px rgba(2, 6, 23, 0.16) !important;
         overflow: hidden !important;
-        padding: 12px !important;
+        padding: 14px !important;
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) div[data-testid="stVideo"] video {{
         width: 100% !important;
         max-height: min(70vh, 760px) !important;
         object-fit: contain !important;
-        background: #020617 !important;
-        border-radius: 16px !important;
+        background: #030814 !important;
+        border-radius: 18px !important;
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card--results {{
@@ -1171,9 +1410,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(180deg, rgba(8,17,29,0.98), rgba(8,17,29,0.92));
-        border: 1px solid rgba(148,163,184,0.14);
-        box-shadow: none;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(59,130,246,0.09), transparent 28%),
+            linear-gradient(180deg, rgba(8,17,29,0.99), rgba(8,17,29,0.94));
+        border: 1px solid rgba(116, 147, 195, 0.14);
+        border-style: solid;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage) .rr-empty-card__title {{
@@ -1184,17 +1426,38 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         color: #94a3b8;
     }}
 
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+        margin: 10px 0 14px;
+        padding: 18px 18px 10px;
+        border-radius: 24px;
+        border: 1px solid rgba(116, 147, 195, 0.12);
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.02), transparent 24%),
+            rgba(8, 17, 31, 0.38);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-context-shell) {{
+        margin-top: 12px;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(116, 147, 195, 0.10);
+    }}
+
     .rr-analysis-bar-head,
     .rr-coach-history-intro {{
-        margin: 0 0 12px;
-        padding: 0 0 12px;
-        border-bottom: 1px solid rgba(148,163,184,0.12);
+        margin: 0 0 14px;
+        padding: 0 0 2px;
+        border-bottom: none;
     }}
 
     .rr-analysis-bar-head__title,
     .rr-coach-history-intro__title {{
         font-family: "Manrope", sans-serif;
-        font-size: 18px;
+        font-size: 19px;
         font-weight: 800;
         letter-spacing: -0.02em;
         color: var(--rr-text);
@@ -1205,17 +1468,17 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         margin-top: 6px;
         font-size: 13px;
         line-height: 1.6;
-        color: var(--rr-text-muted);
+        color: #aebed7;
     }}
 
     .rr-coach-shell-head {{
-        margin-bottom: 14px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(148,163,184,0.12);
+        margin-bottom: 16px;
+        padding-bottom: 0;
+        border-bottom: none;
     }}
 
     .rr-coach-shell-head__title {{
-        font-size: 22px;
+        font-size: 24px;
     }}
 
     .rr-session-row,
@@ -1228,20 +1491,18 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-session-row {{
-        padding: 12px 0;
-        margin-bottom: 2px;
-        border: none;
-        border-bottom: 1px solid rgba(148,163,184,0.12);
-        border-radius: 0;
-        background: transparent;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        border: 1px solid rgba(116, 147, 195, 0.10);
+        border-radius: 16px;
+        background: rgba(10, 18, 33, 0.52);
     }}
 
     .rr-mini-empty {{
-        padding: 14px 0 2px;
-        border: none;
-        border-top: 1px dashed rgba(148,163,184,0.16);
-        border-radius: 0;
-        background: transparent;
+        padding: 16px 14px;
+        border: 1px dashed rgba(116, 147, 195, 0.14);
+        border-radius: 16px;
+        background: rgba(10, 18, 33, 0.32);
     }}
 
     .rr-metric-card,
@@ -1257,24 +1518,27 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     .rr-fault-row,
     .rr-assistant-note {{
-        background: rgba(148,163,184,0.06);
-        border: 1px solid rgba(148,163,184,0.12);
+        background: rgba(10, 18, 33, 0.58);
+        border: 1px solid rgba(116, 147, 195, 0.10);
     }}
 
     .rr-callout {{
         gap: 10px;
-        background: var(--rr-callout-bg);
-        border: 1px solid rgba(148,163,184,0.10);
+        background: linear-gradient(180deg, rgba(10,18,33,0.78), rgba(10,18,33,0.72));
+        border: 1px solid rgba(116, 147, 195, 0.10);
         border-left: 3px solid var(--rr-callout-color);
-        border-radius: 14px;
+        border-radius: 16px;
     }}
 
     .rr-hero-card {{
         background:
-            linear-gradient(180deg, rgba(37,99,235,0.04), transparent 55%),
-            var(--rr-card-bg-alt);
-        border: 1px solid rgba(148,163,184,0.14);
-        box-shadow: none;
+            radial-gradient(circle at top left, rgba(96,165,250,0.10), transparent 28%),
+            linear-gradient(180deg, rgba(255,255,255,0.02), transparent 30%),
+            rgba(12, 22, 40, 0.90);
+        border: 1px solid rgba(116, 147, 195, 0.12);
+        box-shadow:
+            0 20px 40px rgba(2, 6, 23, 0.12),
+            inset 0 1px 0 rgba(255,255,255,0.05);
         color: var(--rr-text);
     }}
 
@@ -1308,15 +1572,15 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-hero-step__icon {{
-        background: rgba(37,99,235,0.08);
-        border: 1px solid rgba(37,99,235,0.14);
-        color: var(--rr-accent);
+        background: rgba(76, 132, 255, 0.10);
+        border: 1px solid rgba(96, 165, 250, 0.16);
+        color: #93c5fd;
     }}
 
     .rr-chip--hero {{
-        background: rgba(37,99,235,0.08);
-        border: 1px solid rgba(37,99,235,0.14);
-        color: var(--rr-text-soft);
+        background: rgba(76, 132, 255, 0.08);
+        border: 1px solid rgba(96, 165, 250, 0.14);
+        color: #c6d7f4;
     }}
 
     div[data-testid="stChatMessage"] {{
@@ -1327,15 +1591,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {{
-        padding: 12px 14px !important;
-        border-radius: 16px !important;
-        border: 1px solid rgba(148,163,184,0.12) !important;
-        background: rgba(148,163,184,0.06) !important;
+        padding: 13px 15px !important;
+        border-radius: 20px 20px 20px 12px !important;
+        border: 1px solid rgba(116, 147, 195, 0.10) !important;
+        background: linear-gradient(180deg, rgba(12,22,40,0.84), rgba(10,18,33,0.80)) !important;
     }}
 
     div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) [data-testid="stMarkdownContainer"] {{
-        background: rgba(37,99,235,0.10) !important;
-        border-color: rgba(37,99,235,0.16) !important;
+        border-radius: 20px 20px 12px 20px !important;
+        background: linear-gradient(180deg, rgba(52, 103, 205, 0.22), rgba(40, 83, 170, 0.20)) !important;
+        border-color: rgba(96,165,250,0.16) !important;
     }}
 
     div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {{
@@ -1360,6 +1625,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
         .rr-app-header__meta {{
             align-items: flex-start;
+            justify-content: flex-start;
             min-width: 0;
         }}
     }}
@@ -1369,6 +1635,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
             padding-top: 18px !important;
             padding-left: 16px !important;
             padding-right: 16px !important;
+        }}
+
+        .block-container::before {{
+            inset: 10px 6px;
+            border-radius: 24px;
         }}
 
         div[data-testid="stHorizontalBlock"] {{
@@ -1384,6 +1655,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         .rr-app-header {{
             gap: 14px;
             margin-bottom: 14px;
+            padding: 18px 16px;
         }}
 
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head--stage),
@@ -1413,6 +1685,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         .rr-analysis-bar-head__copy,
         .rr-coach-history-intro__copy {{
             max-width: none;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+            padding: 16px 14px 8px;
+            border-radius: 20px;
         }}
     }}
     </style>

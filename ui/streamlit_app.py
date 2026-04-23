@@ -1056,6 +1056,7 @@ def render_page_hero() -> None:
         else "Upload from the coach pane, then review the replay and metrics from the main stage."
     )
     session_label = f"{session_count} saved session{'s' if session_count != 1 else ''}"
+    mood_label = "Replay-first workflow"
 
     st.markdown(
         f"""
@@ -1064,6 +1065,10 @@ def render_page_hero() -> None:
                 <div class="rr-section-kicker">Performance Review Workspace</div>
                 <div class="rr-app-header__title">{TEXT['main_title']}</div>
                 <div class="rr-app-header__copy">{status_copy}</div>
+                <div class="rr-app-header__tags">
+                    <span class="rr-app-header__tag">{mood_label}</span>
+                    <span class="rr-app-header__tag">Coach + comparison</span>
+                </div>
             </div>
             <div class="rr-app-header__meta">
                 <div class="rr-app-header__status">{status_value}</div>
@@ -1307,6 +1312,7 @@ def main() -> None:
 
     with centre:
         with st.container(border=True):
+            st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
             render_surface_head(
                 "Replay",
                 "Movement Replay",
@@ -1324,6 +1330,7 @@ def main() -> None:
             panels.render_overlay_panel(overlay_path)
 
         with st.expander(TEXT["recent_sessions_title"], expanded=False):
+            st.markdown('<div class="rr-library-shell"></div>', unsafe_allow_html=True)
             st.markdown(
                 (
                     '<div class="rr-library-copy">Jump back into earlier sessions without leaving the current workflow.</div>'
