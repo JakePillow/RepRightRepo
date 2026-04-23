@@ -250,6 +250,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head) {{
         background: var(--rr-card-bg) !important;
         border: 1px solid var(--rr-glass-border) !important;
         border-radius: 24px !important;
@@ -257,7 +265,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         backdrop-filter: blur(14px) saturate(130%);
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-pane-head):hover,
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-shell-head):hover {{
         box-shadow: 0 24px 50px var(--rr-glass-shadow-strong), inset 0 1px 0 rgba(255,255,255,0.26) !important;
     }}
 

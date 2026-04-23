@@ -522,32 +522,30 @@ def _render_coach_notices(local_notice: tuple[str, str] | None) -> None:
 
 def _render_coach_context_card(*, has_analysis: bool, has_response: bool) -> None:
     if has_analysis or has_response:
-        with st.chat_message("assistant"):
-            _coach_summary_card()
-            action_cols = st.columns([1, 1])
-            with action_cols[0]:
-                open_analysis = st.button(
-                    "Open analysis",
-                    key="open_analysis_dialog",
+        _coach_summary_card()
+        action_cols = st.columns([1, 1])
+        with action_cols[0]:
+            open_analysis = st.button(
+                "Open analysis",
+                key="open_analysis_dialog",
+                use_container_width=True,
+            )
+        with action_cols[1]:
+            p = artifact_analysis_json_path(st.session_state.get("last_analysis"))
+            if p:
+                st.download_button(
+                    "Export JSON",
+                    data=p.read_text(encoding="utf-8"),
+                    file_name=p.name,
+                    mime="application/json",
                     use_container_width=True,
+                    key="download_analysis_dialog_button",
                 )
-            with action_cols[1]:
-                p = artifact_analysis_json_path(st.session_state.get("last_analysis"))
-                if p:
-                    st.download_button(
-                        "Export JSON",
-                        data=p.read_text(encoding="utf-8"),
-                        file_name=p.name,
-                        mime="application/json",
-                        use_container_width=True,
-                        key="download_analysis_dialog_button",
-                    )
-            if open_analysis:
-                _render_analysis_dialog()
+        if open_analysis:
+            _render_analysis_dialog()
         return
 
-    with st.chat_message("assistant"):
-        _coach_welcome_card()
+    _coach_welcome_card()
 
 
 def _render_coach_history() -> None:
