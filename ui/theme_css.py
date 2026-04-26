@@ -35,7 +35,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        z-index: 1000 !important;
+        position: fixed !important;
+        top: 74px !important;
+        left: 0 !important;
+        z-index: 10000 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }}
 
     [data-testid="collapsedControl"] > button,
