@@ -20,7 +20,7 @@ $AnalyzerOut = '.\_out\last_analyzer.json'
 $PayloadOut = '.\_out\last_coach_payload.json'
 $CoachOut = '.\_out\last_coach_response.json'
 
-& (Join-Path $PSScriptRoot 'run_analyzer.ps1') -VideoPath $VideoPath -Exercise deadlift -OutPath $AnalyzerOut -Py $Py
+& (Join-Path $PSScriptRoot 'run_analyser.ps1') -VideoPath $VideoPath -Exercise deadlift -OutPath $AnalyzerOut -Py $Py
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & (Join-Path $PSScriptRoot 'build_coach_payload.ps1') -AnalyzerPath $AnalyzerOut -OutPath $PayloadOut -Message 'Strength focus.' -Py $Py
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

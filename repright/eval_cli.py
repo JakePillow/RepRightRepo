@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 
 
 ACTIVE_FAULT_CODES = (

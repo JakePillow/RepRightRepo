@@ -2,7 +2,7 @@
 import tempfile
 from pathlib import Path
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 
 
 def run_ffmpeg_trim(src: str, out_path: str, trim_sec: float) -> None:

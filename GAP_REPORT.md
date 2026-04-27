@@ -20,7 +20,7 @@
 
 ## D) Single orchestrator class
 - **Status before patch:** Present but signature drift and path contract needed tightening.
-- **Fixes:** `repright/analyzer.py::RepRightAnalyzer.run(video_path, exercise_label, out_path, options)` now serves CLI/UI/programmatic calls and writes deterministic artifact metadata. `repright/core.py` + `repright/analyzer_cli.py` route through this class.
+- **Fixes:** `repright/analyser.py::RepRightAnalyzer.run(video_path, exercise_label, out_path, options)` now serves CLI/UI/programmatic calls and writes deterministic artifact metadata. `repright/core.py` + `repright/analyser_cli.py` route through this class.
 
 ## E) Deterministic PowerShell wrappers
 - **Status before patch:** Partial.
@@ -41,12 +41,12 @@
 
 ## Patched files
 - `scripts/compute_rep_metrics.py`
-- `repright/analyzer.py`
-- `repright/analyzer_cli.py`
+- `repright/analyser.py`
+- `repright/analyser_cli.py`
 - `repright/core.py`
 - `repright/coach_payload.py`
 - `repright/llm_wrapper.py`
-- `tools/run_analyzer.ps1`
+- `tools/run_analyser.ps1`
 - `tools/build_coach_payload.ps1`
 - `tools/run_coach.ps1`
 - `tools/smoke_test.ps1`

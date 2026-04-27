@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 
 
 def main() -> None:

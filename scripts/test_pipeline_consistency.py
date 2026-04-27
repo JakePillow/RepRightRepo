@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 
 
 VALID_EXERCISES = {"bench", "curl", "deadlift", "squat"}

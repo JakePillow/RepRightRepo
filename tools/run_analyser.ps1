@@ -16,6 +16,6 @@ $OutFull = Resolve-RepoPath $OutPath
 $OutDir = Split-Path -Parent $OutFull
 if ($OutDir -and -not (Test-Path $OutDir)) { New-Item -ItemType Directory -Force -Path $OutDir | Out-Null }
 
-& $Py -m repright.analyzer_cli --video-path $VideoFull --exercise $Exercise --out $OutFull
+& $Py -m repright.analyser_cli --video-path $VideoFull --exercise $Exercise --out $OutFull
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "Analyzer JSON: $OutFull"

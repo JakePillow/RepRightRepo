@@ -12,7 +12,7 @@ from typing import Any
 import streamlit as st
 
 from repright import coach_payload as coach_payload_module
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 from repright.llm_wrapper import run_coach
 from ui.config.tokens import TEXT
 from ui.runtime import demo_force_stub

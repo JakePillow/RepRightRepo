@@ -11,7 +11,7 @@ from engine import analyze_video  # type: ignore
 
 
 def main():
-    parser = argparse.ArgumentParser(description="RepRight JSON analyzer")
+    parser = argparse.ArgumentParser(description="RepRight JSON analyser")
     parser.add_argument("--exercise", required=True,
                         choices=["bench", "squat", "curl", "deadlift"])
     parser.add_argument("--video", required=True,
