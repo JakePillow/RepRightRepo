@@ -15,7 +15,7 @@ from typing import Any
 
 import cv2
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 
 RESULT_FIELDS = [
     "run_id",
@@ -129,7 +129,7 @@ def _load_existing_keys(out_path: Path, tag: str) -> set[tuple[str, str]]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Batch-evaluate RepRight analyzer outputs against labeled rep counts.")
+    parser = argparse.ArgumentParser(description="Batch-evaluate RepRight analyser outputs against labelled rep counts.")
     parser.add_argument("--ground", required=True, help="Path to ground_truth.csv")
     parser.add_argument("--out", required=True, help="Path to append-only results.csv")
     parser.add_argument("--tag", required=True, help="Run tag (e.g. baseline_v0)")

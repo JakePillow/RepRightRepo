@@ -9,7 +9,7 @@ import csv
 from pathlib import Path
 from typing import Any, Dict, List
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 from labels import load_all_labels
 
 REPORTS_DIR = Path("data/reports")

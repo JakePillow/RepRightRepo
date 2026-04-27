@@ -1,4 +1,4 @@
-﻿from repright.analyzer import RepRightAnalyzer
+﻿from repright.analyser import RepRightAnalyzer
 
 def run_case(path, exercise):
     an = RepRightAnalyzer()

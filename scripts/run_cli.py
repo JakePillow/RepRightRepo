@@ -19,7 +19,7 @@ def _fmt_bool(b):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="RepRight CLI – analyze a single exercise video"
+        description="RepRight CLI – analyse a single exercise video"
     )
     parser.add_argument(
         "video",

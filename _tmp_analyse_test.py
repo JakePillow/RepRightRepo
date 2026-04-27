@@ -1,4 +1,4 @@
-﻿from repright.analyzer import RepRightAnalyzer
+﻿from repright.analyser import RepRightAnalyzer
 
 an = RepRightAnalyzer()
 out = an.analyze(r"C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\data\raw\curl\barbell biceps curl_1.mp4", "curl")

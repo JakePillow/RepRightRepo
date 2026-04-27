@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 
 
 def trunc_video(src: str, frac: float = 0.65) -> str:
