@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from ui.chat_store import list_threads, load_thread, new_thread_id, now_iso, save_thread, thread_title
-from ui.components import panels
+import ui.components.panels as panels
 from ui.components.primitives import render_callout, render_restore_status_badge
 from ui.config.tokens import DARK_THEME, TEXT, THEME
 from ui.services import run_analysis_pipeline, run_followup_coaching
@@ -1169,6 +1169,78 @@ def render_sidebar() -> None:
                     st.rerun()
 
 
+def render_nav_rail() -> None:
+    busy = bool(st.session_state.get("ui_busy"))
+    all_threads = list_threads()
+
+    st.markdown('<div class="rr-nav-shell"></div>', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="rr-sidebar-brand rr-sidebar-brand--rail">
+            <div class="rr-sidebar-brand__mark">RR</div>
+            <div>
+                <div class="rr-sidebar-brand__name">RepRight</div>
+                <div class="rr-sidebar-brand__copy">Video form review and coaching in one workspace.</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if st.button(
+        TEXT["sidebar"]["new_chat"],
+        use_container_width=True,
+        disabled=busy,
+        type="primary",
+        key="rail_new_chat",
+        help=TEXT["sidebar"].get("new_chat_help"),
+    ):
+        start_new_chat(st.session_state.get("exercise_choice") or "bench")
+        st.rerun()
+
+    if st.button(
+        TEXT["sidebar"]["clear_chat"],
+        use_container_width=True,
+        disabled=busy or (
+            not st.session_state.get("history")
+            and not st.session_state.get("last_response")
+        ),
+        key="rail_clear_chat",
+        help=TEXT["sidebar"].get("clear_chat_help"),
+    ):
+        reset_group("chat")
+        clear_ui_message()
+        if st.session_state.thread_id:
+            save_thread(st.session_state.thread_id)
+        st.rerun()
+
+    st.markdown(
+        f"""
+        <div class="rr-nav-meta">
+            <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
+            <div class="rr-nav-meta__pill">{'Busy' if busy else 'Ready'}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if demo_mode_enabled():
+        render_callout("info", demo_banner_text())
+
+    if all_threads:
+        st.markdown('<div class="rr-nav-label">Sessions</div>', unsafe_allow_html=True)
+        for thread in all_threads[:8]:
+            tid = thread.get("thread_id")
+            if st.button(
+                thread.get("title") or tid,
+                key=f"rail_thread_{tid}",
+                use_container_width=True,
+                disabled=busy,
+            ):
+                load_thread(tid)
+                st.rerun()
+
+
 def start_new_chat(exercise: str) -> None:
     reset_draft_session(exercise)
 
@@ -1293,58 +1365,63 @@ def main() -> None:
         page_title="RepRight",
         page_icon="🏋️",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed",
     )
     initialize_session_state()
     inject_global_css_modern()
-    render_sidebar()
-    render_page_hero()
+    nav, workspace = st.columns([0.34, 2.18], gap="large")
 
-    ui_message = st.session_state.get("ui_message")
-    if isinstance(ui_message, dict) and ui_message.get("text"):
-        render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
+    with nav:
+        render_nav_rail()
 
-    if demo_mode_enabled():
-        render_callout("info", demo_banner_text())
+    with workspace:
+        render_page_hero()
 
-    recent_threads = list_threads()
-    has_analysis = bool(st.session_state.get("last_analysis"))
-    centre, right = st.columns([1.95, 0.95], gap="large")
+        ui_message = st.session_state.get("ui_message")
+        if isinstance(ui_message, dict) and ui_message.get("text"):
+            render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
 
-    with centre:
-        with st.container():
-            st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
-            render_surface_head(
-                "Replay",
-                "Movement Replay",
-                (
-                    "Replay the set, inspect the overlay, and compare what changed before you move on."
-                    if has_analysis
-                    else "Your analysed replay and overlay appear here as soon as the first upload finishes."
-                ),
-                variant="stage",
-            )
-            overlay_path = resolve_overlay_path(
-                st.session_state.last_payload,
-                st.session_state.last_analysis,
-            )
-            panels.render_overlay_panel(overlay_path)
+        if demo_mode_enabled():
+            render_callout("info", demo_banner_text())
 
-        with st.expander(TEXT["recent_sessions_title"], expanded=False):
-            st.markdown('<div class="rr-library-shell"></div>', unsafe_allow_html=True)
-            st.markdown(
-                (
-                    '<div class="rr-library-copy">Jump back into earlier sessions without leaving the current workflow.</div>'
-                    if recent_threads
-                    else '<div class="rr-library-copy">Saved sessions will appear here after the first successful analysis.</div>'
-                ),
-                unsafe_allow_html=True,
-            )
-            panels.render_recent_sessions_in_main()
+        recent_threads = list_threads()
+        has_analysis = bool(st.session_state.get("last_analysis"))
+        centre, right = st.columns([1.9, 0.98], gap="large")
 
-    with right:
-        render_restore_status_badge(st.session_state.get("restore_status"))
-        _render_right_workspace(on_analyze, on_followup)
+        with centre:
+            with st.container():
+                st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
+                render_surface_head(
+                    "Replay",
+                    "Movement Replay",
+                    (
+                        "Replay the set, inspect the overlay, and compare what changed before you move on."
+                        if has_analysis
+                        else "Your analysed replay and overlay appear here as soon as the first upload finishes."
+                    ),
+                    variant="stage",
+                )
+                overlay_path = resolve_overlay_path(
+                    st.session_state.last_payload,
+                    st.session_state.last_analysis,
+                )
+                panels.render_overlay_panel(overlay_path)
+
+            with st.expander(TEXT["recent_sessions_title"], expanded=False):
+                st.markdown('<div class="rr-library-shell"></div>', unsafe_allow_html=True)
+                st.markdown(
+                    (
+                        '<div class="rr-library-copy">Jump back into earlier sessions without leaving the current workflow.</div>'
+                        if recent_threads
+                        else '<div class="rr-library-copy">Saved sessions will appear here after the first successful analysis.</div>'
+                    ),
+                    unsafe_allow_html=True,
+                )
+                panels.render_recent_sessions_in_main()
+
+        with right:
+            render_restore_status_badge(st.session_state.get("restore_status"))
+            _render_right_workspace(on_analyze, on_followup)
 
 
 if __name__ == "__main__":

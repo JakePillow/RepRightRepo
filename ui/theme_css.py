@@ -1983,6 +1983,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     /* Final shell system: replay-first layout with fewer framed subsections */
+    .rr-nav-shell,
     .rr-stage-shell,
     .rr-coach-workspace-shell,
     .rr-analysis-bar-shell,
@@ -1996,6 +1997,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-nav-shell),
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-stage-shell),
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-workspace-shell),
     div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-analysis-bar-shell),
@@ -2008,30 +2010,90 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         backdrop-filter: none !important;
     }}
 
+    [data-testid="stSidebar"],
+    section[data-testid="stSidebar"],
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        position: fixed !important;
-        top: 14px !important;
-        left: 14px !important;
-        z-index: 10000 !important;
-    }}
-
-    [data-testid="collapsedControl"] > button,
-    [data-testid="stSidebarCollapsedControl"] > button {{
-        width: 46px !important;
-        height: 46px !important;
-        min-width: 46px !important;
-        border-radius: 16px !important;
-        background: linear-gradient(180deg, #122347, #0a1530) !important;
-        border: 1px solid rgba(122, 150, 194, 0.20) !important;
-        color: #dce9ff !important;
-        box-shadow: 0 14px 30px rgba(2,6,23,0.24) !important;
+        display: none !important;
     }}
 
     .rr-app-header {{
         padding-bottom: 14px;
         margin-bottom: 22px;
         border-bottom: 1px solid rgba(122, 150, 194, 0.12);
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
+        position: sticky !important;
+        top: 20px !important;
+        align-self: flex-start !important;
+        padding: 4px 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    .rr-sidebar-brand--rail {{
+        margin: 0 0 16px;
+        padding: 16px 14px;
+        border-radius: 24px;
+        background:
+            linear-gradient(180deg, rgba(18,31,55,0.86), rgba(12,22,39,0.82));
+        border: 1px solid rgba(122, 150, 194, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) .stButton > button {{
+        min-height: 46px !important;
+        border-radius: 16px !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        padding: 0 14px !important;
+        background: rgba(13, 23, 41, 0.66) !important;
+        border: 1px solid rgba(122, 150, 194, 0.10) !important;
+        color: #e5eefb !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) .stButton > button:hover {{
+        background: rgba(18, 31, 55, 0.82) !important;
+        border-color: rgba(122, 150, 194, 0.16) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) .stButton > button[kind="primary"] {{
+        justify-content: center !important;
+        text-align: center !important;
+    }}
+
+    .rr-nav-meta {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0 16px;
+    }}
+
+    .rr-nav-meta__pill,
+    .rr-nav-label {{
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }}
+
+    .rr-nav-meta__pill {{
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: rgba(18, 31, 55, 0.56);
+        border: 1px solid rgba(122, 150, 194, 0.10);
+        color: #9eb6da;
+    }}
+
+    .rr-nav-label {{
+        margin: 10px 0 8px;
+        color: #85a0c8;
     }}
 
     .rr-app-header__copy {{
@@ -2098,37 +2160,20 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
-        position: relative;
-        padding: 24px 22px 18px !important;
-        border-radius: 30px !important;
-        background:
-            radial-gradient(circle at top right, rgba(96,165,250,0.13), transparent 23%),
-            linear-gradient(180deg, rgba(14,25,44,0.96), rgba(9,17,31,0.96)) !important;
-        border: 1px solid rgba(122, 150, 194, 0.14) !important;
-        box-shadow:
-            0 28px 56px rgba(2,6,23,0.20),
-            inset 0 1px 0 rgba(255,255,255,0.04) !important;
-        overflow: hidden !important;
+        padding: 2px 0 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell)::before {{
-        content: "";
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%),
-            radial-gradient(circle at 88% 6%, rgba(56,189,248,0.06), transparent 16%);
-        pointer-events: none;
-    }}
-
-    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) > * {{
-        position: relative;
-        z-index: 1;
+        display: none !important;
     }}
 
     .rr-coach-shell-head {{
-        margin-bottom: 14px;
-        padding: 0 2px;
+        margin-bottom: 12px;
+        padding: 0 2px 4px;
+        border-bottom: 1px solid rgba(122, 150, 194, 0.10);
     }}
 
     .rr-coach-shell-head__title {{
@@ -2137,13 +2182,15 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
-        margin: 6px 0 16px !important;
+        margin: 6px 0 14px !important;
         padding: 16px 16px 8px !important;
         border-radius: 22px !important;
         background:
-            linear-gradient(180deg, rgba(19,34,60,0.82), rgba(13,24,43,0.78)) !important;
+            linear-gradient(180deg, rgba(22,38,66,0.84), rgba(14,24,43,0.78)) !important;
         border: 1px solid rgba(122, 150, 194, 0.12) !important;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.05),
+            0 12px 24px rgba(2,6,23,0.10) !important;
     }}
 
     .rr-analysis-bar-head {{
@@ -2165,7 +2212,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-context-shell) {{
-        margin: 0 0 14px !important;
+        margin: 0 0 12px !important;
         padding: 0 !important;
         background: transparent !important;
         border: none !important;
@@ -2174,8 +2221,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
         margin-top: 8px !important;
-        padding-top: 14px !important;
-        border-top: 1px solid rgba(122, 150, 194, 0.10) !important;
+        padding-top: 12px !important;
+        border-top: 1px solid rgba(122, 150, 194, 0.08) !important;
         background: transparent !important;
     }}
 
@@ -2249,7 +2296,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         padding: 16px 16px 14px;
         border-radius: 20px;
         background:
-            linear-gradient(180deg, rgba(17,29,50,0.72), rgba(12,22,39,0.70));
+            linear-gradient(180deg, rgba(17,29,50,0.60), rgba(12,22,39,0.56));
         border: 1px solid rgba(122, 150, 194, 0.10);
     }}
 
@@ -2314,7 +2361,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-history-head {{
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         padding: 0 2px;
     }}
 
@@ -2380,6 +2427,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     @media (max-width: 900px) {{
+        div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
+            position: static !important;
+            margin-bottom: 8px !important;
+        }}
+
         .rr-app-header {{
             margin-bottom: 18px;
         }}
