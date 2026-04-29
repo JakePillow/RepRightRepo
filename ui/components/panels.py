@@ -345,7 +345,7 @@ def _coach_welcome_card() -> None:
             <div class="rr-kicker rr-kicker--light">Coach Workflow</div>
             <div class="rr-workspace-hint__title">{t['title']}</div>
             <div class="rr-workspace-hint__copy">
-                Upload one clear side-view set to unlock replay, metrics, and rep-by-rep coaching.
+                Upload one clear side-view set to open the replay, movement metrics, and the coaching thread.
             </div>
             <div class="rr-workspace-hint__grid">{steps}</div>
             <div class="rr-workspace-hint__tip">{t['tip']}</div>
@@ -405,14 +405,14 @@ def _render_coach_composer(
     exercise_locked: bool,
 ) -> tuple[str, str] | None:
     caption = (
-        "Upload the next clip of this exercise to compare it, or send a quick follow-up below."
+        "Upload the next clip to compare it, or send a quick follow-up below."
         if has_analysis else
-        "Choose the lift, add the load if it matters, then upload the set to start."
+        "Choose the lift, add the load if it matters, then upload the set."
     )
     title = (
         "Compare the next set or ask a follow-up"
         if has_analysis else
-        "Analyze a set"
+        "Start a set review"
     )
 
     with st.container():
@@ -562,8 +562,8 @@ def _render_coach_history() -> None:
         st.markdown(
             """<div class="rr-history-head">
                 <div class="rr-section-kicker">Conversation</div>
-                <div class="rr-history-head__title">Session thread</div>
-                <div class="rr-history-head__copy">Keep follow-ups and coaching replies in one running thread.</div>
+                <div class="rr-history-head__title">Coach thread</div>
+                <div class="rr-history-head__copy">Keep uploads, follow-ups, and replies in one running conversation.</div>
             </div>""",
             unsafe_allow_html=True,
         )
@@ -597,7 +597,7 @@ def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCal
             """<div class="rr-coach-shell-head">
                 <div>
                     <div class="rr-section-kicker">Coach Workspace</div>
-                    <div class="rr-coach-shell-head__title">Chat With RepRight</div>
+                    <div class="rr-coach-shell-head__title">Coach Thread</div>
                 </div>
             </div>""",
             unsafe_allow_html=True,

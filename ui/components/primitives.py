@@ -8,6 +8,28 @@ def render_section(enabled: bool, body: Callable[[], None]) -> None:
         body()
 
 
+def _lift_loop_markup(*, compact: bool = False) -> str:
+    compact_class = " rr-lift-loop--compact" if compact else ""
+    return f"""
+        <div class="rr-lift-loop{compact_class}" aria-hidden="true">
+            <div class="rr-lift-loop__platform"></div>
+            <div class="rr-lift-loop__barbell"></div>
+            <div class="rr-lift-loop__plate rr-lift-loop__plate--left"></div>
+            <div class="rr-lift-loop__plate rr-lift-loop__plate--right"></div>
+            <div class="rr-lift-loop__athlete">
+                <div class="rr-lift-loop__head"></div>
+                <div class="rr-lift-loop__torso"></div>
+                <div class="rr-lift-loop__arm rr-lift-loop__arm--left"></div>
+                <div class="rr-lift-loop__arm rr-lift-loop__arm--right"></div>
+                <div class="rr-lift-loop__leg rr-lift-loop__leg--left"></div>
+                <div class="rr-lift-loop__leg rr-lift-loop__leg--right"></div>
+            </div>
+            <div class="rr-lift-loop__wave rr-lift-loop__wave--one"></div>
+            <div class="rr-lift-loop__wave rr-lift-loop__wave--two"></div>
+        </div>
+    """
+
+
 def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#cbd5e1") -> None:
     value = score if score is not None else "—"
     pct = float(score) if isinstance(score, (int, float)) else 0
@@ -36,7 +58,7 @@ def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#c
 def render_empty_state(message: str) -> None:
     st.markdown(f"""
         <div class="rr-empty-card">
-            <div class="rr-empty-card__icon">📷</div>
+            {_lift_loop_markup(compact=True)}
             <div class="rr-empty-card__body">{message}</div>
         </div>""", unsafe_allow_html=True)
 
@@ -46,7 +68,7 @@ def render_empty_state_results() -> None:
     t = TEXT["states"]
     st.markdown(f"""
         <div class="rr-empty-card rr-empty-card--results">
-            <div class="rr-empty-card__icon rr-empty-card__icon--large">📷</div>
+            {_lift_loop_markup()}
             <div class="rr-empty-card__title">
                 {t["empty_title"]}</div>
             <div class="rr-empty-card__body">{t["empty_body"]}</div>

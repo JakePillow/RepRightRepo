@@ -1051,13 +1051,13 @@ def render_page_hero() -> None:
     session_count = len(list_threads())
     status_value = f"Reviewing {exercise}" if has_analysis else "Ready for first upload"
     status_copy = (
-        "Review the latest replay, ask the coach for one focused change, or upload the next set to compare."
+        "Review the replay, ask for one clear coaching change, and keep the next set moving forward."
         if has_analysis
-        else "Upload one side-view set to unlock replay, movement metrics, and threaded coaching."
+        else "Upload one side-view set to unlock replay, movement metrics, and a coaching thread."
     )
     session_label = f"{session_count} saved session{'s' if session_count != 1 else ''}"
-    mood_label = "Replay-led review"
-    secondary_tag = "Threaded coaching" if has_analysis else "Single upload workflow"
+    mood_label = "Replay-first"
+    secondary_tag = "Coach thread" if has_analysis else "Set review"
 
     st.markdown(
         f"""
@@ -1369,7 +1369,7 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
-    nav, workspace = st.columns([0.34, 2.18], gap="large")
+    nav, workspace = st.columns([0.24, 2.56], gap="large")
 
     with nav:
         render_nav_rail()
@@ -1386,7 +1386,7 @@ def main() -> None:
 
         recent_threads = list_threads()
         has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([1.9, 0.98], gap="large")
+        centre, right = st.columns([2.14, 0.96], gap="large")
 
         with centre:
             with st.container():

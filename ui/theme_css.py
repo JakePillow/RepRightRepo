@@ -2426,14 +2426,372 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-color: rgba(96,165,250,0.14) !important;
     }}
 
+    /* ChatGPT-like shell pass: use the canvas, slim the rail, and keep the experience calmer */
+    .block-container {{
+        max-width: min(1820px, calc(100vw - 18px)) !important;
+        padding-top: 18px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 22px !important;
+    }}
+
+    html,
+    body,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stApp"],
+    section[data-testid="stMain"],
+    section[data-testid="stMain"] > div {{
+        background:
+            radial-gradient(circle at 12% 0%, rgba(56, 189, 248, 0.08), transparent 24%),
+            radial-gradient(circle at 88% 0%, rgba(59, 130, 246, 0.10), transparent 20%),
+            linear-gradient(180deg, #09111f 0%, #0b1322 50%, #0a111e 100%) !important;
+    }}
+
+    .rr-app-header {{
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 18px;
+        padding: 4px 0 0;
+        margin-bottom: 18px;
+        border-bottom: none;
+    }}
+
+    .rr-app-header__title {{
+        font-size: clamp(42px, 5vw, 64px);
+        line-height: 0.94;
+        letter-spacing: -0.055em;
+        margin: 6px 0 10px;
+    }}
+
+    .rr-app-header__copy {{
+        max-width: 36ch;
+        font-size: 15px;
+        line-height: 1.72;
+        color: #b8c6db;
+    }}
+
+    .rr-app-header__meta {{
+        padding-top: 6px;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
+        top: 16px !important;
+        min-width: 0 !important;
+    }}
+
+    .rr-sidebar-brand--rail {{
+        padding: 14px 12px;
+        border-radius: 20px;
+        background: rgba(12, 20, 35, 0.84);
+        border: 1px solid rgba(122, 150, 194, 0.10);
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) .stButton > button {{
+        min-height: 42px !important;
+        border-radius: 14px !important;
+        font-size: 14px !important;
+        background: rgba(14, 23, 40, 0.72) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) .stButton > button[kind="primary"] {{
+        min-height: 54px !important;
+        border-radius: 18px !important;
+        background: linear-gradient(135deg, #7ab3ff 0%, #5f96fb 48%, #4c87f6 100%) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"],
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-empty-card--results {{
+        min-height: clamp(500px, 72vh, 900px) !important;
+        border-radius: 34px !important;
+        padding: 24px !important;
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__title {{
+        font-size: clamp(30px, 3.8vw, 48px);
+    }}
+
+    .rr-pane-head--stage .rr-pane-head__copy {{
+        max-width: 38ch;
+        font-size: 15px;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
+        padding-top: 10px !important;
+    }}
+
+    .rr-coach-shell-head {{
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+    }}
+
+    .rr-coach-shell-head__title {{
+        font-size: 22px;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+        margin: 4px 0 14px !important;
+        padding: 18px 18px 12px !important;
+        border-radius: 24px !important;
+        background: rgba(16, 27, 47, 0.82) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextArea textarea {{
+        min-height: 120px !important;
+        border-radius: 18px !important;
+        background: rgba(14, 22, 39, 0.90) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) div[data-testid="stFileUploaderDropzone"] {{
+        background: rgba(13, 22, 40, 0.88) !important;
+        border-radius: 18px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+        margin-top: 10px !important;
+        padding-top: 14px !important;
+    }}
+
+    .rr-history-head {{
+        margin-bottom: 8px;
+    }}
+
+    .rr-summary-strip,
+    .rr-workspace-hint {{
+        background: rgba(15, 24, 41, 0.64);
+        border-color: rgba(122, 150, 194, 0.08);
+    }}
+
+    .rr-empty-card {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    .rr-empty-card--results {{
+        gap: 18px;
+        text-align: center;
+    }}
+
+    .rr-empty-card__title {{
+        max-width: 18ch;
+        margin: 0 auto;
+        font-size: clamp(28px, 3vw, 38px);
+        letter-spacing: -0.04em;
+    }}
+
+    .rr-empty-card__body {{
+        max-width: 40ch;
+        margin: 0 auto;
+        font-size: 14px;
+        line-height: 1.8;
+    }}
+
+    div[data-testid="stChatMessage"] {{
+        margin: 0 0 12px !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {{
+        max-width: 94%;
+        padding: 10px 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        background: transparent !important;
+    }}
+
+    div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) [data-testid="stMarkdownContainer"] {{
+        max-width: 86%;
+        margin-left: auto;
+        padding: 12px 16px !important;
+        border-radius: 18px !important;
+        background: rgba(29, 48, 84, 0.76) !important;
+        border: 1px solid rgba(122, 150, 194, 0.10) !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li {{
+        font-size: 14px !important;
+        line-height: 1.7 !important;
+    }}
+
+    .rr-lift-loop {{
+        position: relative;
+        width: min(320px, 72vw);
+        height: 128px;
+        margin: 0 auto 8px;
+    }}
+
+    .rr-lift-loop--compact {{
+        width: 112px;
+        height: 54px;
+        margin-bottom: 10px;
+        transform: scale(0.9);
+        transform-origin: center;
+    }}
+
+    .rr-lift-loop__platform {{
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        bottom: 18px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(122, 150, 194, 0.24), transparent);
+    }}
+
+    .rr-lift-loop__barbell {{
+        position: absolute;
+        left: 18%;
+        right: 18%;
+        top: 22px;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #4fd1ff, #9cc3ff, #4fd1ff);
+        box-shadow: 0 0 18px rgba(79, 209, 255, 0.18);
+        animation: rr-lift-bar 2.4s ease-in-out infinite;
+    }}
+
+    .rr-lift-loop__plate {{
+        position: absolute;
+        top: 12px;
+        width: 18px;
+        height: 24px;
+        border-radius: 9px;
+        background: rgba(166, 196, 255, 0.16);
+        border: 1px solid rgba(156, 195, 255, 0.34);
+        animation: rr-lift-bar 2.4s ease-in-out infinite;
+    }}
+
+    .rr-lift-loop__plate--left {{
+        left: 16%;
+    }}
+
+    .rr-lift-loop__plate--right {{
+        right: 16%;
+    }}
+
+    .rr-lift-loop__athlete {{
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        width: 82px;
+        height: 82px;
+        transform: translateX(-50%);
+        animation: rr-lift-athlete 2.4s ease-in-out infinite;
+    }}
+
+    .rr-lift-loop__head,
+    .rr-lift-loop__torso,
+    .rr-lift-loop__arm,
+    .rr-lift-loop__leg {{
+        position: absolute;
+        background: #dce8ff;
+        border-radius: 999px;
+    }}
+
+    .rr-lift-loop__head {{
+        width: 14px;
+        height: 14px;
+        left: 34px;
+        top: 6px;
+        background: #f4f8ff;
+    }}
+
+    .rr-lift-loop__torso {{
+        width: 6px;
+        height: 28px;
+        left: 38px;
+        top: 20px;
+    }}
+
+    .rr-lift-loop__arm {{
+        width: 28px;
+        height: 4px;
+        top: 28px;
+    }}
+
+    .rr-lift-loop__arm--left {{
+        left: 12px;
+        transform: rotate(-18deg);
+        transform-origin: right center;
+    }}
+
+    .rr-lift-loop__arm--right {{
+        right: 12px;
+        transform: rotate(18deg);
+        transform-origin: left center;
+    }}
+
+    .rr-lift-loop__leg {{
+        width: 24px;
+        height: 4px;
+        top: 54px;
+    }}
+
+    .rr-lift-loop__leg--left {{
+        left: 18px;
+        transform: rotate(22deg);
+        transform-origin: right center;
+    }}
+
+    .rr-lift-loop__leg--right {{
+        right: 18px;
+        transform: rotate(-22deg);
+        transform-origin: left center;
+    }}
+
+    .rr-lift-loop__wave {{
+        position: absolute;
+        border: 1px solid rgba(79, 209, 255, 0.16);
+        border-radius: 999px;
+        opacity: 0;
+    }}
+
+    .rr-lift-loop__wave--one {{
+        inset: 18px 58px 34px;
+        animation: rr-lift-wave 2.4s ease-out infinite;
+    }}
+
+    .rr-lift-loop__wave--two {{
+        inset: 8px 40px 20px;
+        animation: rr-lift-wave 2.4s ease-out 0.4s infinite;
+    }}
+
+    @keyframes rr-lift-bar {{
+        0%, 100% {{ transform: translateY(20px); }}
+        35% {{ transform: translateY(0); }}
+        60% {{ transform: translateY(2px); }}
+    }}
+
+    @keyframes rr-lift-athlete {{
+        0%, 100% {{ transform: translateX(-50%) translateY(10px); }}
+        35% {{ transform: translateX(-50%) translateY(0); }}
+        60% {{ transform: translateX(-50%) translateY(2px); }}
+    }}
+
+    @keyframes rr-lift-wave {{
+        0% {{ opacity: 0; transform: scale(0.94); }}
+        30% {{ opacity: 1; }}
+        100% {{ opacity: 0; transform: scale(1.08); }}
+    }}
+
     @media (max-width: 900px) {{
         div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
             position: static !important;
             margin-bottom: 8px !important;
         }}
 
+        .block-container {{
+            max-width: calc(100vw - 10px) !important;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }}
+
         .rr-app-header {{
             margin-bottom: 18px;
+        }}
+
+        .rr-app-header__title {{
+            font-size: clamp(34px, 10vw, 46px);
         }}
 
         div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
@@ -2458,6 +2816,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
         .rr-summary-strip__score {{
             text-align: left;
+        }}
+
+        .rr-lift-loop {{
+            width: min(250px, 76vw);
+            height: 108px;
         }}
     }}
     </style>
