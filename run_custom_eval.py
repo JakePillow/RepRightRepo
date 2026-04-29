@@ -1,5 +1,5 @@
 ﻿from pathlib import Path
-from repright.analyzer import RepRightAnalyzer
+from repright.analyser import RepRightAnalyzer
 import csv
 
 gt_path = Path(r"data\eval\ground_truth_custom.csv")

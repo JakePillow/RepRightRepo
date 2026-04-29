@@ -1237,7 +1237,7 @@ def on_analyze(exercise, use_load, upload, note) -> None:
         set_chat_upload_notice(
             "error",
             (
-                "This upload could not be analyzed, so your current chat and last valid analysis were kept intact. "
+                "This upload could not be analysed, so your current chat and last valid analysis were kept intact. "
                 f"{TEXT['errors']['details_prefix']} {exc}"
             ),
         )
@@ -1320,7 +1320,7 @@ def main() -> None:
                 (
                     "Replay the set, inspect the overlay, and compare what changed before you move on."
                     if has_analysis
-                    else "Your replay and overlay will land here as soon as the first analysis finishes."
+                    else "Your analysed replay and overlay appear here as soon as the first upload finishes."
                 ),
                 variant="stage",
             )

@@ -35,7 +35,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        z-index: 1000 !important;
+        position: fixed !important;
+        top: max(74px, env(safe-area-inset-top)) !important;
+        left: 0 !important;
+        z-index: 2147483647 !important;
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: auto !important;
+        overflow: visible !important;
     }}
 
     [data-testid="collapsedControl"] > button,
@@ -45,11 +54,22 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border: 1px solid rgba(255,255,255,0.10) !important;
         border-radius: 0 16px 16px 0 !important;
         box-shadow: 0 12px 30px rgba(2,6,23,0.28) !important;
+        min-width: 46px !important;
+        min-height: 46px !important;
+        padding: 0 12px !important;
+        touch-action: manipulation !important;
     }}
 
     [data-testid="collapsedControl"] > button:hover,
     [data-testid="stSidebarCollapsedControl"] > button:hover {{
         background: #16233a !important;
+    }}
+
+    @media (max-width: 900px) {{
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {{
+            top: max(66px, env(safe-area-inset-top)) !important;
+        }}
     }}
 
     html,

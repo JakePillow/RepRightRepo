@@ -108,12 +108,12 @@ TEXT = {
     },
     "inputs": {
         "exercise": "Exercise",
-        "exercise_locked": "Exercise is locked to this analyzed set. Start a new session to analyze a different lift.",
+        "exercise_locked": "Exercise is locked to this analysed set. Start a new session to analyse a different lift.",
         "load": "Load (KG)",
         "upload": "Upload Set Video",
         "coach_note": "Note to Coach (Optional)",
-        "analyze": "Analyze set ->",
-        "upload_warning": "Please upload a video before analyzing.",
+        "analyze": "Analyse set ->",
+        "upload_warning": "Please upload a video before analysing.",
         "busy_help": "Analysis is running. Controls will unlock when it finishes.",
     },
     "results": {
@@ -150,7 +150,7 @@ TEXT = {
         "subtitle": "Upload a video and run an analysis to see your form score, detailed metrics, and AI coaching in this pane.",
         "how_title": "How it Works",
         "view_all": "View all",
-        "tip": "Tip: Side views work best for analyzing most exercises.",
+        "tip": "Tip: Side views work best for analysing most exercises.",
         "steps": [
             ("\U0001F4F9", "Capture the set", "Upload a clean side-view clip for the strongest replay and fault analysis."),
             ("\U0001F4CA", "Review the replay", "Inspect the overlay, compare against your previous set, and spot the main changes."),

@@ -93,7 +93,7 @@ The app is deployable now, but the current architecture is not yet ideal for a p
 Current repo behavior:
 
 - `ui/chat_store.py` writes threads to `data/chats`
-- `repright/analyzer.py` stages uploads into `data/uploads`
+- `repright/analyser.py` stages uploads into `data/uploads`
 - `scripts/pipeline.py` writes generated artifacts into `data/processed/runs`
 
 Why this matters on Community Cloud:

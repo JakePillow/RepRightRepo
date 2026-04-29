@@ -59,7 +59,7 @@ def render_analysis_controls(on_analyze: AnalyzeCallback) -> None:
 
 
 def render_recent_sessions_in_main() -> None:
-    from ui.chat_store import list_threads
+    from ui.chat_store import list_threads, load_thread
     threads = list_threads()
     if not threads:
         st.markdown(
@@ -70,14 +70,17 @@ def render_recent_sessions_in_main() -> None:
         )
         return
     for thread in threads[:5]:
-        title = thread.get("title") or thread.get("thread_id", "")
-        st.markdown(
-            f"""<div class="rr-session-row">
-                <span>{title}</span>
-                <span class="rr-session-row__arrow">›</span>
-            </div>""",
-            unsafe_allow_html=True,
-        )
+        tid = thread.get("thread_id")
+        title = thread.get("title") or tid or "Untitled session"
+        if st.button(
+            f"{title}  ›",
+            key=f"main_recent_{tid}",
+            use_container_width=True,
+            type="tertiary",
+        ):
+            if tid:
+                load_thread(tid)
+                st.rerun()
 
 
 def _probe_video_stream(src: Path) -> tuple[str | None, str | None]:
@@ -118,8 +121,10 @@ def _transcode_to_browser_mp4(src: Path) -> bytes | None:
             "-y",
             "-i", str(src),
             "-map", "0:v:0",
+            "-metadata:s:v:0", "rotate=0",
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",
+            "-vf", "format=yuv420p,setsar=1",
             "-movflags", "+faststart",
             str(tmp_path),
         ]
@@ -152,21 +157,19 @@ def render_overlay_panel(overlay_path) -> None:
                 p.stat().st_size,
             )
 
-            if suffix == ".webm":
+            # Always try to normalize into baseline MP4 first to avoid mobile orientation metadata issues.
+            video_bytes = _transcode_to_browser_mp4(p)
+            if video_bytes:
+                st.video(video_bytes, format="video/mp4")
+            elif suffix == ".webm":
                 st.video(p.read_bytes(), format="video/webm")
             elif suffix == ".mp4" and codec == "h264" and (pix_fmt is None or "420" in pix_fmt):
                 st.video(p.read_bytes(), format="video/mp4")
+            elif suffix == ".mp4":
+                st.video(p.read_bytes(), format="video/mp4")
             else:
-                video_bytes = _transcode_to_browser_mp4(p)
-                if video_bytes:
-                    st.video(video_bytes, format="video/mp4")
-                elif suffix == ".mp4":
-                    st.video(p.read_bytes(), format="video/mp4")
-                elif suffix == ".webm":
-                    st.video(p.read_bytes(), format="video/webm")
-                else:
-                    st.warning(f"Overlay video could not be transcoded for browser playback: {p.name}")
-                    render_empty_state_results()
+                st.warning(f"Overlay video could not be transcoded for browser playback: {p.name}")
+                render_empty_state_results()
         else:
             st.warning(f"Overlay file not found or empty at: {p}")
             render_empty_state_results()
@@ -610,7 +613,6 @@ def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCal
         _render_coach_notices(local_notice)
         _render_coach_context_card(has_analysis=has_analysis, has_response=has_response)
         _render_coach_history()
-
 
 
 

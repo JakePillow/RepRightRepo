@@ -129,7 +129,7 @@ class RepRightAnalyzer:
 
         return analysis
 
-    # Back-compat for older UI code that calls analyzer.run(...)
+    # Backward compatibility for older UI code that calls analyzer.run(...)
     def run(self, video_path: str | Path, exercise: str, **kwargs: Any) -> Dict[str, Any]:
         options = kwargs.get("options")
         run_dir = kwargs.get("run_dir")
@@ -157,7 +157,7 @@ def main() -> None:
     ap.add_argument("--exercise", required=True, help="Exercise label (curl, bench, squat, deadlift, ...)")
     ap.add_argument("--processed-root", default="data/processed", help="Processed output root")
     ap.add_argument("--uploads-root", default="data/uploads", help="Uploads staging root")
-    ap.add_argument("--out", default=None, help="Optional path to write analyzer output JSON")
+    ap.add_argument("--out", default=None, help="Optional path to write analyser output JSON")
     args = ap.parse_args()
 
     analyzer = RepRightAnalyzer(

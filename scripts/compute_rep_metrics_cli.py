@@ -5,7 +5,7 @@ import argparse
 
 DEPRECATION_MESSAGE = (
     "scripts/compute_rep_metrics_cli.py is deprecated and out of sync with the current metrics pipeline. "
-    "Use the canonical path repright/analyzer.py -> scripts/pipeline.py -> scripts/extract_all.py -> "
+    "Use the canonical path repright/analyser.py -> scripts/pipeline.py -> scripts/extract_all.py -> "
     "scripts/compute_rep_metrics.py instead."
 )
 

@@ -22,7 +22,7 @@ The repository currently contains backup and temporary files that duplicate acti
 **Recommendation:** move these into an untracked `archive/` directory or delete after tagging a release. This will reduce review noise and accidental import/run risks.
 
 ### 1.2 Analyzer/pipeline signature compatibility fallback complexity
-`repright/analyzer.py` includes multi-layer `TypeError` fallback logic to call `run_full_pipeline` under several possible signatures. This is useful during migration, but now that architecture is locked, this is unnecessary runtime branching and cognitive overhead.
+`repright/analyser.py` includes multi-layer `TypeError` fallback logic to call `run_full_pipeline` under several possible signatures. This is useful during migration, but now that architecture is locked, this is unnecessary runtime branching and cognitive overhead.
 
 **Recommendation:** freeze one canonical signature for `run_full_pipeline(...)` and remove fallback branches after one final compatibility checkpoint.
 
