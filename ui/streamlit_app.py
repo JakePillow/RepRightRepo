@@ -1051,12 +1051,13 @@ def render_page_hero() -> None:
     session_count = len(list_threads())
     status_value = f"Reviewing {exercise}" if has_analysis else "Ready for first upload"
     status_copy = (
-        "Upload another clip, compare it against the last set, or continue the coaching thread."
+        "Review the latest replay, ask the coach for one focused change, or upload the next set to compare."
         if has_analysis
-        else "Upload from the coach pane, then review the replay and metrics from the main stage."
+        else "Upload one side-view set to unlock replay, movement metrics, and threaded coaching."
     )
     session_label = f"{session_count} saved session{'s' if session_count != 1 else ''}"
-    mood_label = "Replay-first workflow"
+    mood_label = "Replay-led review"
+    secondary_tag = "Threaded coaching" if has_analysis else "Single upload workflow"
 
     st.markdown(
         f"""
@@ -1067,7 +1068,7 @@ def render_page_hero() -> None:
                 <div class="rr-app-header__copy">{status_copy}</div>
                 <div class="rr-app-header__tags">
                     <span class="rr-app-header__tag">{mood_label}</span>
-                    <span class="rr-app-header__tag">Coach + comparison</span>
+                    <span class="rr-app-header__tag">{secondary_tag}</span>
                 </div>
             </div>
             <div class="rr-app-header__meta">
@@ -1308,18 +1309,18 @@ def main() -> None:
 
     recent_threads = list_threads()
     has_analysis = bool(st.session_state.get("last_analysis"))
-    centre, right = st.columns([1.7, 1], gap="medium")
+    centre, right = st.columns([1.95, 0.95], gap="large")
 
     with centre:
-        with st.container(border=True):
+        with st.container():
             st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
             render_surface_head(
                 "Replay",
                 "Movement Replay",
                 (
-                    "Review the replay here, inspect form changes, and keep the video stage front and center."
+                    "Replay the set, inspect the overlay, and compare what changed before you move on."
                     if has_analysis
-                    else "Your analyzed replay appears here after the first upload finishes."
+                    else "Your replay and overlay will land here as soon as the first analysis finishes."
                 ),
                 variant="stage",
             )

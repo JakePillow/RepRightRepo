@@ -291,25 +291,17 @@ def _coach_summary_card() -> None:
     load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "Load: n/a"
 
     st.markdown(
-        f"""<div class="rr-hero-card rr-hero-card--analysis">
-            <div class="rr-hero-card__head">
-                <div>
-                    <div class="rr-kicker rr-kicker--light">Analysis Snapshot</div>
-                    <div class="rr-hero-card__title">{exercise}</div>
-                    <div class="rr-hero-card__copy">
-                        Open the full analysis for quality breakdown, rep metrics, recurring faults, and export tools.
-                    </div>
-                </div>
-                <div class="rr-hero-card__score">
-                    <div class="rr-kicker rr-kicker--light">Lift Quality</div>
-                    <div class="rr-hero-card__score-value">{score_label}</div>
-                    <div class="rr-hero-card__score-scale">/100</div>
+        f"""<div class="rr-summary-strip">
+            <div class="rr-summary-strip__main">
+                <div class="rr-kicker rr-kicker--light">Latest analysis</div>
+                <div class="rr-summary-strip__title">{exercise}</div>
+                <div class="rr-summary-strip__copy">
+                    {reps} reps detected. Average ROM {avg_rom_label}. {load_label}.
                 </div>
             </div>
-            <div class="rr-chip-row">
-                <span class="rr-chip rr-chip--hero">Reps: {reps}</span>
-                <span class="rr-chip rr-chip--hero">Avg ROM: {avg_rom_label}</span>
-                <span class="rr-chip rr-chip--hero">{load_label}</span>
+            <div class="rr-summary-strip__score">
+                <div class="rr-summary-strip__score-label">Quality</div>
+                <div class="rr-summary-strip__score-value">{score_label}</div>
             </div>
         </div>""",
         unsafe_allow_html=True,
@@ -322,13 +314,12 @@ def _coach_summary_card() -> None:
             for metric in compare_vm.metrics[:4]
         )
         st.markdown(
-            f"""<div class="rr-compare-strip">
-                <div class="rr-section-kicker">Latest Comparison</div>
-                <div class="rr-compare-strip__summary">{compare_vm.summary}</div>
-                <div class="rr-comparison-note">
-                    Showing the change from the previous valid set to this one.
+            f"""<div class="rr-summary-strip rr-summary-strip--comparison">
+                <div class="rr-summary-strip__main">
+                    <div class="rr-kicker rr-kicker--light">Comparison</div>
+                    <div class="rr-summary-strip__copy">{compare_vm.summary}</div>
                 </div>
-                <div class="rr-chip-row">{chips}</div>
+                <div class="rr-chip-row rr-chip-row--compact">{chips}</div>
             </div>""",
             unsafe_allow_html=True,
         )
@@ -337,25 +328,27 @@ def _coach_summary_card() -> None:
 def _coach_welcome_card() -> None:
     t = TEXT["coaching_panel"]
     steps = "".join(
-        f"""<div class="rr-hero-step">
-            <div class="rr-hero-step__icon">{icon}</div>
-            <div>
-                <div class="rr-hero-step__title">{title}</div>
-                <div class="rr-hero-step__desc">{desc}</div>
+        f"""<div class="rr-workspace-hint__step">
+            <div class="rr-workspace-hint__icon">{icon}</div>
+            <div class="rr-workspace-hint__step-copy">
+                <div class="rr-workspace-hint__step-title">{title}</div>
+                <div class="rr-workspace-hint__step-desc">{desc}</div>
             </div>
         </div>"""
         for icon, title, desc in t["steps"]
     )
     st.markdown(
-        f"""<div class="rr-hero-card rr-hero-card--welcome">
-            <div class="rr-kicker rr-kicker--light">Coach Chat</div>
-            <div class="rr-hero-card__title">{t['title']}</div>
-            <div class="rr-hero-card__copy">{t['subtitle']}</div>
-            {steps}
+        f"""<div class="rr-workspace-hint">
+            <div class="rr-kicker rr-kicker--light">Coach Workflow</div>
+            <div class="rr-workspace-hint__title">{t['title']}</div>
+            <div class="rr-workspace-hint__copy">
+                Upload one clear side-view set to unlock replay, metrics, and rep-by-rep coaching.
+            </div>
+            <div class="rr-workspace-hint__grid">{steps}</div>
+            <div class="rr-workspace-hint__tip">{t['tip']}</div>
         </div>""",
         unsafe_allow_html=True,
     )
-    st.caption(t["tip"])
 
 
 def _render_analysis_dialog() -> None:
@@ -409,9 +402,9 @@ def _render_coach_composer(
     exercise_locked: bool,
 ) -> tuple[str, str] | None:
     caption = (
-        "Upload another clip of this same exercise to compare it against the latest analysis, or send a quick follow-up."
+        "Upload the next clip of this exercise to compare it, or send a quick follow-up below."
         if has_analysis else
-        "Choose the lift, add the load if it matters, then upload the set to start the workflow."
+        "Choose the lift, add the load if it matters, then upload the set to start."
     )
     title = (
         "Compare the next set or ask a follow-up"
@@ -493,9 +486,9 @@ def _render_coach_composer(
             )
 
         action_label = (
-            ("Analyze comparison" if has_analysis else "Analyze set")
+            ("Compare this set" if has_analysis else "Run analysis")
             if upload is not None else
-            ("Send follow-up" if has_analysis else "Analyze set")
+            ("Ask coach" if has_analysis else "Run analysis")
         )
         if st.button(
             action_label,
@@ -564,10 +557,10 @@ def _render_coach_history() -> None:
     with st.container():
         st.markdown('<div class="rr-history-shell"></div>', unsafe_allow_html=True)
         st.markdown(
-            """<div class="rr-coach-history-intro">
+            """<div class="rr-history-head">
                 <div class="rr-section-kicker">Conversation</div>
-                <div class="rr-coach-history-intro__title">Session thread</div>
-                <div class="rr-coach-history-intro__copy">Uploads, questions, and coach replies stay together here.</div>
+                <div class="rr-history-head__title">Session thread</div>
+                <div class="rr-history-head__copy">Keep follow-ups and coaching replies in one running thread.</div>
             </div>""",
             unsafe_allow_html=True,
         )
@@ -595,7 +588,8 @@ def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCal
         st.session_state.coach_followup_draft = ""
         st.session_state.clear_followup_draft_pending = False
 
-    with st.container(border=True):
+    with st.container():
+        st.markdown('<div class="rr-coach-workspace-shell"></div>', unsafe_allow_html=True)
         st.markdown(
             """<div class="rr-coach-shell-head">
                 <div>

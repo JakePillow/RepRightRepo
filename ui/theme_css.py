@@ -1961,5 +1961,432 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
             border-radius: 22px !important;
         }}
     }}
+
+    /* Final shell system: replay-first layout with fewer framed subsections */
+    .rr-stage-shell,
+    .rr-coach-workspace-shell,
+    .rr-analysis-bar-shell,
+    .rr-context-shell,
+    .rr-history-shell,
+    .rr-library-shell {{
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-stage-shell),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-coach-workspace-shell),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-analysis-bar-shell),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-context-shell),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-history-shell),
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-library-shell) {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }}
+
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] {{
+        position: fixed !important;
+        top: 14px !important;
+        left: 14px !important;
+        z-index: 10000 !important;
+    }}
+
+    [data-testid="collapsedControl"] > button,
+    [data-testid="stSidebarCollapsedControl"] > button {{
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        border-radius: 16px !important;
+        background: linear-gradient(180deg, #122347, #0a1530) !important;
+        border: 1px solid rgba(122, 150, 194, 0.20) !important;
+        color: #dce9ff !important;
+        box-shadow: 0 14px 30px rgba(2,6,23,0.24) !important;
+    }}
+
+    .rr-app-header {{
+        padding-bottom: 14px;
+        margin-bottom: 22px;
+        border-bottom: 1px solid rgba(122, 150, 194, 0.12);
+    }}
+
+    .rr-app-header__copy {{
+        max-width: 42ch;
+        font-size: 15px;
+    }}
+
+    .rr-app-header__tags {{
+        margin-top: 14px;
+    }}
+
+    .rr-app-header__tag {{
+        min-height: 32px;
+        padding: 0 13px;
+        background: rgba(18, 31, 55, 0.62);
+        border-color: rgba(122, 150, 194, 0.14);
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) {{
+        padding: 2px 0 10px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-pane-head--stage {{
+        padding: 2px 2px 0 !important;
+        margin-bottom: 14px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"],
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-empty-card--results {{
+        min-height: clamp(440px, 64vh, 820px) !important;
+        border-radius: 32px !important;
+        border: 1px solid rgba(122, 150, 194, 0.14) !important;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(56,189,248,0.11), transparent 24%),
+            radial-gradient(circle at 85% 100%, rgba(251,146,60,0.08), transparent 20%),
+            linear-gradient(180deg, rgba(8,15,28,0.98), rgba(5,11,20,0.99)) !important;
+        box-shadow:
+            0 34px 68px rgba(2,6,23,0.26),
+            inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        padding: 18px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] video {{
+        border-radius: 22px !important;
+    }}
+
+    div[data-testid="stExpander"] {{
+        background: rgba(13, 22, 40, 0.46) !important;
+        border: 1px solid rgba(122, 150, 194, 0.10) !important;
+        border-radius: 22px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stExpander"] summary {{
+        min-height: 54px;
+    }}
+
+    div[data-testid="stExpanderDetails"] {{
+        padding: 0 18px 16px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
+        position: relative;
+        padding: 24px 22px 18px !important;
+        border-radius: 30px !important;
+        background:
+            radial-gradient(circle at top right, rgba(96,165,250,0.13), transparent 23%),
+            linear-gradient(180deg, rgba(14,25,44,0.96), rgba(9,17,31,0.96)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.14) !important;
+        box-shadow:
+            0 28px 56px rgba(2,6,23,0.20),
+            inset 0 1px 0 rgba(255,255,255,0.04) !important;
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell)::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%),
+            radial-gradient(circle at 88% 6%, rgba(56,189,248,0.06), transparent 16%);
+        pointer-events: none;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) > * {{
+        position: relative;
+        z-index: 1;
+    }}
+
+    .rr-coach-shell-head {{
+        margin-bottom: 14px;
+        padding: 0 2px;
+    }}
+
+    .rr-coach-shell-head__title {{
+        font-size: 24px;
+        letter-spacing: -0.04em;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+        margin: 6px 0 16px !important;
+        padding: 16px 16px 8px !important;
+        border-radius: 22px !important;
+        background:
+            linear-gradient(180deg, rgba(19,34,60,0.82), rgba(13,24,43,0.78)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.12) !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    }}
+
+    .rr-analysis-bar-head {{
+        margin-bottom: 12px;
+    }}
+
+    .rr-analysis-bar-head__title {{
+        font-size: 18px;
+    }}
+
+    .rr-analysis-bar-head__copy,
+    .rr-pane-head__copy,
+    .rr-library-copy,
+    .rr-history-head__copy,
+    .rr-summary-strip__copy,
+    .rr-workspace-hint__copy,
+    .rr-workspace-hint__step-desc {{
+        color: #c4d2e7 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-context-shell) {{
+        margin: 0 0 14px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+        margin-top: 8px !important;
+        padding-top: 14px !important;
+        border-top: 1px solid rgba(122, 150, 194, 0.10) !important;
+        background: transparent !important;
+    }}
+
+    .rr-summary-strip {{
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px 16px 14px;
+        border-radius: 20px;
+        background:
+            linear-gradient(180deg, rgba(18,31,54,0.78), rgba(13,24,43,0.74));
+        border: 1px solid rgba(122, 150, 194, 0.11);
+    }}
+
+    .rr-summary-strip--comparison {{
+        margin-top: 10px;
+        display: block;
+        padding-bottom: 12px;
+    }}
+
+    .rr-summary-strip__main {{
+        min-width: 0;
+        flex: 1;
+    }}
+
+    .rr-summary-strip__title {{
+        margin-top: 4px;
+        font-family: "Manrope", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #f5f9ff;
+    }}
+
+    .rr-summary-strip__copy {{
+        margin-top: 6px;
+        font-size: 13px;
+        line-height: 1.65;
+    }}
+
+    .rr-summary-strip__score {{
+        min-width: 72px;
+        text-align: right;
+    }}
+
+    .rr-summary-strip__score-label {{
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: #90a7cc;
+    }}
+
+    .rr-summary-strip__score-value {{
+        margin-top: 4px;
+        font-family: "Manrope", sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
+        color: #f8fbff;
+    }}
+
+    .rr-chip-row--compact {{
+        margin-top: 10px;
+        gap: 8px;
+    }}
+
+    .rr-workspace-hint {{
+        padding: 16px 16px 14px;
+        border-radius: 20px;
+        background:
+            linear-gradient(180deg, rgba(17,29,50,0.72), rgba(12,22,39,0.70));
+        border: 1px solid rgba(122, 150, 194, 0.10);
+    }}
+
+    .rr-workspace-hint__title {{
+        margin-top: 4px;
+        font-family: "Manrope", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #f5f9ff;
+    }}
+
+    .rr-workspace-hint__copy {{
+        margin-top: 6px;
+        font-size: 13px;
+        line-height: 1.65;
+    }}
+
+    .rr-workspace-hint__grid {{
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 14px;
+    }}
+
+    .rr-workspace-hint__step {{
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }}
+
+    .rr-workspace-hint__icon {{
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(76, 132, 255, 0.10);
+        border: 1px solid rgba(96, 165, 250, 0.14);
+        color: #95c5ff;
+        flex: 0 0 auto;
+    }}
+
+    .rr-workspace-hint__step-title {{
+        font-size: 13px;
+        font-weight: 700;
+        color: #e9f1ff;
+    }}
+
+    .rr-workspace-hint__step-desc {{
+        margin-top: 3px;
+        font-size: 12.5px;
+        line-height: 1.55;
+    }}
+
+    .rr-workspace-hint__tip {{
+        margin-top: 12px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #8ea4c9;
+    }}
+
+    .rr-history-head {{
+        margin-bottom: 12px;
+        padding: 0 2px;
+    }}
+
+    .rr-history-head__title {{
+        margin-top: 4px;
+        font-family: "Manrope", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #f5f9ff;
+    }}
+
+    .rr-history-head__copy {{
+        margin-top: 6px;
+        font-size: 13px;
+        line-height: 1.6;
+    }}
+
+    .rr-session-row,
+    .rr-mini-empty {{
+        background:
+            linear-gradient(180deg, rgba(18,30,52,0.62), rgba(13,23,41,0.58)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.09) !important;
+    }}
+
+    .rr-hero-card,
+    .rr-callout,
+    .rr-metric-card,
+    .rr-quality-badge,
+    .rr-comparison-shell,
+    .rr-comparison-metric,
+    .rr-compare-strip,
+    .rr-dialog-hero,
+    .rr-fault-row,
+    .rr-assistant-note {{
+        box-shadow: none !important;
+    }}
+
+    .rr-callout,
+    .rr-fault-row,
+    .rr-assistant-note {{
+        border-radius: 16px;
+    }}
+
+    div[data-testid="stChatMessage"] {{
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 0 10px !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {{
+        padding: 13px 15px !important;
+        border-radius: 18px 18px 18px 12px !important;
+        border: 1px solid rgba(122, 150, 194, 0.09) !important;
+        background: linear-gradient(180deg, rgba(16,28,48,0.82), rgba(12,22,39,0.78)) !important;
+    }}
+
+    div[data-testid="stChatMessage"]:has([aria-label="user avatar"]) [data-testid="stMarkdownContainer"] {{
+        border-radius: 18px 18px 12px 18px !important;
+        background: linear-gradient(180deg, rgba(66, 116, 219, 0.24), rgba(46, 85, 170, 0.20)) !important;
+        border-color: rgba(96,165,250,0.14) !important;
+    }}
+
+    @media (max-width: 900px) {{
+        .rr-app-header {{
+            margin-bottom: 18px;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
+            padding: 20px 16px 16px !important;
+            border-radius: 24px !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+            padding: 14px 14px 8px !important;
+            border-radius: 18px !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"],
+        div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-empty-card--results {{
+            min-height: 300px !important;
+            border-radius: 24px !important;
+        }}
+
+        .rr-summary-strip {{
+            flex-direction: column;
+        }}
+
+        .rr-summary-strip__score {{
+            text-align: left;
+        }}
+    }}
     </style>
     """
