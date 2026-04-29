@@ -1390,7 +1390,7 @@ def main() -> None:
             render_callout("info", demo_banner_text())
 
         has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([3.35, 0.85], gap="large")
+        centre, right = st.columns([3.85, 0.78], gap="large")
 
         with centre:
             with st.container():
