@@ -242,9 +242,27 @@ def render_overlay_panel(overlay_path) -> None:
 
 def render_quality_header(*, variant: str = "default") -> None:
     vm = quality_view_model(st.session_state.last_analysis, st.session_state.last_response)
-    render_quality_badge(TEXT["results"]["quality_title"],
-                         vm.score, vm.color, vm.zone_label,
-                         bg=vm.bg, ring=vm.ring, variant=variant)
+    if variant == "hero":
+        st.markdown('<div class="rr-analysis-badge-hero-shell"></div>', unsafe_allow_html=True)
+    try:
+        render_quality_badge(
+            TEXT["results"]["quality_title"],
+            vm.score,
+            vm.color,
+            vm.zone_label,
+            bg=vm.bg,
+            ring=vm.ring,
+            variant=variant,
+        )
+    except TypeError:
+        render_quality_badge(
+            TEXT["results"]["quality_title"],
+            vm.score,
+            vm.color,
+            vm.zone_label,
+            bg=vm.bg,
+            ring=vm.ring,
+        )
 
 
 def render_summary_metrics() -> None:
