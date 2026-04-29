@@ -15,7 +15,10 @@ from repright import coach_payload as coach_payload_module
 from repright.analyser import RepRightAnalyzer
 from repright.llm_wrapper import run_coach
 from ui.config.tokens import TEXT
-from ui.runtime import demo_force_stub
+try:
+    from .runtime import demo_force_stub
+except Exception:
+    from ui.runtime import demo_force_stub
 
 
 def safe_tmp_video(upload) -> Path:

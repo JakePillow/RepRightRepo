@@ -29,7 +29,10 @@ from ui.state import (
     set_ui_busy,
     set_ui_message,
 )
-from ui.runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
+try:
+    from .runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
+except Exception:
+    from ui.runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
 from ui.theme_css import build_global_css
 from ui.view_models import resolve_overlay_path
 

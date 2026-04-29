@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import time
 import urllib.error
 import urllib.request
@@ -41,6 +42,84 @@ def _clean_comparison_context(raw: Any) -> dict[str, Any] | None:
     if not any(isinstance(v, (int, float)) for v in delta.values()):
         return None
     return comparison
+
+
+def _round_long_decimals_in_text(text: str) -> str:
+    def repl(match: re.Match[str]) -> str:
+        token = match.group(0)
+        try:
+            value = float(token)
+        except Exception:
+            return token
+        rounded = round(value, 2)
+        return f"{rounded:.2f}".rstrip("0").rstrip(".")
+
+    return re.sub(r"(?<![\w-])\d+\.\d{3,}(?![\w-])", repl, text)
+
+
+def _sanitize_generated_line(text: str, *, n_reps: int | None, kind: str) -> str | None:
+    line = " ".join(str(text or "").split()).strip()
+    if not line:
+        return None
+
+    lower = line.lower()
+    forbidden = (
+        "comparison_v1",
+        "driver_side",
+        "driver_right",
+        "driver_left",
+        "rep_table",
+        "confidence_v1",
+        "faults_v1",
+    )
+    if any(token in lower for token in forbidden):
+        return None
+
+    if "0 faults recorded" in lower or "no numeric technique issue detected" in lower:
+        return None
+
+    if (n_reps or 0) <= 1 and ("stddev" in lower or "standard deviation" in lower or "consistency" in lower):
+        return None
+
+    if kind == "cue":
+        line = line.replace("right-side driver signal", "same curl path")
+        line = line.replace("driver signal", "movement path")
+
+    line = _round_long_decimals_in_text(line)
+    return line
+
+
+def _sanitize_structured_feedback(structured: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    cleaned = dict(structured)
+    summary = _safe_dict(payload.get("high_level_summary"))
+    if not summary:
+        summary = _safe_dict(_safe_dict(payload.get("analysis_v1")).get("set_summary_v1"))
+
+    n_reps_raw = summary.get("n_reps")
+    n_reps = int(round(float(n_reps_raw))) if isinstance(n_reps_raw, (int, float)) else None
+
+    issues = []
+    for item in _safe_list(cleaned.get("issues")):
+        cooked = _sanitize_generated_line(str(item), n_reps=n_reps, kind="issue")
+        if cooked:
+            issues.append(cooked)
+    cleaned["issues"] = issues[:5]
+
+    cues = []
+    for item in _safe_list(cleaned.get("cues")):
+        cooked = _sanitize_generated_line(str(item), n_reps=n_reps, kind="cue")
+        if cooked:
+            cues.append(cooked)
+    cleaned["cues"] = cues[:5]
+
+    summary_text = str(cleaned.get("summary_text") or "").strip()
+    if summary_text:
+        cooked_summary = _sanitize_generated_line(summary_text, n_reps=n_reps, kind="summary")
+        cleaned["summary_text"] = cooked_summary or ""
+    else:
+        cleaned["summary_text"] = ""
+
+    return cleaned
 
 
 def _stub_response(payload: dict, reason: str | None = None, status_code: int | None = None) -> Dict[str, Any]:
@@ -393,6 +472,16 @@ def _render_text(structured: dict[str, Any], payload: dict[str, Any]) -> str:
     return "\n".join(lines).strip()
 
 
+def format_response_text(response: dict[str, Any] | None, payload: dict[str, Any] | None) -> str:
+    if not isinstance(response, dict):
+        return ""
+    structured = _safe_dict(response.get("structured"))
+    if structured:
+        cleaned = _sanitize_structured_feedback(structured, _safe_dict(payload))
+        return _render_text(cleaned, _safe_dict(payload))
+    return str(response.get("response_text") or "").strip()
+
+
 def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
     """
     mode:
@@ -418,6 +507,7 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
             t0 = time.time()
             resp_json, raw_dbg = _call_openai(messages)
             structured = _extract_structured_from_responses_api(resp_json)
+            structured = _sanitize_structured_feedback(structured, payload)
             text = _render_text(structured, payload)
             dt = time.time() - t0
 

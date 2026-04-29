@@ -67,8 +67,9 @@ def _compact_response_snapshot(response: dict[str, Any] | None) -> dict[str, Any
         "response_text":   response.get("response_text", ""),
         "structured": {
             "overall_score": structured.get("overall_score"),
-            "faults":        structured.get("faults", []),
-            "coaching_cues": structured.get("coaching_cues", []),
+            "issues":        structured.get("issues") or structured.get("faults", []),
+            "cues":          structured.get("cues") or structured.get("coaching_cues", []),
+            "summary_text":  structured.get("summary_text", ""),
         },
     }
 
@@ -198,7 +199,18 @@ def load_thread(thread_id: str) -> None:
 
     # ── Restore coaching response from snapshot ──
     rsnap = data.get("response_snapshot")
-    st.session_state.last_response = rsnap if isinstance(rsnap, dict) else None
+    if isinstance(rsnap, dict):
+        structured = rsnap.get("structured") or {}
+        if isinstance(structured, dict):
+            if "issues" not in structured and "faults" in structured:
+                structured["issues"] = structured.get("faults", [])
+            if "cues" not in structured and "coaching_cues" in structured:
+                structured["cues"] = structured.get("coaching_cues", [])
+            if "summary_text" not in structured:
+                structured["summary_text"] = ""
+        st.session_state.last_response = rsnap
+    else:
+        st.session_state.last_response = None
     psnap = data.get("payload_snapshot")
     st.session_state.last_payload = psnap if isinstance(psnap, dict) else None
 

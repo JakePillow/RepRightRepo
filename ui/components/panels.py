@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 import streamlit as st
+from repright.llm_wrapper import format_response_text
 from ui.components.primitives import (
     render_callout, render_empty_state, render_empty_state_results,
     render_quality_badge,
@@ -244,25 +245,14 @@ def render_quality_header(*, variant: str = "default") -> None:
     vm = quality_view_model(st.session_state.last_analysis, st.session_state.last_response)
     if variant == "hero":
         st.markdown('<div class="rr-analysis-badge-hero-shell"></div>', unsafe_allow_html=True)
-    try:
-        render_quality_badge(
-            TEXT["results"]["quality_title"],
-            vm.score,
-            vm.color,
-            vm.zone_label,
-            bg=vm.bg,
-            ring=vm.ring,
-            variant=variant,
-        )
-    except TypeError:
-        render_quality_badge(
-            TEXT["results"]["quality_title"],
-            vm.score,
-            vm.color,
-            vm.zone_label,
-            bg=vm.bg,
-            ring=vm.ring,
-        )
+    render_quality_badge(
+        TEXT["results"]["quality_title"],
+        vm.score,
+        vm.color,
+        vm.zone_label,
+        bg=vm.bg,
+        ring=vm.ring,
+    )
 
 
 def render_summary_metrics() -> None:
@@ -450,7 +440,7 @@ def _render_analysis_dialog() -> None:
         summary = analysis.get("set_summary_v1") or {}
         load_kg = st.session_state.get("ui_load_kg")
         load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "n/a"
-        response_text = response.get("response_text", "") if isinstance(response, dict) else ""
+        response_text = format_response_text(response, st.session_state.get("last_payload") or {})
         reps = summary.get("n_reps", "—")
         fault_count = len(top_fault_rows(summary))
 
