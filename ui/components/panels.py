@@ -240,11 +240,11 @@ def render_overlay_panel(overlay_path) -> None:
         render_empty_state_results()
 
 
-def render_quality_header() -> None:
+def render_quality_header(*, variant: str = "default") -> None:
     vm = quality_view_model(st.session_state.last_analysis, st.session_state.last_response)
     render_quality_badge(TEXT["results"]["quality_title"],
                          vm.score, vm.color, vm.zone_label,
-                         bg=vm.bg, ring=vm.ring)
+                         bg=vm.bg, ring=vm.ring, variant=variant)
 
 
 def render_summary_metrics() -> None:
@@ -429,9 +429,12 @@ def _render_analysis_dialog() -> None:
         analysis = st.session_state.get("last_analysis") or {}
         response = st.session_state.get("last_response") or {}
         exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "analysis").capitalize()
+        summary = analysis.get("set_summary_v1") or {}
         load_kg = st.session_state.get("ui_load_kg")
         load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "n/a"
         response_text = response.get("response_text", "") if isinstance(response, dict) else ""
+        reps = summary.get("n_reps", "—")
+        fault_count = len(top_fault_rows(summary))
 
         st.markdown(
             f"""<div class="rr-dialog-hero">
@@ -446,18 +449,35 @@ def _render_analysis_dialog() -> None:
             unsafe_allow_html=True,
         )
 
-        render_quality_header()
-        render_summary_metrics()
+        st.markdown('<div class="rr-analysis-overview-shell"></div>', unsafe_allow_html=True)
+        overview_col, metrics_col = st.columns([0.98, 1.7], gap="large")
+        with overview_col:
+            render_quality_header(variant="hero")
+        with metrics_col:
+            st.markdown(
+                f"""<div class="rr-analysis-overview-copy">
+                    <div class="rr-analysis-overview-copy__kicker">Analysis snapshot</div>
+                    <div class="rr-analysis-overview-copy__title">{exercise} overview</div>
+                    <div class="rr-analysis-overview-copy__body">
+                        {reps} reps detected at {load_label}. {fault_count} flagged issue{"s" if fault_count != 1 else ""} surfaced in this set.
+                    </div>
+                </div>""",
+                unsafe_allow_html=True,
+            )
+            render_summary_metrics()
+
         render_comparison_panel()
         render_faults_panel()
         render_artifacts_panel()
 
         if response_text:
-            st.markdown("**Latest Coach Reply**")
-            st.markdown(
-                f"""<div class="rr-assistant-note">{response_text}</div>""",
-                unsafe_allow_html=True,
-            )
+            with st.container():
+                st.markdown('<div class="rr-analysis-reply-shell"></div>', unsafe_allow_html=True)
+                st.markdown(
+                    """<div class="rr-section-kicker" style="margin-bottom:8px;">Latest Coach Reply</div>""",
+                    unsafe_allow_html=True,
+                )
+                st.markdown(response_text)
 
         if st.button("Back To Chat", use_container_width=True, key="collapse_analysis_dialog"):
             st.rerun()

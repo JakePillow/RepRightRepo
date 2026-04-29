@@ -3077,5 +3077,161 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     .rr-quality-badge__ring {{
         margin: 0 auto !important;
     }}
+
+    /* Final analysis dialog emphasis */
+    .rr-dialog-hero {{
+        border-radius: 24px !important;
+        padding: 22px 24px 20px !important;
+        background:
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.10), transparent 28%),
+            linear-gradient(180deg, rgba(15, 24, 41, 0.94), rgba(11, 18, 31, 0.96)) !important;
+        border-color: rgba(122, 150, 194, 0.14) !important;
+    }}
+
+    .rr-dialog-hero__title {{
+        font-size: clamp(32px, 4vw, 42px) !important;
+        line-height: 0.98 !important;
+    }}
+
+    .rr-dialog-hero__load {{
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(96, 165, 250, 0.22);
+        background: rgba(25, 68, 152, 0.18);
+        color: #8fc3ff !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) {{
+        margin: 0 0 18px !important;
+        padding: 22px 22px 18px !important;
+        border-radius: 28px !important;
+        background:
+            radial-gradient(circle at top left, rgba(96, 165, 250, 0.10), transparent 28%),
+            linear-gradient(180deg, rgba(15, 24, 41, 0.92), rgba(11, 18, 31, 0.96)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.14) !important;
+        box-shadow: 0 22px 48px rgba(2, 6, 23, 0.22) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) div[data-testid="stHorizontalBlock"] {{
+        align-items: stretch !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) .rr-quality-badge {{
+        margin-bottom: 0 !important;
+        min-height: 100% !important;
+        border-radius: 24px !important;
+        padding: 28px 22px 24px !important;
+        background: linear-gradient(180deg, rgba(16, 28, 48, 0.86), rgba(11, 19, 33, 0.92)) !important;
+        border-color: rgba(122, 150, 194, 0.16) !important;
+    }}
+
+    .rr-quality-badge--hero .rr-quality-badge__title {{
+        font-size: 12px !important;
+        letter-spacing: 0.14em !important;
+        margin-bottom: 18px !important;
+    }}
+
+    .rr-quality-badge--hero .rr-quality-badge__ring {{
+        width: 152px !important;
+        height: 152px !important;
+        margin-bottom: 18px !important;
+    }}
+
+    .rr-quality-badge--hero .rr-quality-badge__value {{
+        font-size: 48px !important;
+    }}
+
+    .rr-quality-badge--hero .rr-quality-badge__scale {{
+        font-size: 11px !important;
+        margin-top: 4px !important;
+    }}
+
+    .rr-quality-badge--hero .rr-quality-badge__zone {{
+        padding: 8px 18px !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+    }}
+
+    .rr-analysis-overview-copy {{
+        margin: 2px 0 14px;
+        padding: 2px 2px 4px;
+    }}
+
+    .rr-analysis-overview-copy__kicker {{
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--rr-text-muted);
+        margin-bottom: 8px;
+    }}
+
+    .rr-analysis-overview-copy__title {{
+        font-family: "Manrope", sans-serif;
+        font-size: clamp(24px, 2.4vw, 30px);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.04;
+        color: #f4f8ff;
+        margin-bottom: 8px;
+    }}
+
+    .rr-analysis-overview-copy__body {{
+        max-width: 54ch;
+        font-size: 14px;
+        line-height: 1.7;
+        color: #cdd9ea;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) .rr-metric-card {{
+        min-height: 150px !important;
+        padding: 24px 16px !important;
+        border-radius: 22px !important;
+        background: linear-gradient(180deg, rgba(16, 27, 47, 0.88), rgba(12, 20, 35, 0.92)) !important;
+        border-color: rgba(122, 150, 194, 0.12) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) .rr-metric-card__label {{
+        color: #9eb4d4 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) .rr-metric-card__value {{
+        font-size: clamp(30px, 3vw, 38px) !important;
+        color: #f5f9ff !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-reply-shell) {{
+        margin-top: 18px !important;
+        padding: 18px 18px 14px !important;
+        border-radius: 22px !important;
+        background: linear-gradient(180deg, rgba(14, 23, 40, 0.84), rgba(11, 18, 31, 0.92)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.12) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-reply-shell) [data-testid="stMarkdownContainer"] p,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-reply-shell) [data-testid="stMarkdownContainer"] li {{
+        color: #e8f1ff !important;
+        line-height: 1.75 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-reply-shell) [data-testid="stMarkdownContainer"] strong {{
+        color: #f5f9ff !important;
+    }}
+
+    @media (max-width: 900px) {{
+        div[data-testid="stVerticalBlock"]:has(.rr-analysis-overview-shell) {{
+            padding: 16px 16px 12px !important;
+            border-radius: 22px !important;
+        }}
+
+        .rr-quality-badge--hero .rr-quality-badge__ring {{
+            width: 132px !important;
+            height: 132px !important;
+        }}
+
+        .rr-quality-badge--hero .rr-quality-badge__value {{
+            font-size: 42px !important;
+        }}
+    }}
     </style>
     """

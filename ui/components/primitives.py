@@ -19,6 +19,10 @@ def _render_html(markup: str) -> None:
         st.markdown(html, unsafe_allow_html=True)
 
 
+def _render_markdown_html(markup: str) -> None:
+    st.markdown(dedent(markup).strip(), unsafe_allow_html=True)
+
+
 def lift_loop_markup(*, compact: bool = False) -> str:
     compact_class = " rr-lift-loop--compact" if compact else ""
     return f"""
@@ -41,22 +45,35 @@ def lift_loop_markup(*, compact: bool = False) -> str:
     """
 
 
-def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#cbd5e1") -> None:
+def render_quality_badge(
+    title,
+    score,
+    color,
+    zone_label,
+    bg="#f1f5f9",
+    ring="#cbd5e1",
+    *,
+    variant: str = "default",
+) -> None:
     value = score if score is not None else "-"
     pct = float(score) if isinstance(score, (int, float)) else 0
-    r = 42
-    circ = 263.9
+    hero = variant == "hero"
+    size = 152 if hero else 110
+    center = size / 2
+    radius = 58 if hero else 42
+    stroke = 10 if hero else 8
+    circ = 2 * 3.141592653589793 * radius
     dash = circ * pct / 100
-    _render_html(
+    _render_markdown_html(
         f"""
-        <div class="rr-glass-card rr-quality-badge">
+        <div class="rr-glass-card rr-quality-badge rr-quality-badge--{variant}">
             <div class="rr-quality-badge__title">{title}</div>
             <div class="rr-quality-badge__ring">
-                <svg width="110" height="110" viewBox="0 0 110 110">
-                    <circle cx="55" cy="55" r="{r}" fill="none" stroke="{ring}" stroke-width="8"/>
-                    <circle cx="55" cy="55" r="{r}" fill="none" stroke="{color}" stroke-width="8"
+                <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}" aria-hidden="true">
+                    <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="{ring}" stroke-width="{stroke}"/>
+                    <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="{color}" stroke-width="{stroke}"
                         stroke-linecap="round" stroke-dasharray="{dash:.1f} {circ:.1f}"
-                        transform="rotate(-90 55 55)"/>
+                        transform="rotate(-90 {center} {center})"/>
                 </svg>
                 <div class="rr-quality-badge__value-wrap">
                     <div class="rr-quality-badge__value" style="color:{color};">{value}</div>
