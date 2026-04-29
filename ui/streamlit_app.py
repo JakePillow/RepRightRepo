@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 
 from ui.chat_store import list_threads, load_thread, new_thread_id, now_iso, save_thread, thread_title
 import ui.components.panels as panels
-from ui.components.primitives import render_callout, render_restore_status_badge
+from ui.components.primitives import lift_loop_markup, render_callout, render_restore_status_badge
 from ui.config.tokens import DARK_THEME, TEXT, THEME
 from ui.services import run_analysis_pipeline, run_followup_coaching
 from ui.state import (
@@ -1072,8 +1072,14 @@ def render_page_hero() -> None:
                 </div>
             </div>
             <div class="rr-app-header__meta">
-                <div class="rr-app-header__status">{status_value}</div>
-                <div class="rr-app-header__submeta">{session_label}</div>
+                <div class="rr-hero-visual">
+                    {lift_loop_markup(compact=True)}
+                    <div class="rr-hero-visual__label">Pose and kinematics live here</div>
+                </div>
+                <div class="rr-app-header__status-group">
+                    <div class="rr-app-header__status">{status_value}</div>
+                    <div class="rr-app-header__submeta">{session_label}</div>
+                </div>
             </div>
         </section>
         """,
@@ -1369,7 +1375,7 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
-    nav, workspace = st.columns([0.24, 2.56], gap="large")
+    nav, workspace = st.columns([0.18, 2.82], gap="medium")
 
     with nav:
         render_nav_rail()
@@ -1386,7 +1392,7 @@ def main() -> None:
 
         recent_threads = list_threads()
         has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([2.14, 0.96], gap="large")
+        centre, right = st.columns([2.42, 1.08], gap="large")
 
         with centre:
             with st.container():

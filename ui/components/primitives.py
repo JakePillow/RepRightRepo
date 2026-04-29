@@ -8,7 +8,7 @@ def render_section(enabled: bool, body: Callable[[], None]) -> None:
         body()
 
 
-def _lift_loop_markup(*, compact: bool = False) -> str:
+def lift_loop_markup(*, compact: bool = False) -> str:
     compact_class = " rr-lift-loop--compact" if compact else ""
     return f"""
         <div class="rr-lift-loop{compact_class}" aria-hidden="true">
@@ -58,7 +58,7 @@ def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#c
 def render_empty_state(message: str) -> None:
     st.markdown(f"""
         <div class="rr-empty-card">
-            {_lift_loop_markup(compact=True)}
+            {lift_loop_markup(compact=True)}
             <div class="rr-empty-card__body">{message}</div>
         </div>""", unsafe_allow_html=True)
 
@@ -68,7 +68,7 @@ def render_empty_state_results() -> None:
     t = TEXT["states"]
     st.markdown(f"""
         <div class="rr-empty-card rr-empty-card--results">
-            {_lift_loop_markup()}
+            {lift_loop_markup()}
             <div class="rr-empty-card__title">
                 {t["empty_title"]}</div>
             <div class="rr-empty-card__body">{t["empty_body"]}</div>

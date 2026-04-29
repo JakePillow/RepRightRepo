@@ -2428,11 +2428,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     /* ChatGPT-like shell pass: use the canvas, slim the rail, and keep the experience calmer */
     .block-container {{
-        max-width: min(1820px, calc(100vw - 18px)) !important;
-        padding-top: 18px !important;
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-        padding-bottom: 22px !important;
+        width: calc(100vw - 12px) !important;
+        max-width: none !important;
+        padding-top: 14px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-bottom: 18px !important;
     }}
 
     html,
@@ -2472,7 +2473,40 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-app-header__meta {{
+        display: grid;
+        justify-items: end;
+        gap: 10px;
         padding-top: 6px;
+    }}
+
+    .rr-app-header__status-group {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+    }}
+
+    .rr-hero-visual {{
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px 8px;
+        border-radius: 18px;
+        background: rgba(13, 22, 39, 0.54);
+        border: 1px solid rgba(122, 150, 194, 0.08);
+    }}
+
+    .rr-hero-visual .rr-lift-loop {{
+        margin-bottom: 0;
+    }}
+
+    .rr-hero-visual__label {{
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #8ea6ca;
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
@@ -2606,6 +2640,57 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-radius: 18px !important;
         background: rgba(29, 48, 84, 0.76) !important;
         border: 1px solid rgba(122, 150, 194, 0.10) !important;
+    }}
+
+    @media (min-width: 1101px) {{
+        .block-container {{
+            min-height: 100vh !important;
+        }}
+
+        div[data-testid="stHorizontalBlock"] {{
+            align-items: flex-start !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
+            position: sticky !important;
+            top: 12px !important;
+            max-height: calc(100vh - 24px) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding-right: 6px !important;
+            scrollbar-gutter: stable;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
+            position: sticky !important;
+            top: 12px !important;
+            max-height: calc(100vh - 24px) !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 0 !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell),
+        div[data-testid="stVerticalBlock"]:has(.rr-context-shell) {{
+            flex: 0 0 auto !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding-right: 6px !important;
+            margin-right: -2px !important;
+            scrollbar-gutter: stable;
+        }}
+
+        div[data-testid="stExpanderDetails"] {{
+            max-height: 34vh !important;
+            overflow-y: auto !important;
+            scrollbar-gutter: stable;
+        }}
     }}
 
     div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
@@ -2778,23 +2863,38 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
             position: static !important;
             margin-bottom: 8px !important;
+            max-height: none !important;
+            overflow: visible !important;
         }}
 
         .block-container {{
-            max-width: calc(100vw - 10px) !important;
+            width: calc(100vw - 6px) !important;
+            max-width: none !important;
             padding-left: 10px !important;
             padding-right: 10px !important;
         }}
 
         .rr-app-header {{
             margin-bottom: 18px;
+            grid-template-columns: 1fr;
         }}
 
         .rr-app-header__title {{
             font-size: clamp(34px, 10vw, 46px);
         }}
 
+        .rr-app-header__meta {{
+            justify-items: start;
+        }}
+
+        .rr-app-header__status-group {{
+            justify-content: flex-start;
+        }}
+
         div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
+            position: static !important;
+            max-height: none !important;
+            overflow: visible !important;
             padding: 20px 16px 16px !important;
             border-radius: 24px !important;
         }}
