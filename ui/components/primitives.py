@@ -1,5 +1,8 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
+from textwrap import dedent
 from typing import Callable
+
 import streamlit as st
 
 
@@ -35,8 +38,9 @@ def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#c
     pct = float(score) if isinstance(score, (int, float)) else 0
     r = 42
     circ = 263.9
-    dash  = circ * pct / 100
-    st.markdown(f"""
+    dash = circ * pct / 100
+    st.markdown(
+        f"""
         <div class="rr-glass-card rr-quality-badge">
             <div class="rr-quality-badge__title">{title}</div>
             <div class="rr-quality-badge__ring">
@@ -52,41 +56,55 @@ def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#c
                 </div>
             </div>
             <div class="rr-quality-badge__zone" style="background:{bg};color:{color};border-color:{color}44;">{zone_label}</div>
-        </div>""", unsafe_allow_html=True)
+        </div>""",
+        unsafe_allow_html=True,
+    )
 
 
 def render_empty_state(message: str) -> None:
-    st.markdown(f"""
+    html = dedent(
+        f"""
         <div class="rr-empty-card">
-            {lift_loop_markup(compact=True)}
+            <div class="rr-empty-card__icon">&#128172;</div>
             <div class="rr-empty-card__body">{message}</div>
-        </div>""", unsafe_allow_html=True)
+        </div>
+        """
+    ).strip()
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def render_empty_state_results() -> None:
     from ui.config.tokens import TEXT
+
     t = TEXT["states"]
-    st.markdown(f"""
+    html = dedent(
+        f"""
         <div class="rr-empty-card rr-empty-card--results">
-            {lift_loop_markup()}
-            <div class="rr-empty-card__title">
-                {t["empty_title"]}</div>
+            <div class="rr-empty-card__icon rr-empty-card__icon--large">&#127947;</div>
+            <div class="rr-empty-card__title">{t["empty_title"]}</div>
             <div class="rr-empty-card__body">{t["empty_body"]}</div>
-        </div>""", unsafe_allow_html=True)
+        </div>
+        """
+    ).strip()
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def render_callout(kind: str, message: str) -> None:
     palette = {
         "warning": ("var(--rr-warning)", "var(--rr-warning-bg)", "!"),
         "success": ("var(--rr-success)", "var(--rr-success-bg)", "+"),
-        "info":    ("var(--rr-accent)", "var(--rr-accent-soft)", "i"),
-        "error":   ("var(--rr-error)", "var(--rr-error-bg)", "!"),
+        "info": ("var(--rr-accent)", "var(--rr-accent-soft)", "i"),
+        "error": ("var(--rr-error)", "var(--rr-error-bg)", "!"),
     }
     color, bg, icon = palette.get(kind, palette["info"])
-    st.markdown(f"""
+    st.markdown(
+        f"""
         <div class="rr-callout" style="--rr-callout-color:{color};--rr-callout-bg:{bg};">
             <span class="rr-callout__icon">{icon}</span><span class="rr-callout__body">{message}</span>
-        </div>""", unsafe_allow_html=True)
+        </div>""",
+        unsafe_allow_html=True,
+    )
+
 
 def render_restore_status_badge(status: str | None) -> None:
     """
@@ -98,25 +116,30 @@ def render_restore_status_badge(status: str | None) -> None:
 
     cfg = {
         "partial": (
-            "var(--rr-warning)", "var(--rr-warning-bg)",
+            "var(--rr-warning)",
+            "var(--rr-warning-bg)",
             "Partial restore",
             "Some analysis metrics were reloaded from an embedded snapshot. "
             "Artifact files (overlay video) may no longer be available.",
         ),
         "missing": (
-            "var(--rr-error)", "var(--rr-error-bg)",
+            "var(--rr-error)",
+            "var(--rr-error-bg)",
             "Degraded restore",
             "Analysis artifacts could not be found. Metrics and faults shown "
             "may be unavailable. Re-upload the video to regenerate a full analysis.",
         ),
-    }.get(status, (
-        "var(--rr-text-muted)", "var(--rr-card-bg-alt)",
-        "Unknown restore state",
-        "Session state could not be fully verified.",
-    ))
+    }.get(
+        status,
+        (
+            "var(--rr-text-muted)",
+            "var(--rr-card-bg-alt)",
+            "Unknown restore state",
+            "Session state could not be fully verified.",
+        ),
+    )
 
     color, bg, label, msg = cfg
-    import streamlit as st
     st.markdown(
         f"""<div class="rr-callout rr-callout--restore" style="--rr-callout-color:{color};--rr-callout-bg:{bg};margin:0 0 14px;">
             <span class="rr-callout__icon" style="background:{color};color:#fff;">!</span>

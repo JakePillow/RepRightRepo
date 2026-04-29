@@ -9,7 +9,7 @@ import urllib.request
 from typing import Any, Dict, Tuple
 
 
-DEFAULT_MODEL = os.getenv("REPRIGHT_COACH_MODEL", "gpt-4.1-mini")
+DEFAULT_MODEL = os.getenv("REPRIGHT_COACH_MODEL", "gpt-5.4-mini")
 DEFAULT_TIMEOUT = float(os.getenv("REPRIGHT_COACH_TIMEOUT_S", "30"))
 MAX_RETRIES = int(os.getenv("REPRIGHT_COACH_MAX_RETRIES", "4"))
 BASE_BACKOFF_S = float(os.getenv("REPRIGHT_COACH_BACKOFF_S", "1.2"))

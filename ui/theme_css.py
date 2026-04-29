@@ -2466,7 +2466,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-app-header__copy {{
-        max-width: 36ch;
+        max-width: 54ch;
         font-size: 15px;
         line-height: 1.72;
         color: #b8c6db;
@@ -2511,14 +2511,30 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
         top: 16px !important;
-        min-width: 0 !important;
+        min-width: 240px !important;
+        width: 100% !important;
     }}
 
     .rr-sidebar-brand--rail {{
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
         padding: 14px 12px;
         border-radius: 20px;
         background: rgba(12, 20, 35, 0.84);
         border: 1px solid rgba(122, 150, 194, 0.10);
+    }}
+
+    .rr-sidebar-brand--rail .rr-sidebar-brand__name {{
+        font-size: 30px;
+        line-height: 1;
+    }}
+
+    .rr-sidebar-brand--rail .rr-sidebar-brand__copy {{
+        max-width: none;
+        font-size: 13px;
+        line-height: 1.55;
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) .stButton > button {{
@@ -2608,7 +2624,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-empty-card__title {{
-        max-width: 18ch;
+        max-width: 24ch;
         margin: 0 auto;
         font-size: clamp(28px, 3vw, 38px);
         letter-spacing: -0.04em;
@@ -2645,6 +2661,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     @media (min-width: 1101px) {{
         .block-container {{
             min-height: 100vh !important;
+        }}
+
+        div[data-testid="stHorizontalBlock"] > div:first-child {{
+            min-width: 250px !important;
+            max-width: 290px !important;
         }}
 
         div[data-testid="stHorizontalBlock"] {{
