@@ -1389,9 +1389,8 @@ def main() -> None:
         if demo_mode_enabled():
             render_callout("info", demo_banner_text())
 
-        recent_threads = list_threads()
         has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([3.05, 0.95], gap="large")
+        centre, right = st.columns([3.35, 0.85], gap="large")
 
         with centre:
             with st.container():
@@ -1411,18 +1410,6 @@ def main() -> None:
                     st.session_state.last_analysis,
                 )
                 panels.render_overlay_panel(overlay_path)
-
-            with st.expander(TEXT["recent_sessions_title"], expanded=False):
-                st.markdown('<div class="rr-library-shell"></div>', unsafe_allow_html=True)
-                st.markdown(
-                    (
-                        '<div class="rr-library-copy">Jump back into earlier sessions without leaving the current workflow.</div>'
-                        if recent_threads
-                        else '<div class="rr-library-copy">Saved sessions will appear here after the first successful analysis.</div>'
-                    ),
-                    unsafe_allow_html=True,
-                )
-                panels.render_recent_sessions_in_main()
 
         with right:
             render_restore_status_badge(st.session_state.get("restore_status"))

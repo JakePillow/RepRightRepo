@@ -3289,5 +3289,84 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
             font-size: 42px !important;
         }}
     }}
+
+    /* Final stage / coach balance */
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-pane-head--stage {{
+        max-width: 100% !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] {{
+        min-height: clamp(620px, 82vh, 1080px) !important;
+        padding: 16px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] > div {{
+        width: 100% !important;
+        justify-content: center !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] video {{
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 84vh !important;
+        height: auto !important;
+        object-fit: contain !important;
+        margin: 0 auto !important;
+        background: #030814 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
+        max-width: 100% !important;
+    }}
+
+    .rr-coach-shell-head__title {{
+        font-size: 20px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) {{
+        padding: 16px 16px 12px !important;
+        border-radius: 22px !important;
+    }}
+
+    .rr-pane-head__copy,
+    .rr-coach-shell-head,
+    .rr-analysis-bar-head__copy,
+    .rr-summary-strip__copy,
+    .rr-workspace-hint__copy,
+    .rr-workspace-hint__step-desc,
+    .rr-workspace-hint__tip {{
+        color: #d7e3f3 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextArea textarea,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextInput input,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stNumberInput input,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) div[data-baseweb="select"] > div {{
+        background: rgba(11, 19, 33, 0.92) !important;
+        border-color: rgba(122, 150, 194, 0.20) !important;
+        color: #f4f8ff !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextArea textarea::placeholder,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextInput input::placeholder,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stNumberInput input::placeholder {{
+        color: #adc0da !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) div[data-testid="stFileUploaderDropzone"] {{
+        background: rgba(10, 18, 32, 0.90) !important;
+        border-color: rgba(96, 165, 250, 0.34) !important;
+    }}
+
+    @media (max-width: 900px) {{
+        div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] {{
+            min-height: 360px !important;
+            padding: 12px !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] video {{
+            max-height: 58vh !important;
+        }}
+    }}
     </style>
     """
