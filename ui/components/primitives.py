@@ -11,6 +11,14 @@ def render_section(enabled: bool, body: Callable[[], None]) -> None:
         body()
 
 
+def _render_html(markup: str) -> None:
+    html = dedent(markup).strip()
+    if hasattr(st, "html"):
+        st.html(html)
+    else:
+        st.markdown(html, unsafe_allow_html=True)
+
+
 def lift_loop_markup(*, compact: bool = False) -> str:
     compact_class = " rr-lift-loop--compact" if compact else ""
     return f"""
@@ -34,12 +42,12 @@ def lift_loop_markup(*, compact: bool = False) -> str:
 
 
 def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#cbd5e1") -> None:
-    value = score if score is not None else "—"
+    value = score if score is not None else "-"
     pct = float(score) if isinstance(score, (int, float)) else 0
     r = 42
     circ = 263.9
     dash = circ * pct / 100
-    st.markdown(
+    _render_html(
         f"""
         <div class="rr-glass-card rr-quality-badge">
             <div class="rr-quality-badge__title">{title}</div>
@@ -56,28 +64,27 @@ def render_quality_badge(title, score, color, zone_label, bg="#f1f5f9", ring="#c
                 </div>
             </div>
             <div class="rr-quality-badge__zone" style="background:{bg};color:{color};border-color:{color}44;">{zone_label}</div>
-        </div>""",
-        unsafe_allow_html=True,
+        </div>
+        """
     )
 
 
 def render_empty_state(message: str) -> None:
-    html = dedent(
+    _render_html(
         f"""
         <div class="rr-empty-card">
             <div class="rr-empty-card__icon">&#128172;</div>
             <div class="rr-empty-card__body">{message}</div>
         </div>
         """
-    ).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    )
 
 
 def render_empty_state_results() -> None:
     from ui.config.tokens import TEXT
 
     t = TEXT["states"]
-    html = dedent(
+    _render_html(
         f"""
         <div class="rr-empty-card rr-empty-card--results">
             <div class="rr-empty-card__icon rr-empty-card__icon--large">&#127947;</div>
@@ -85,8 +92,7 @@ def render_empty_state_results() -> None:
             <div class="rr-empty-card__body">{t["empty_body"]}</div>
         </div>
         """
-    ).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    )
 
 
 def render_callout(kind: str, message: str) -> None:
@@ -97,12 +103,12 @@ def render_callout(kind: str, message: str) -> None:
         "error": ("var(--rr-error)", "var(--rr-error-bg)", "!"),
     }
     color, bg, icon = palette.get(kind, palette["info"])
-    st.markdown(
+    _render_html(
         f"""
         <div class="rr-callout" style="--rr-callout-color:{color};--rr-callout-bg:{bg};">
             <span class="rr-callout__icon">{icon}</span><span class="rr-callout__body">{message}</span>
-        </div>""",
-        unsafe_allow_html=True,
+        </div>
+        """
     )
 
 
@@ -140,11 +146,12 @@ def render_restore_status_badge(status: str | None) -> None:
     )
 
     color, bg, label, msg = cfg
-    st.markdown(
-        f"""<div class="rr-callout rr-callout--restore" style="--rr-callout-color:{color};--rr-callout-bg:{bg};margin:0 0 14px;">
+    _render_html(
+        f"""
+        <div class="rr-callout rr-callout--restore" style="--rr-callout-color:{color};--rr-callout-bg:{bg};margin:0 0 14px;">
             <span class="rr-callout__icon" style="background:{color};color:#fff;">!</span>
             <span style="font-weight:700;color:{color};flex-shrink:0;">{label}</span>
             <span class="rr-callout__body">{msg}</span>
-        </div>""",
-        unsafe_allow_html=True,
+        </div>
+        """
     )
