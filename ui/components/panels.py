@@ -7,7 +7,6 @@ import subprocess
 from pathlib import Path
 
 import streamlit as st
-from repright.llm_wrapper import format_response_text
 from ui.components.primitives import (
     render_callout, render_empty_state, render_empty_state_results,
     render_quality_badge,
@@ -19,6 +18,16 @@ from ui.view_models import (
 
 AnalyzeCallback  = Callable[[str, float | None, object, str], None]
 FollowupCallback = Callable[[str, float], None]
+
+
+def _format_response_text_safe(response: dict | None, payload: dict | None) -> str:
+    try:
+        from repright.llm_wrapper import format_response_text as _format_response_text
+        return _format_response_text(response, payload)
+    except Exception:
+        if isinstance(response, dict):
+            return str(response.get("response_text") or "").strip()
+        return ""
 
 
 def render_analysis_controls(on_analyze: AnalyzeCallback) -> None:
@@ -440,7 +449,7 @@ def _render_analysis_dialog() -> None:
         summary = analysis.get("set_summary_v1") or {}
         load_kg = st.session_state.get("ui_load_kg")
         load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "n/a"
-        response_text = format_response_text(response, st.session_state.get("last_payload") or {})
+        response_text = _format_response_text_safe(response, st.session_state.get("last_payload") or {})
         reps = summary.get("n_reps", "—")
         fault_count = len(top_fault_rows(summary))
 
