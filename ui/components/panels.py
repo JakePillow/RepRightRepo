@@ -345,31 +345,39 @@ def _coach_summary_card() -> None:
     analysis = st.session_state.get("last_analysis") or {}
     summary = analysis.get("set_summary_v1") or {}
     compare_vm = comparison_view_model(st.session_state.get("last_payload"))
+    response = st.session_state.get("last_response") or {}
     exercise = str(analysis.get("exercise") or st.session_state.get("exercise_choice") or "analysis").capitalize()
     reps = summary.get("n_reps", "—")
     avg_rom = summary.get("avg_rom")
     avg_rom_label = f"{float(avg_rom):.2f}" if isinstance(avg_rom, (int, float)) else "n/a"
     load_kg = st.session_state.get("ui_load_kg")
-    score = _analysis_score_value()
-    score_label = f"{score:.0f}" if isinstance(score, (int, float)) else "—"
     load_label = f"{float(load_kg):.1f} kg" if isinstance(load_kg, (int, float)) else "Load: n/a"
+    quality_vm = quality_view_model(analysis, response)
 
-    st.markdown(
-        f"""<div class="rr-summary-strip">
-            <div class="rr-summary-strip__main">
-                <div class="rr-kicker rr-kicker--light">Latest analysis</div>
-                <div class="rr-summary-strip__title">{exercise}</div>
-                <div class="rr-summary-strip__copy">
-                    {reps} reps detected. Average ROM {avg_rom_label}. {load_label}.
+    summary_col, badge_col = st.columns([1.7, 0.9], gap="medium")
+    with summary_col:
+        st.markdown(
+            f"""<div class="rr-summary-strip">
+                <div class="rr-summary-strip__main">
+                    <div class="rr-kicker rr-kicker--light">Latest analysis</div>
+                    <div class="rr-summary-strip__title">{exercise}</div>
+                    <div class="rr-summary-strip__copy">
+                        {reps} reps detected. Average ROM {avg_rom_label}. {load_label}.
+                    </div>
                 </div>
-            </div>
-            <div class="rr-summary-strip__score">
-                <div class="rr-summary-strip__score-label">Quality</div>
-                <div class="rr-summary-strip__score-value">{score_label}</div>
-            </div>
-        </div>""",
-        unsafe_allow_html=True,
-    )
+            </div>""",
+            unsafe_allow_html=True,
+        )
+    with badge_col:
+        render_quality_badge(
+            TEXT["results"]["quality_title"],
+            quality_vm.score,
+            quality_vm.color,
+            quality_vm.zone_label,
+            bg=quality_vm.bg,
+            ring=quality_vm.ring,
+        )
+
     if compare_vm and compare_vm.metrics:
         chips = "".join(
             f"""<span class="rr-chip rr-chip--compare rr-chip--compare-{metric.tone}">
@@ -636,7 +644,7 @@ def _render_coach_history() -> None:
             for msg in st.session_state.history:
                 role = "user" if msg.get("role") == "user" else "assistant"
                 with st.chat_message(role):
-                    st.write(msg.get("content", ""))
+                    st.markdown(str(msg.get("content", "")))
                     ts = msg.get("timestamp")
                     if ts:
                         st.caption(ts[:16].replace("T", " "))

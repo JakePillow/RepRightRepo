@@ -27,6 +27,22 @@ def _safe_list(v: Any) -> list[Any]:
     return v if isinstance(v, list) else []
 
 
+def _round_float(value: Any, digits: int = 2) -> float | None:
+    if not isinstance(value, (int, float)):
+        return None
+    return round(float(value), digits)
+
+
+def _clean_comparison_context(raw: Any) -> dict[str, Any] | None:
+    comparison = _safe_dict(raw)
+    if not comparison:
+        return None
+    delta = _safe_dict(comparison.get("delta"))
+    if not any(isinstance(v, (int, float)) for v in delta.values()):
+        return None
+    return comparison
+
+
 def _stub_response(payload: dict, reason: str | None = None, status_code: int | None = None) -> Dict[str, Any]:
     exercise = payload.get("exercise")
     user_message = payload.get("user_message") or ""
@@ -96,17 +112,21 @@ def _compact_rep_table(rep_table: list[dict[str, Any]]) -> list[dict[str, Any]]:
         out.append(
             {
                 "rep_index": r.get("rep_index"),
-                "rom": r.get("rom"),
-                "duration_sec": r.get("duration_sec"),
-                "tempo_down_sec": r.get("tempo_down_sec"),
-                "tempo_up_sec": r.get("tempo_up_sec"),
+                "rom": _round_float(r.get("rom")),
+                "duration_sec": _round_float(r.get("duration_sec")),
+                "tempo_down_sec": _round_float(r.get("tempo_down_sec")),
+                "tempo_up_sec": _round_float(r.get("tempo_up_sec")),
                 "confidence_level": conf.get("level"),
                 "faults_v1": [
                     {
                         "code": _safe_dict(f).get("code") or "UNKNOWN",
                         "severity": _safe_dict(f).get("severity") or "info",
-                        "value": _safe_dict(f).get("value"),
-                        "threshold": _safe_dict(f).get("threshold"),
+                        "value": _round_float(_safe_dict(f).get("value"), 3)
+                        if isinstance(_safe_dict(f).get("value"), (int, float))
+                        else _safe_dict(f).get("value"),
+                        "threshold": _round_float(_safe_dict(f).get("threshold"), 3)
+                        if isinstance(_safe_dict(f).get("threshold"), (int, float))
+                        else _safe_dict(f).get("threshold"),
                     }
                     for f in faults[:10]
                     if isinstance(f, dict)
@@ -154,16 +174,17 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
     load_kg = payload.get("load_kg")
 
     # Provide compact "facts" object that the model must ground on
+    comparison = _clean_comparison_context(payload.get("comparison_v1"))
+
     facts = {
         "exercise": exercise,
-        "load_kg": load_kg,
+        "load_kg": _round_float(load_kg, 1) if isinstance(load_kg, (int, float)) else None,
         "user_message": user_message,
         "summary": summary or _safe_dict(analysis.get("set_summary_v1")),
         "rep_table": rep_table,
         "aggregates": aggregates,
-        "comparison_v1": _safe_dict(payload.get("comparison_v1")),
+        "comparison_v1": comparison,
         "repeated_faults": _safe_list(aggregates.get("repeated_faults")),
-        "artifact_refs": _safe_dict(payload.get("artifact_refs")),
         "history": history,
     }
 
@@ -172,9 +193,14 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         "Hard rules:\n"
         "- Base ALL claims strictly on the numeric data provided in FACTS.\n"
         "- Never invent values.\n"
-        "- When you mention a metric, include the number (and threshold if provided).\n"
+        "- When you mention a metric, include the number and unit where relevant.\n"
+        "- Round decimals to at most 2 places unless a threshold needs 3 places.\n"
         "- If FACTS.load_kg is a number, treat the load as provided and do not say weight is missing.\n"
+        "- If FACTS.comparison_v1 is null, do not mention comparison at all.\n"
         "- If FACTS.comparison_v1 is present, compare the current set against the previous set first and ground claims in the deltas.\n"
+        "- Never mention internal field names or JSON keys such as comparison_v1, rep_table, driver_signal, driver_side, confidence_v1, or faults_v1.\n"
+        "- If there are no faults, say the set looks clean instead of inventing an issue.\n"
+        "- If there is only one rep, do not discuss consistency or standard deviation beyond saying more reps are needed to judge consistency.\n"
         "- If data is insufficient, say what is missing.\n"
         "- Output MUST follow the JSON schema exactly.\n"
     )
@@ -184,12 +210,12 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         + json.dumps(facts, ensure_ascii=False)
         + "\n\n"
         "Task:\n"
-        "1) Identify up to 3 key issues using numeric evidence (rep_index + values).\n"
+        "1) Identify up to 3 meaningful findings using numeric evidence; if the set is clean, findings may be positive or cautionary rather than faults.\n"
         "2) If comparison_v1 exists, explain what improved, regressed, or stayed similar using numeric deltas.\n"
         "3) Give 2 actionable cues.\n"
         "4) Give an overall_score 0-100 grounded on consistency + faults.\n"
         "5) If load_kg is present, you may reference it directly, but do not invent progression advice that requires missing context such as RPE, bodyweight, or training history.\n"
-        "6) summary_text: a short natural paragraph (<120 words) referencing the numbers and, when available, the comparison outcome.\n"
+        "6) summary_text: a short natural paragraph (<90 words) in plain coaching language, referencing the numbers and, when available, the comparison outcome.\n"
     )
 
     return [
@@ -273,7 +299,63 @@ def _extract_structured_from_responses_api(resp_json: dict[str, Any]) -> dict[st
     raise RuntimeError("openai_parse_error: no_message_content_found")
 
 
-def _render_text(structured: dict[str, Any]) -> str:
+def _metric_lines(payload: dict[str, Any], structured: dict[str, Any]) -> list[str]:
+    analysis = _safe_dict(payload.get("analysis_v1"))
+    summary = _safe_dict(payload.get("high_level_summary"))
+    if not summary:
+        summary = _safe_dict(analysis.get("set_summary_v1"))
+
+    lines: list[str] = []
+    score = structured.get("overall_score")
+    if isinstance(score, (int, float)):
+        lines.append(f"Quality score: {round(float(score), 1)}/100")
+
+    load_kg = payload.get("load_kg")
+    if isinstance(load_kg, (int, float)):
+        lines.append(f"Load: {float(load_kg):.1f} kg")
+
+    n_reps = summary.get("n_reps")
+    if isinstance(n_reps, (int, float)):
+        lines.append(f"Reps: {int(round(float(n_reps)))}")
+
+    avg_rom = summary.get("avg_rom")
+    if isinstance(avg_rom, (int, float)):
+        lines.append(f"Average ROM: {float(avg_rom):.2f}")
+
+    avg_duration = summary.get("avg_duration_sec")
+    if isinstance(avg_duration, (int, float)):
+        lines.append(f"Average rep duration: {float(avg_duration):.2f} s")
+
+    avg_tempo_up = summary.get("tempo_summary", {}).get("tempo_up_sec_avg") if isinstance(summary.get("tempo_summary"), dict) else summary.get("avg_tempo_up_sec")
+    if not isinstance(avg_tempo_up, (int, float)):
+        avg_tempo_up = summary.get("avg_tempo_up_sec")
+    if isinstance(avg_tempo_up, (int, float)):
+        lines.append(f"Average lift phase: {float(avg_tempo_up):.2f} s")
+
+    avg_tempo_down = summary.get("tempo_summary", {}).get("tempo_down_sec_avg") if isinstance(summary.get("tempo_summary"), dict) else summary.get("avg_tempo_down_sec")
+    if not isinstance(avg_tempo_down, (int, float)):
+        avg_tempo_down = summary.get("avg_tempo_down_sec")
+    if isinstance(avg_tempo_down, (int, float)):
+        lines.append(f"Average lowering phase: {float(avg_tempo_down):.2f} s")
+
+    low_conf = summary.get("n_low_confidence")
+    if isinstance(low_conf, (int, float)):
+        lines.append(f"Low-confidence reps: {int(round(float(low_conf)))}")
+
+    comparison = _clean_comparison_context(payload.get("comparison_v1"))
+    if comparison:
+        delta = _safe_dict(comparison.get("delta"))
+        if isinstance(delta.get("quality_score"), (int, float)):
+            lines.append(f"Quality delta vs previous set: {float(delta['quality_score']):+.1f}")
+        if isinstance(delta.get("avg_rom"), (int, float)):
+            lines.append(f"ROM delta vs previous set: {float(delta['avg_rom']):+.2f}")
+        if isinstance(delta.get("load_kg"), (int, float)):
+            lines.append(f"Load delta vs previous set: {float(delta['load_kg']):+.1f} kg")
+
+    return lines
+
+
+def _render_text(structured: dict[str, Any], payload: dict[str, Any]) -> str:
     score = structured.get("overall_score")
     issues = _safe_list(structured.get("issues"))
     cues = _safe_list(structured.get("cues"))
@@ -284,11 +366,20 @@ def _render_text(structured: dict[str, Any]) -> str:
         lines.append(f"**Lift quality:** {round(float(score), 1)}/100")
         lines.append("")
 
+    metric_lines = _metric_lines(payload, structured)
+    if metric_lines:
+        lines.append("**Measured values:**")
+        for item in metric_lines:
+            lines.append(f"- {item}")
+        lines.append("")
+
+    lines.append("**Key findings:**")
     if issues:
-        lines.append("**Key issues (evidence-based):**")
         for it in issues[:5]:
             lines.append(f"- {str(it)}")
-        lines.append("")
+    else:
+        lines.append("- No major technique faults were detected in this set.")
+    lines.append("")
 
     if cues:
         lines.append("**Cues:**")
@@ -327,7 +418,7 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
             t0 = time.time()
             resp_json, raw_dbg = _call_openai(messages)
             structured = _extract_structured_from_responses_api(resp_json)
-            text = _render_text(structured)
+            text = _render_text(structured, payload)
             dt = time.time() - t0
 
             return {

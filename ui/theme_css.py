@@ -3046,5 +3046,36 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     div[data-testid="stChatMessage"] [data-testid="stCaptionContainer"] {{
         color: #9fb2ce !important;
     }}
+
+    /* Final replay / summary polish */
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"],
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-empty-card--results {{
+        min-height: clamp(560px, 78vh, 980px) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] video {{
+        max-width: min(100%, 1320px) !important;
+        max-height: 80vh !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-context-shell) [data-testid="stColumn"] > div {{
+        height: 100% !important;
+    }}
+
+    .rr-summary-strip {{
+        min-height: 100% !important;
+    }}
+
+    .rr-quality-badge {{
+        min-height: 210px !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }}
+
+    .rr-quality-badge__ring {{
+        margin: 0 auto !important;
+    }}
     </style>
     """
