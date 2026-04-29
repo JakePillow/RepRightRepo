@@ -132,6 +132,7 @@ def save_thread(thread_id: str) -> None:
             "overlay_path":  artifacts.get("overlay_path")
                              or artifacts.get("overlay_video")
                              or analysis.get("overlay_path"),
+            "browser_overlay_path": artifacts.get("browser_overlay_path"),
             "run_dir":       artifacts.get("run_dir") or analysis.get("run_dir"),
         }.items()
         if v
@@ -204,10 +205,15 @@ def load_thread(thread_id: str) -> None:
     # ── Restore overlay path (file ref only — bytes stay on disk) ──
     ref  = data.get("analysis_ref") or {}
     op   = ref.get("overlay_path")
+    bop  = ref.get("browser_overlay_path")
     if op and Path(str(op)).exists():
         if "artifacts_v1" not in (st.session_state.last_analysis or {}):
             st.session_state.last_analysis = st.session_state.last_analysis or {}
-            st.session_state.last_analysis.setdefault("artifacts_v1", {})["overlay_path"] = op
+        st.session_state.last_analysis.setdefault("artifacts_v1", {})["overlay_path"] = op
+    if bop and Path(str(bop)).exists():
+        if "artifacts_v1" not in (st.session_state.last_analysis or {}):
+            st.session_state.last_analysis = st.session_state.last_analysis or {}
+        st.session_state.last_analysis.setdefault("artifacts_v1", {})["browser_overlay_path"] = bop
 
     # ── Store restore status for UI callout ──
     st.session_state.restore_status = _compute_restore_status(data)

@@ -1388,7 +1388,7 @@ def main() -> None:
 
         recent_threads = list_threads()
         has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([2.3, 1.1], gap="large")
+        centre, right = st.columns([2.7, 1.0], gap="large")
 
         with centre:
             with st.container():

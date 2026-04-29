@@ -2143,6 +2143,30 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-radius: 22px !important;
     }}
 
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] {{
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] > div {{
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] video {{
+        display: block !important;
+        width: auto !important;
+        max-width: min(100%, 1120px) !important;
+        max-height: 72vh !important;
+        height: auto !important;
+        margin: 0 auto !important;
+        object-fit: contain !important;
+        background: transparent !important;
+    }}
+
     div[data-testid="stExpander"] {{
         background: rgba(13, 22, 40, 0.46) !important;
         border: 1px solid rgba(122, 150, 194, 0.10) !important;

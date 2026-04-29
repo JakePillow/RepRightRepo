@@ -262,10 +262,12 @@ def resolve_overlay_path(payload, analysis) -> Path | None:
 
     if isinstance(analysis, dict):
         # Top-level key — confirmed present
+        raw_candidates.append(analysis.get("browser_overlay_path"))
         raw_candidates.append(analysis.get("overlay_path"))
         # artifacts_v1 block — confirmed present
         arts = analysis.get("artifacts_v1") or {}
         raw_candidates += [
+            arts.get("browser_overlay_path"),
             arts.get("overlay_path"),
             arts.get("overlay_video"),
             arts.get("annotated_video"),
@@ -285,6 +287,7 @@ def resolve_overlay_path(payload, analysis) -> Path | None:
         # artifact_refs block — confirmed present in payload
         ar = payload.get("artifact_refs") or {}
         raw_candidates += [
+            ar.get("browser_overlay_path"),
             ar.get("overlay_path"),
             ar.get("overlay_video"),
             ar.get("annotated_video"),

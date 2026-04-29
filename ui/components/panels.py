@@ -1,9 +1,9 @@
 ﻿from __future__ import annotations
 from collections.abc import Callable
+import json
 import logging
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 import streamlit as st
@@ -83,63 +83,122 @@ def render_recent_sessions_in_main() -> None:
                 st.rerun()
 
 
-def _probe_video_stream(src: Path) -> tuple[str | None, str | None]:
+def _probe_video_stream(src: Path) -> tuple[str | None, str | None, int]:
     ffprobe = shutil.which("ffprobe")
     if ffprobe is None:
-        return None, None
+        return None, None, 0
 
     cmd = [
         ffprobe,
         "-v", "error",
         "-select_streams", "v:0",
-        "-show_entries", "stream=codec_name,pix_fmt",
-        "-of", "default=noprint_wrappers=1:nokey=1",
+        "-show_entries", "stream=codec_name,pix_fmt:stream_tags=rotate:stream_side_data=rotation",
+        "-of", "json",
         str(src),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
         logging.warning("[FFPROBE FAILED] %s", proc.stderr.strip()[:240])
-        return None, None
+        return None, None, 0
 
-    lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-    codec = lines[0] if len(lines) >= 1 else None
-    pix_fmt = lines[1] if len(lines) >= 2 else None
-    return codec, pix_fmt
+    try:
+        payload = json.loads(proc.stdout or "{}")
+        stream = (payload.get("streams") or [{}])[0]
+    except Exception:
+        logging.warning("[FFPROBE PARSE FAILED] Could not decode probe output for %s", src)
+        return None, None, 0
+
+    codec = stream.get("codec_name")
+    pix_fmt = stream.get("pix_fmt")
+    rotation = 0
+
+    tags = stream.get("tags") or {}
+    if tags.get("rotate") is not None:
+        try:
+            rotation = int(float(tags.get("rotate")))
+        except Exception:
+            rotation = 0
+
+    for entry in stream.get("side_data_list") or []:
+        raw = entry.get("rotation")
+        if raw is None:
+            continue
+        try:
+            rotation = int(float(raw))
+            break
+        except Exception:
+            continue
+
+    return codec, pix_fmt, rotation % 360
 
 
-def _transcode_to_browser_mp4(src: Path) -> bytes | None:
+def _browser_ready_overlay_path(src: Path) -> Path:
+    return src.with_name(f"{src.stem}_browser.mp4")
+
+
+def _rotation_filter(rotation: int) -> str | None:
+    normalized = rotation % 360
+    if normalized == 90:
+        return "transpose=1"
+    if normalized == 180:
+        return "hflip,vflip"
+    if normalized == 270:
+        return "transpose=2"
+    return None
+
+
+def _transcode_to_browser_mp4(src: Path, dst: Path, *, rotation: int = 0) -> Path | None:
     ffmpeg = shutil.which("ffmpeg")
     if ffmpeg is None:
         return None
 
-    tmp_handle = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-    tmp_handle.close()
-    tmp_path = Path(tmp_handle.name)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    filters: list[str] = []
+    rotation_filter = _rotation_filter(rotation)
+    if rotation_filter:
+        filters.append(rotation_filter)
+    filters.extend(["format=yuv420p", "setsar=1"])
     try:
         cmd = [
             ffmpeg,
             "-y",
+            "-noautorotate",
             "-i", str(src),
             "-map", "0:v:0",
             "-metadata:s:v:0", "rotate=0",
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",
-            "-vf", "format=yuv420p,setsar=1",
+            "-vf", ",".join(filters),
             "-movflags", "+faststart",
-            str(tmp_path),
+            str(dst),
         ]
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0:
             logging.warning("[REENCODE FAILED] %s", proc.stderr.strip()[:240])
             return None
-        if not tmp_path.exists() or tmp_path.stat().st_size <= 1000:
+        if not dst.exists() or dst.stat().st_size <= 50 * 1024:
             return None
-        return tmp_path.read_bytes()
+        return dst
     except Exception as exc:
         logging.warning("[REENCODE FAILED] %s", exc)
         return None
-    finally:
-        tmp_path.unlink(missing_ok=True)
+
+
+def _ensure_browser_ready_overlay(src: Path) -> Path | None:
+    codec, pix_fmt, rotation = _probe_video_stream(src)
+    cache_path = _browser_ready_overlay_path(src)
+
+    if cache_path.exists():
+        try:
+            if cache_path.stat().st_size > 50 * 1024 and cache_path.stat().st_mtime >= src.stat().st_mtime:
+                return cache_path
+        except OSError:
+            pass
+
+    if src.suffix.lower() == ".mp4" and codec == "h264" and (pix_fmt is None or "420" in pix_fmt) and rotation == 0:
+        return src
+
+    return _transcode_to_browser_mp4(src, cache_path, rotation=rotation)
 
 
 def render_overlay_panel(overlay_path) -> None:
@@ -147,28 +206,30 @@ def render_overlay_panel(overlay_path) -> None:
         p = Path(str(overlay_path))
         if p.exists() and p.stat().st_size > 0:
             suffix = p.suffix.lower()
-            codec, pix_fmt = _probe_video_stream(p)
+            codec, pix_fmt, rotation = _probe_video_stream(p)
             logging.debug(
-                "[OVERLAY PANEL] path='%s' suffix='%s' codec='%s' pix_fmt='%s' size=%s",
+                "[OVERLAY PANEL] path='%s' suffix='%s' codec='%s' pix_fmt='%s' rotation='%s' size=%s",
                 p,
                 suffix,
                 codec,
                 pix_fmt,
+                rotation,
                 p.stat().st_size,
             )
 
-            # Always try to normalize into baseline MP4 first to avoid mobile orientation metadata issues.
-            video_bytes = _transcode_to_browser_mp4(p)
-            if video_bytes:
-                st.video(video_bytes, format="video/mp4")
+            browser_ready = _ensure_browser_ready_overlay(p)
+            if browser_ready is not None:
+                analysis = st.session_state.get("last_analysis")
+                if isinstance(analysis, dict):
+                    artifacts = analysis.setdefault("artifacts_v1", {})
+                    artifacts["browser_overlay_path"] = str(browser_ready.resolve())
+                st.video(str(browser_ready), format="video/mp4" if browser_ready.suffix.lower() == ".mp4" else "video/webm")
             elif suffix == ".webm":
-                st.video(p.read_bytes(), format="video/webm")
-            elif suffix == ".mp4" and codec == "h264" and (pix_fmt is None or "420" in pix_fmt):
-                st.video(p.read_bytes(), format="video/mp4")
+                st.video(str(p), format="video/webm")
             elif suffix == ".mp4":
-                st.video(p.read_bytes(), format="video/mp4")
+                st.video(str(p), format="video/mp4")
             else:
-                st.warning(f"Overlay video could not be transcoded for browser playback: {p.name}")
+                st.warning(f"Overlay video could not be prepared for browser playback: {p.name}")
                 render_empty_state_results()
         else:
             st.warning(f"Overlay file not found or empty at: {p}")
