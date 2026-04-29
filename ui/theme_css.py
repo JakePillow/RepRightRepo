@@ -2944,5 +2944,83 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
             height: 108px;
         }}
     }}
+
+    /* Final contrast guardrails for the coach workspace */
+    div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell),
+    div[data-testid="stVerticalBlock"]:has(.rr-context-shell),
+    div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+        color: #eef4ff !important;
+    }}
+
+    .rr-coach-shell-head__title,
+    .rr-analysis-bar-head__title,
+    .rr-history-head__title,
+    .rr-summary-strip__title,
+    .rr-workspace-hint__title,
+    .rr-workspace-hint__step-title,
+    .rr-empty-card__title {{
+        color: #f5f9ff !important;
+    }}
+
+    .rr-analysis-bar-head__copy,
+    .rr-history-head__copy,
+    .rr-summary-strip__copy,
+    .rr-workspace-hint__copy,
+    .rr-workspace-hint__step-desc,
+    .rr-workspace-hint__tip,
+    .rr-empty-card__body,
+    .rr-empty-card,
+    .rr-summary-strip__score-label,
+    .rr-nav-meta__pill,
+    .rr-nav-label {{
+        color: #cfdced !important;
+    }}
+
+    .rr-summary-strip__score-value,
+    .rr-workspace-hint__icon,
+    .rr-empty-card__icon {{
+        color: #eef4ff !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) label,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) [data-testid="stWidgetLabel"],
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stSelectbox label,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stNumberInput label,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stFileUploader label {{
+        color: #dbe7f7 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextArea textarea,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextInput input,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stNumberInput input,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stSelectbox div[data-baseweb="select"] * {{
+        color: #eef4ff !important;
+        -webkit-text-fill-color: #eef4ff !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextArea textarea::placeholder,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stTextInput input::placeholder,
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) .stNumberInput input::placeholder {{
+        color: #96abc9 !important;
+        -webkit-text-fill-color: #96abc9 !important;
+        opacity: 1 !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) div[data-testid="stFileUploaderDropzone"],
+    div[data-testid="stVerticalBlock"]:has(.rr-analysis-bar-shell) div[data-testid="stFileUploaderDropzone"] * {{
+        color: #d8e5f7 !important;
+    }}
+
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li,
+    div[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] span {{
+        color: #e8f1ff !important;
+    }}
+
+    div[data-testid="stChatMessage"] small,
+    div[data-testid="stChatMessage"] [data-testid="stCaptionContainer"] {{
+        color: #9fb2ce !important;
+    }}
     </style>
     """
