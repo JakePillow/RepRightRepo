@@ -1485,47 +1485,43 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
-    sidebar_col, main_col = st.columns([0.22, 1.78], gap="large")
-    with sidebar_col:
-        render_app_sidebar()
+    render_app_sidebar()
+    st.markdown('<div class="rr-app-workspace-shell"></div>', unsafe_allow_html=True)
+    render_page_hero()
 
-    with main_col:
-        st.markdown('<div class="rr-app-workspace-shell"></div>', unsafe_allow_html=True)
-        render_page_hero()
+    ui_message = st.session_state.get("ui_message")
+    if isinstance(ui_message, dict) and ui_message.get("text"):
+        render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
 
-        ui_message = st.session_state.get("ui_message")
-        if isinstance(ui_message, dict) and ui_message.get("text"):
-            render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
+    if demo_mode_enabled():
+        render_callout("info", demo_banner_text())
 
-        if demo_mode_enabled():
-            render_callout("info", demo_banner_text())
+    has_analysis = bool(st.session_state.get("last_analysis"))
+    centre, right = st.columns([1.66, 1.04], gap="large")
 
-        has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([1.66, 1.04], gap="large")
+    with centre:
+        with st.container():
+            st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
+            render_surface_head(
+                "Replay",
+                "Movement Replay",
+                (
+                    "Replay the set, inspect the overlay, and compare what changed before you move on."
+                    if has_analysis
+                    else "Your analysed replay and overlay appear here as soon as the first upload finishes."
+                ),
+                variant="stage",
+            )
+            overlay_path = resolve_overlay_path(
+                st.session_state.last_payload,
+                st.session_state.last_analysis,
+            )
+            panels.render_overlay_panel(overlay_path)
+            panels.render_stage_analysis_panel()
 
-        with centre:
-            with st.container():
-                st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
-                render_surface_head(
-                    "Replay",
-                    "Movement Replay",
-                    (
-                        "Replay the set, inspect the overlay, and compare what changed before you move on."
-                        if has_analysis
-                        else "Your analysed replay and overlay appear here as soon as the first upload finishes."
-                    ),
-                    variant="stage",
-                )
-                overlay_path = resolve_overlay_path(
-                    st.session_state.last_payload,
-                    st.session_state.last_analysis,
-                )
-                panels.render_overlay_panel(overlay_path)
-                panels.render_stage_analysis_panel()
-
-        with right:
-            render_restore_status_badge(st.session_state.get("restore_status"))
-            _render_right_workspace(on_analyze, on_followup)
+    with right:
+        render_restore_status_badge(st.session_state.get("restore_status"))
+        _render_right_workspace(on_analyze, on_followup)
 
 
 if __name__ == "__main__":
