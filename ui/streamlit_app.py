@@ -1272,18 +1272,21 @@ def render_sidebar_panel() -> None:
 
     with st.container():
         st.markdown('<div class="rr-sidebar-panel-shell"></div>', unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div class="rr-sidebar-brand rr-sidebar-brand--rail">
-                <div class="rr-sidebar-brand__mark">RR</div>
-                <div>
-                    <div class="rr-sidebar-brand__name">RepRight</div>
-                    <div class="rr-sidebar-brand__copy">Exercise form review and coaching.</div>
+        head_col, toggle_col = st.columns([1, 0.18], gap="small")
+        with head_col:
+            st.markdown(
+                f"""
+                <div class="rr-sidebar-panel-head">
+                    <div class="rr-sidebar-panel-title">RepRight</div>
+                    <div class="rr-sidebar-panel-subtitle">New chat and saved sessions.</div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                """,
+                unsafe_allow_html=True,
+            )
+        with toggle_col:
+            if st.button("✕", key="ui_sidebar_toggle_open", help="Collapse sidebar", use_container_width=True):
+                st.session_state.ui_sidebar_open = False
+                st.rerun()
 
         if st.button(
             TEXT["sidebar"]["new_chat"],
@@ -1296,38 +1299,18 @@ def render_sidebar_panel() -> None:
             start_new_chat(st.session_state.get("exercise_choice") or "bench")
             st.rerun()
 
-        if st.button(
-            TEXT["sidebar"]["clear_chat"],
-            use_container_width=True,
-            disabled=busy or (
-                not st.session_state.get("history")
-                and not st.session_state.get("last_response")
-            ),
-            key="panel_clear_chat",
-            help=TEXT["sidebar"].get("clear_chat_help"),
-        ):
-            reset_group("chat")
-            clear_ui_message()
-            if st.session_state.thread_id:
-                save_thread(st.session_state.thread_id)
-            st.rerun()
-
         st.markdown(
             f"""
-            <div class="rr-nav-meta">
+            <div class="rr-sidebar-panel-meta">
                 <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
-                <div class="rr-nav-meta__pill">{'Busy' if busy else 'Ready'}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        if demo_mode_enabled():
-            render_callout("info", demo_banner_text())
-
+        st.markdown('<div class="rr-sidebar-section-label">Past sessions</div>', unsafe_allow_html=True)
         if all_threads:
-            st.markdown('<div class="rr-nav-label">Sessions</div>', unsafe_allow_html=True)
-            for thread in all_threads[:8]:
+            for thread in all_threads[:12]:
                 tid = thread.get("thread_id")
                 if st.button(
                     thread.get("title") or tid,
@@ -1337,17 +1320,31 @@ def render_sidebar_panel() -> None:
                 ):
                     load_thread(tid)
                     st.rerun()
+        else:
+            st.markdown(
+                '<div class="rr-sidebar-empty">No saved sessions yet.</div>',
+                unsafe_allow_html=True,
+            )
 
 
 def render_sidebar_toggle_button() -> None:
     with st.container():
-        st.markdown('<div class="rr-sidebar-toggle-shell"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="rr-sidebar-collapsed-shell"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="rr-sidebar-collapsed-head">
+                <div class="rr-sidebar-collapsed-label">RepRight</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         if st.button(
-            "✕" if st.session_state.get("ui_sidebar_open", True) else "☰",
-            key="ui_sidebar_toggle",
-            help="Toggle sidebar",
+            "☰",
+            key="ui_sidebar_toggle_closed",
+            help="Open sidebar",
+            use_container_width=True,
         ):
-            st.session_state.ui_sidebar_open = not st.session_state.get("ui_sidebar_open", True)
+            st.session_state.ui_sidebar_open = True
             st.rerun()
 
 
@@ -1496,14 +1493,14 @@ def main() -> None:
     if "ui_sidebar_open" not in st.session_state:
         st.session_state.ui_sidebar_open = True
     inject_global_css_modern()
-    render_sidebar_toggle_button()
-
     if st.session_state.get("ui_sidebar_open", True):
-        sidebar_col, main_col = st.columns([0.34, 1.66], gap="large")
+        sidebar_col, main_col = st.columns([0.24, 1.76], gap="large")
         with sidebar_col:
             render_sidebar_panel()
     else:
-        main_col = st.container()
+        sidebar_col, main_col = st.columns([0.08, 1.92], gap="large")
+        with sidebar_col:
+            render_sidebar_toggle_button()
 
     with main_col:
         render_page_hero()

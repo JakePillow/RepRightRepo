@@ -3452,7 +3452,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-sidebar-panel-shell,
-    .rr-sidebar-toggle-shell {{
+    .rr-sidebar-collapsed-shell {{
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
@@ -3460,40 +3460,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
-    .st-key-ui_sidebar_toggle {{
-        position: fixed !important;
-        top: 18px !important;
-        left: 18px !important;
-        z-index: 4000 !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: visible !important;
+    div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-panel-shell) > div:first-child {{
+        min-width: 250px !important;
+        max-width: 300px !important;
+        flex: 0 0 clamp(250px, 18vw, 300px) !important;
     }}
 
-    .st-key-ui_sidebar_toggle .stButton {{
-        margin: 0 !important;
-        padding: 0 !important;
-    }}
-
-    .st-key-ui_sidebar_toggle .stButton > button {{
-        min-width: 46px !important;
-        width: 46px !important;
-        min-height: 46px !important;
-        height: 46px !important;
-        padding: 0 !important;
-        border-radius: 16px !important;
-        background: linear-gradient(180deg, rgba(25, 67, 150, 0.98), rgba(18, 46, 102, 0.98)) !important;
-        border: 1px solid rgba(122, 150, 194, 0.18) !important;
-        color: #f8fbff !important;
-        font-size: 20px !important;
-        font-weight: 800 !important;
-        box-shadow: 0 16px 32px rgba(2, 6, 23, 0.28) !important;
-    }}
-
-    .st-key-ui_sidebar_toggle .stButton > button:hover {{
-        background: linear-gradient(180deg, rgba(44, 96, 196, 0.98), rgba(23, 57, 122, 0.98)) !important;
+    div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-collapsed-shell) > div:first-child {{
+        min-width: 72px !important;
+        max-width: 88px !important;
+        flex: 0 0 80px !important;
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) {{
@@ -3504,24 +3480,148 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         max-height: calc(100vh - 36px) !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
-        padding: 16px 14px !important;
+        padding: 18px 16px 16px !important;
         margin: 0 !important;
-        background: linear-gradient(180deg, rgba(12, 21, 38, 0.97), rgba(8, 15, 28, 0.985)) !important;
+        background: linear-gradient(180deg, rgba(11, 19, 34, 0.98), rgba(8, 14, 25, 0.985)) !important;
         border: 1px solid rgba(122, 150, 194, 0.14) !important;
-        border-radius: 26px !important;
+        border-radius: 24px !important;
         box-shadow:
-            0 24px 50px rgba(2, 6, 23, 0.34),
-            inset 0 1px 0 rgba(255,255,255,0.05) !important;
-        backdrop-filter: blur(12px) saturate(118%) !important;
+            0 22px 48px rgba(2, 6, 23, 0.30),
+            inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-collapsed-shell) {{
+        position: sticky !important;
+        top: 18px !important;
+        align-self: flex-start !important;
+        width: 100% !important;
+        padding: 10px 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }}
+
+    .rr-sidebar-panel-head {{
+        margin-bottom: 14px;
+    }}
+
+    .rr-sidebar-panel-title {{
+        font-family: "Manrope", sans-serif;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: #f8fbff;
+    }}
+
+    .rr-sidebar-panel-subtitle {{
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 1.55;
+        color: #9eb3d1;
+    }}
+
+    .rr-sidebar-panel-meta {{
+        margin: 12px 0 18px;
+    }}
+
+    .rr-sidebar-section-label {{
+        margin: 6px 0 10px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9bb0ce;
+    }}
+
+    .rr-sidebar-empty {{
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(13, 22, 39, 0.68);
+        border: 1px solid rgba(122, 150, 194, 0.10);
+        color: #c5d5ea;
+        font-size: 13px;
+        line-height: 1.55;
+    }}
+
+    .rr-sidebar-collapsed-head {{
+        margin-bottom: 10px;
+        text-align: center;
+    }}
+
+    .rr-sidebar-collapsed-label {{
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: #9fb6d8;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton {{
+        margin-bottom: 10px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton > button {{
+        min-height: 44px !important;
+        border-radius: 16px !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        padding: 0 14px !important;
+        background: rgba(13, 22, 39, 0.72) !important;
+        border: 1px solid rgba(122, 150, 194, 0.12) !important;
+        color: #ecf3ff !important;
+        font-size: 14px !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton > button:hover {{
+        background: rgba(18, 31, 55, 0.84) !important;
+        border-color: rgba(122, 150, 194, 0.18) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton > button[kind="primary"] {{
+        min-height: 50px !important;
+        justify-content: center !important;
+        text-align: center !important;
+        background: linear-gradient(135deg, #79aefe 0%, #5d95fb 50%, #4d83eb 100%) !important;
+        border-color: rgba(146, 181, 242, 0.28) !important;
+        color: #f8fbff !important;
+        box-shadow: 0 14px 30px rgba(40, 84, 175, 0.22) !important;
+    }}
+
+    .st-key-ui_sidebar_toggle_open .stButton > button,
+    .st-key-ui_sidebar_toggle_closed .stButton > button {{
+        min-height: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        border-radius: 14px !important;
+        justify-content: center !important;
+        text-align: center !important;
+        background: rgba(13, 22, 39, 0.84) !important;
+        border: 1px solid rgba(122, 150, 194, 0.16) !important;
+        color: #eff5ff !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }}
+
+    .st-key-ui_sidebar_toggle_open .stButton > button:hover,
+    .st-key-ui_sidebar_toggle_closed .stButton > button:hover {{
+        background: rgba(20, 35, 62, 0.92) !important;
+        border-color: rgba(122, 150, 194, 0.22) !important;
     }}
 
     @media (max-width: 900px) {{
-        .st-key-ui_sidebar_toggle {{
-            top: 12px !important;
-            left: 12px !important;
+        div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-panel-shell) > div:first-child,
+        div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-collapsed-shell) > div:first-child {{
+            min-width: 0 !important;
+            max-width: none !important;
+            flex: 1 1 auto !important;
         }}
 
-        div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) {{
+        div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell),
+        div[data-testid="stVerticalBlock"]:has(.rr-sidebar-collapsed-shell) {{
             position: static !important;
             top: auto !important;
             max-height: none !important;
