@@ -3303,12 +3303,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) .rr-pane-head--stage .rr-pane-head__copy {{
-        max-width: 58ch !important;
+        max-width: 52ch !important;
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] {{
-        min-height: clamp(680px, 84vh, 1120px) !important;
-        padding: 12px !important;
+        min-height: clamp(540px, 72vh, 920px) !important;
+        padding: 14px !important;
     }}
 
     div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] > div {{
@@ -3319,16 +3319,35 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     div[data-testid="stVerticalBlock"]:has(.rr-stage-shell) div[data-testid="stVideo"] video {{
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 86vh !important;
+        max-height: 78vh !important;
         height: auto !important;
         object-fit: contain !important;
         margin: 0 auto !important;
         background: #030814 !important;
     }}
 
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-analysis-shell) {{
+        margin-top: 14px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-analysis-shell) .rr-summary-strip,
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-analysis-shell) .rr-quality-badge {{
+        background: linear-gradient(180deg, rgba(16, 28, 48, 0.88), rgba(12, 21, 38, 0.92)) !important;
+        border-color: rgba(122, 150, 194, 0.12) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-analysis-shell) .stButton > button,
+    div[data-testid="stVerticalBlock"]:has(.rr-stage-analysis-shell) .stDownloadButton > button {{
+        min-height: 46px !important;
+    }}
+
     div[data-testid="stVerticalBlock"]:has(.rr-coach-workspace-shell) {{
         max-width: 100% !important;
-        padding-left: 6px !important;
+        padding-left: 0 !important;
     }}
 
     .rr-coach-shell-head__title {{
@@ -3343,6 +3362,10 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     .rr-analysis-bar-head__title {{
         font-size: 17px !important;
         line-height: 1.22 !important;
+    }}
+
+    .rr-analysis-bar-head__copy {{
+        max-width: 42ch !important;
     }}
 
     .rr-pane-head__copy,
@@ -3379,6 +3402,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     div[data-testid="stVerticalBlock"]:has(.rr-history-shell) [data-testid="stMarkdownContainer"] li,
     div[data-testid="stVerticalBlock"]:has(.rr-history-shell) [data-testid="stCaptionContainer"] p {{
         color: #eaf2ff !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-history-shell) {{
+        margin-top: 12px !important;
+        padding-top: 14px !important;
+        border-top: 1px solid rgba(122, 150, 194, 0.10) !important;
     }}
 
     @media (max-width: 900px) {{

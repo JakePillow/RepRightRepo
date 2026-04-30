@@ -414,6 +414,37 @@ def _coach_summary_card() -> None:
         )
 
 
+def render_stage_analysis_panel() -> None:
+    has_analysis = bool(st.session_state.get("last_analysis"))
+    has_response = bool(st.session_state.get("last_response"))
+    if not (has_analysis or has_response):
+        return
+
+    with st.container():
+        st.markdown('<div class="rr-stage-analysis-shell"></div>', unsafe_allow_html=True)
+        _coach_summary_card()
+        action_cols = st.columns([1, 1], gap="small")
+        with action_cols[0]:
+            open_analysis = st.button(
+                "Open analysis",
+                key="stage_open_analysis_dialog",
+                use_container_width=True,
+            )
+        with action_cols[1]:
+            p = artifact_analysis_json_path(st.session_state.get("last_analysis"))
+            if p:
+                st.download_button(
+                    "Export JSON",
+                    data=p.read_text(encoding="utf-8"),
+                    file_name=p.name,
+                    mime="application/json",
+                    use_container_width=True,
+                    key="stage_download_analysis_dialog_button",
+                )
+        if open_analysis:
+            _render_analysis_dialog()
+
+
 def _coach_welcome_card() -> None:
     t = TEXT["coaching_panel"]
     steps = "".join(
@@ -532,7 +563,7 @@ def _render_coach_composer(
             unsafe_allow_html=True,
         )
 
-        exercise_col, load_col = st.columns([1.45, 0.75], gap="small")
+        exercise_col, load_col = st.columns([1.20, 0.80], gap="small")
         with exercise_col:
             if exercise_locked:
                 locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
@@ -572,7 +603,7 @@ def _render_coach_composer(
             )
 
         upload_key = f"chat_video_upload_{int(st.session_state.get('chat_upload_nonce', 0))}"
-        upload_col, prompt_col = st.columns([1.05, 1], gap="small")
+        upload_col, prompt_col = st.columns([0.82, 1.18], gap="small")
         with upload_col:
             upload = st.file_uploader(
                 TEXT["inputs"]["upload"],
@@ -703,7 +734,7 @@ def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCal
             """<div class="rr-coach-shell-head">
                 <div>
                     <div class="rr-section-kicker">Coach Workspace</div>
-                    <div class="rr-coach-shell-head__title">Coach Thread</div>
+                    <div class="rr-coach-shell-head__title">Coach Chat</div>
                 </div>
             </div>""",
             unsafe_allow_html=True,
@@ -717,7 +748,6 @@ def render_coach_workspace(on_analyze: AnalyzeCallback, on_followup: FollowupCal
             exercise_locked=exercise_locked,
         )
         _render_coach_notices(local_notice)
-        _render_coach_context_card(has_analysis=has_analysis, has_response=has_response)
         _render_coach_history()
 
 

@@ -1374,7 +1374,7 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
-    nav, workspace = st.columns([0.40, 2.60], gap="medium")
+    nav, workspace = st.columns([0.38, 2.62], gap="medium")
 
     with nav:
         render_nav_rail()
@@ -1390,7 +1390,7 @@ def main() -> None:
             render_callout("info", demo_banner_text())
 
         has_analysis = bool(st.session_state.get("last_analysis"))
-        centre, right = st.columns([4.15, 0.78], gap="large")
+        centre, right = st.columns([1.70, 1.08], gap="large")
 
         with centre:
             with st.container():
@@ -1410,6 +1410,7 @@ def main() -> None:
                     st.session_state.last_analysis,
                 )
                 panels.render_overlay_panel(overlay_path)
+                panels.render_stage_analysis_panel()
 
         with right:
             render_restore_status_badge(st.session_state.get("restore_status"))
