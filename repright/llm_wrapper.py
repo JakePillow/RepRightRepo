@@ -272,6 +272,10 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         "Hard rules:\n"
         "- Base ALL claims strictly on the numeric data provided in FACTS.\n"
         "- Never invent values.\n"
+        "- Sound like a premium personal trainer in chat: direct, calm, specific, and supportive.\n"
+        "- Lead with the most useful takeaway first.\n"
+        "- Prefer plain coaching language over lab-report language.\n"
+        "- Keep sentences tight and readable.\n"
         "- When you mention a metric, include the number and unit where relevant.\n"
         "- Round decimals to at most 2 places unless a threshold needs 3 places.\n"
         "- If FACTS.load_kg is a number, treat the load as provided and do not say weight is missing.\n"
@@ -291,10 +295,10 @@ def _build_messages(payload: dict) -> list[dict[str, Any]]:
         "Task:\n"
         "1) Identify up to 3 meaningful findings using numeric evidence; if the set is clean, findings may be positive or cautionary rather than faults.\n"
         "2) If comparison_v1 exists, explain what improved, regressed, or stayed similar using numeric deltas.\n"
-        "3) Give 2 actionable cues.\n"
+        "3) Give 2 actionable cues written as short commands.\n"
         "4) Give an overall_score 0-100 grounded on consistency + faults.\n"
         "5) If load_kg is present, you may reference it directly, but do not invent progression advice that requires missing context such as RPE, bodyweight, or training history.\n"
-        "6) summary_text: a short natural paragraph (<90 words) in plain coaching language, referencing the numbers and, when available, the comparison outcome.\n"
+        "6) summary_text: 2 to 4 sentences, under 90 words, opening with a clear coaching verdict. Make it sound like a sharp AI personal trainer, not a report. Reference only the numbers that actually matter. If the user gave a goal or note, address it when relevant.\n"
     )
 
     return [
@@ -438,36 +442,40 @@ def _render_text(structured: dict[str, Any], payload: dict[str, Any]) -> str:
     score = structured.get("overall_score")
     issues = _safe_list(structured.get("issues"))
     cues = _safe_list(structured.get("cues"))
-    summary = structured.get("summary_text") or ""
+    summary = str(structured.get("summary_text") or "").strip()
 
     lines: list[str] = []
-    if isinstance(score, (int, float)):
-        lines.append(f"**Lift quality:** {round(float(score), 1)}/100")
-        lines.append("")
+    if summary:
+        lines.append(f"**Coach take:** {summary}")
+    elif isinstance(score, (int, float)):
+        lines.append(f"**Coach take:** This set scored {round(float(score), 1)}/100 and the overall pattern looks solid.")
+
+    if issues:
+        if lines:
+            lines.append("")
+        lines.append("**What stood out:**")
+        for it in issues[:4]:
+            lines.append(f"- {str(it)}")
+    elif isinstance(score, (int, float)):
+        if lines:
+            lines.append("")
+        lines.append("**What stood out:**")
+        lines.append(f"- Overall lift quality came out at {round(float(score), 1)}/100 with no major technique faults flagged.")
+
+    if cues:
+        if lines:
+            lines.append("")
+        lines.append("**Next set cues:**")
+        for c in cues[:4]:
+            lines.append(f"- {str(c)}")
 
     metric_lines = _metric_lines(payload, structured)
     if metric_lines:
-        lines.append("**Measured values:**")
+        if lines:
+            lines.append("")
+        lines.append("**Numbers I used:**")
         for item in metric_lines:
             lines.append(f"- {item}")
-        lines.append("")
-
-    lines.append("**Key findings:**")
-    if issues:
-        for it in issues[:5]:
-            lines.append(f"- {str(it)}")
-    else:
-        lines.append("- No major technique faults were detected in this set.")
-    lines.append("")
-
-    if cues:
-        lines.append("**Cues:**")
-        for c in cues[:5]:
-            lines.append(f"- {str(c)}")
-        lines.append("")
-
-    if isinstance(summary, str) and summary.strip():
-        lines.append(str(summary).strip())
 
     return "\n".join(lines).strip()
 

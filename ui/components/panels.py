@@ -491,7 +491,7 @@ def _render_analysis_dialog() -> None:
             with st.container():
                 st.markdown('<div class="rr-analysis-reply-shell"></div>', unsafe_allow_html=True)
                 st.markdown(
-                    """<div class="rr-section-kicker" style="margin-bottom:8px;">Latest Coach Reply</div>""",
+                    """<div class="rr-section-kicker" style="margin-bottom:8px;">Coach Take</div>""",
                     unsafe_allow_html=True,
                 )
                 st.markdown(response_text)
