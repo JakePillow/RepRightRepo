@@ -1490,6 +1490,7 @@ def main() -> None:
         render_app_sidebar()
 
     with main_col:
+        st.markdown('<div class="rr-app-workspace-shell"></div>', unsafe_allow_html=True)
         render_page_hero()
 
         ui_message = st.session_state.get("ui_message")

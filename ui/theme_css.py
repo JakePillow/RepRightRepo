@@ -3451,7 +3451,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
-    .rr-app-sidebar-shell {{
+    .rr-app-sidebar-shell,
+    .rr-app-workspace-shell {{
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
@@ -3459,18 +3460,26 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
-    div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell) > div:first-child {{
+    div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell):has(.rr-app-workspace-shell) {{
+        align-items: flex-start !important;
+    }}
+
+    div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell):has(.rr-app-workspace-shell) > div:first-child {{
         min-width: 258px !important;
         max-width: 286px !important;
         flex: 0 0 272px !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) {{
-        position: sticky !important;
-        top: 14px !important;
-        align-self: flex-start !important;
+    div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell):has(.rr-app-workspace-shell) > div:last-child {{
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) {{
+        position: relative !important;
         width: 100% !important;
-        height: calc(100vh - 28px) !important;
+        min-height: calc(100vh - 28px) !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         padding: 18px 16px 18px !important;
@@ -3481,6 +3490,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow:
             0 20px 44px rgba(2, 6, 23, 0.24),
             inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    }}
+
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-workspace-shell) {{
+        min-width: 0 !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }}
 
     .rr-app-sidebar-head {{
@@ -3529,11 +3546,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         line-height: 1.55;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton {{
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton {{
         margin-bottom: 10px !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton > button {{
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton > button {{
         min-height: 46px !important;
         border-radius: 16px !important;
         justify-content: flex-start !important;
@@ -3546,12 +3563,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: none !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton > button:hover {{
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton > button:hover {{
         background: rgba(18, 31, 55, 0.84) !important;
         border-color: rgba(122, 150, 194, 0.18) !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton > button[kind="primary"] {{
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton > button[kind="primary"] {{
         min-height: 52px !important;
         justify-content: center !important;
         text-align: center !important;
@@ -3562,16 +3579,20 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     @media (max-width: 900px) {{
-        div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell) > div:first-child {{
+        div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell):has(.rr-app-workspace-shell) > div:first-child {{
             min-width: 0 !important;
             max-width: none !important;
             flex: 1 1 auto !important;
         }}
 
-        div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) {{
-            position: static !important;
-            top: auto !important;
-            height: auto !important;
+        div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell):has(.rr-app-workspace-shell) > div:last-child {{
+            min-width: 0 !important;
+            max-width: none !important;
+            flex: 1 1 auto !important;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) {{
+            min-height: 0 !important;
             overflow: visible !important;
             margin-bottom: 10px !important;
         }}
