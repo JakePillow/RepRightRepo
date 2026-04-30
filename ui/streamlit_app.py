@@ -1177,82 +1177,88 @@ def render_sidebar() -> None:
 def render_nav_rail() -> None:
     busy = bool(st.session_state.get("ui_busy"))
     all_threads = list_threads()
-
-    st.markdown('<div class="rr-nav-shell"></div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div class="rr-sidebar-brand rr-sidebar-brand--rail">
-            <div class="rr-sidebar-brand__mark">RR</div>
-            <div>
-                <div class="rr-sidebar-brand__name">RepRight</div>
-                <div class="rr-sidebar-brand__copy">Exercise form review and coaching.</div>
+    with st.container():
+        st.markdown('<div class="rr-nav-shell"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="rr-sidebar-brand rr-sidebar-brand--rail">
+                <div class="rr-sidebar-brand__mark">RR</div>
+                <div>
+                    <div class="rr-sidebar-brand__name">RepRight</div>
+                    <div class="rr-sidebar-brand__copy">Exercise form review and coaching.</div>
+                </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
-    if st.button(
-        TEXT["sidebar"]["new_chat"],
-        use_container_width=True,
-        disabled=busy,
-        type="primary",
-        key="rail_new_chat",
-        help=TEXT["sidebar"].get("new_chat_help"),
-    ):
-        start_new_chat(st.session_state.get("exercise_choice") or "bench")
-        st.rerun()
+        if st.button(
+            TEXT["sidebar"]["new_chat"],
+            use_container_width=True,
+            disabled=busy,
+            type="primary",
+            key="rail_new_chat",
+            help=TEXT["sidebar"].get("new_chat_help"),
+        ):
+            start_new_chat(st.session_state.get("exercise_choice") or "bench")
+            st.rerun()
 
-    if st.button(
-        TEXT["sidebar"]["clear_chat"],
-        use_container_width=True,
-        disabled=busy or (
-            not st.session_state.get("history")
-            and not st.session_state.get("last_response")
-        ),
-        key="rail_clear_chat",
-        help=TEXT["sidebar"].get("clear_chat_help"),
-    ):
-        reset_group("chat")
-        clear_ui_message()
-        if st.session_state.thread_id:
-            save_thread(st.session_state.thread_id)
-        st.rerun()
+        if st.button(
+            TEXT["sidebar"]["clear_chat"],
+            use_container_width=True,
+            disabled=busy or (
+                not st.session_state.get("history")
+                and not st.session_state.get("last_response")
+            ),
+            key="rail_clear_chat",
+            help=TEXT["sidebar"].get("clear_chat_help"),
+        ):
+            reset_group("chat")
+            clear_ui_message()
+            if st.session_state.thread_id:
+                save_thread(st.session_state.thread_id)
+            st.rerun()
 
-    st.markdown(
-        f"""
-        <div class="rr-nav-meta">
-            <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
-            <div class="rr-nav-meta__pill">{'Busy' if busy else 'Ready'}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            f"""
+            <div class="rr-nav-meta">
+                <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
+                <div class="rr-nav-meta__pill">{'Busy' if busy else 'Ready'}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    if demo_mode_enabled():
-        render_callout("info", demo_banner_text())
+        if demo_mode_enabled():
+            render_callout("info", demo_banner_text())
 
-    if all_threads:
-        st.markdown('<div class="rr-nav-label">Sessions</div>', unsafe_allow_html=True)
-        for thread in all_threads[:8]:
-            tid = thread.get("thread_id")
-            if st.button(
-                thread.get("title") or tid,
-                key=f"rail_thread_{tid}",
-                use_container_width=True,
-                disabled=busy,
-            ):
-                load_thread(tid)
-                st.rerun()
+        if all_threads:
+            st.markdown('<div class="rr-nav-label">Sessions</div>', unsafe_allow_html=True)
+            for thread in all_threads[:8]:
+                tid = thread.get("thread_id")
+                if st.button(
+                    thread.get("title") or tid,
+                    key=f"rail_thread_{tid}",
+                    use_container_width=True,
+                    disabled=busy,
+                ):
+                    load_thread(tid)
+                    st.rerun()
 
 
 def render_nav_drawer_toggle() -> None:
     is_open = bool(st.session_state.get("nav_drawer_open", True))
     shell_class = "rr-drawer-toggle-shell rr-drawer-toggle-shell--open" if is_open else "rr-drawer-toggle-shell rr-drawer-toggle-shell--closed"
-    st.markdown(f'<div class="{shell_class}"></div>', unsafe_allow_html=True)
-    if st.button("✕" if is_open else "☰", key="rr_nav_drawer_toggle_button", help="Toggle sidebar"):
-        st.session_state.nav_drawer_open = not is_open
-        st.rerun()
+    with st.container():
+        st.markdown(f'<div class="{shell_class}"></div>', unsafe_allow_html=True)
+        if st.button("✕" if is_open else "☰", key="rr_nav_drawer_toggle_button", help="Toggle sidebar"):
+            st.session_state.nav_drawer_open = not is_open
+            st.rerun()
+
+
+def render_nav_state_marker() -> None:
+    marker_class = "rr-nav-open-state" if st.session_state.get("nav_drawer_open", True) else "rr-nav-closed-state"
+    st.markdown(f'<div class="{marker_class}"></div>', unsafe_allow_html=True)
 
 
 def start_new_chat(exercise: str) -> None:
@@ -1379,11 +1385,16 @@ def main() -> None:
         page_title="RepRight",
         page_icon="🏋️",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed",
     )
     initialize_session_state()
+    if "nav_drawer_open" not in st.session_state:
+        st.session_state.nav_drawer_open = True
     inject_global_css_modern()
-    render_sidebar()
+    render_nav_state_marker()
+    render_nav_drawer_toggle()
+    if st.session_state.get("nav_drawer_open", True):
+        render_nav_rail()
     render_page_hero()
 
     ui_message = st.session_state.get("ui_message")
