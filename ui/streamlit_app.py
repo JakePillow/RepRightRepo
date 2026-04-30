@@ -1246,6 +1246,15 @@ def render_nav_rail() -> None:
                 st.rerun()
 
 
+def render_nav_drawer_toggle() -> None:
+    is_open = bool(st.session_state.get("nav_drawer_open", True))
+    shell_class = "rr-drawer-toggle-shell rr-drawer-toggle-shell--open" if is_open else "rr-drawer-toggle-shell rr-drawer-toggle-shell--closed"
+    st.markdown(f'<div class="{shell_class}"></div>', unsafe_allow_html=True)
+    if st.button("✕" if is_open else "☰", key="rr_nav_drawer_toggle_button", help="Toggle sidebar"):
+        st.session_state.nav_drawer_open = not is_open
+        st.rerun()
+
+
 def start_new_chat(exercise: str) -> None:
     reset_draft_session(exercise)
 
@@ -1373,8 +1382,12 @@ def main() -> None:
         initial_sidebar_state="expanded",
     )
     initialize_session_state()
+    if "nav_drawer_open" not in st.session_state:
+        st.session_state.nav_drawer_open = True
     inject_global_css_modern()
-    render_sidebar()
+    render_nav_drawer_toggle()
+    if st.session_state.get("nav_drawer_open", True):
+        render_nav_rail()
     render_page_hero()
 
     ui_message = st.session_state.get("ui_message")

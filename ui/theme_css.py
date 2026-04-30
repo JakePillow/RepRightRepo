@@ -2011,16 +2011,10 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     [data-testid="stSidebar"],
-    section[data-testid="stSidebar"] {{
-        display: block !important;
-    }}
-
+    section[data-testid="stSidebar"],
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
+        display: none !important;
     }}
 
     .rr-app-header {{
@@ -2029,14 +2023,69 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-bottom: 1px solid rgba(122, 150, 194, 0.12);
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
-        position: sticky !important;
-        top: 20px !important;
-        align-self: flex-start !important;
-        padding: 4px 0 !important;
+    .rr-drawer-toggle-shell {{
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-drawer-toggle-shell) {{
+        position: fixed !important;
+        top: 18px !important;
+        left: 18px !important;
+        z-index: 3200 !important;
+        width: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-drawer-toggle-shell--open) {{
+        left: 314px !important;
+        top: 22px !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-drawer-toggle-shell) .stButton > button {{
+        min-width: 46px !important;
+        width: 46px !important;
+        min-height: 46px !important;
+        height: 46px !important;
+        padding: 0 !important;
+        border-radius: 16px !important;
+        background: linear-gradient(180deg, rgba(25, 67, 150, 0.98), rgba(18, 46, 102, 0.98)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.18) !important;
+        color: #f8fbff !important;
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        box-shadow: 0 16px 32px rgba(2, 6, 23, 0.28) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-drawer-toggle-shell) .stButton > button:hover {{
+        background: linear-gradient(180deg, rgba(44, 96, 196, 0.98), rgba(23, 57, 122, 0.98)) !important;
+    }}
+
+    div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
+        position: fixed !important;
+        top: 18px !important;
+        left: 18px !important;
+        z-index: 3190 !important;
+        width: 280px !important;
+        max-height: calc(100vh - 36px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 16px 14px !important;
+        margin: 0 !important;
+        background: linear-gradient(180deg, rgba(12, 21, 38, 0.97), rgba(8, 15, 28, 0.985)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.14) !important;
+        border-radius: 26px !important;
+        box-shadow:
+            0 24px 50px rgba(2, 6, 23, 0.34),
+            inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        backdrop-filter: blur(12px) saturate(118%) !important;
     }}
 
     .rr-sidebar-brand--rail {{
@@ -2918,11 +2967,22 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     @media (max-width: 900px) {{
+        div[data-testid="stVerticalBlock"]:has(.rr-drawer-toggle-shell) {{
+            top: 12px !important;
+            left: 12px !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-drawer-toggle-shell--open) {{
+            left: auto !important;
+            right: 12px !important;
+            top: 14px !important;
+        }}
+
         div[data-testid="stVerticalBlock"]:has(.rr-nav-shell) {{
-            position: static !important;
-            margin-bottom: 8px !important;
-            max-height: none !important;
-            overflow: visible !important;
+            top: 12px !important;
+            left: 12px !important;
+            width: min(290px, calc(100vw - 24px)) !important;
+            max-height: calc(100vh - 24px) !important;
         }}
 
         .block-container {{
