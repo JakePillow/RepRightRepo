@@ -3491,32 +3491,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     .rr-app-sidebar-title {{
         font-family: "Manrope", sans-serif;
-        display: inline-block;
-        position: relative;
-        font-size: 31px;
-        font-weight: 900;
-        line-height: 0.98;
-        letter-spacing: -0.045em;
+        font-size: 30px;
+        font-weight: 850;
+        line-height: 1;
+        letter-spacing: -0.04em;
         color: #f8fbff;
-        text-shadow:
-            0 1px 0 rgba(255,255,255,0.06),
-            0 10px 26px rgba(77, 131, 235, 0.10);
-    }}
-
-    .rr-app-sidebar-title::after {{
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: -10px;
-        width: 44px;
-        height: 3px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #79aefe 0%, #4d83eb 100%);
-        opacity: 0.9;
+        text-shadow: 0 8px 20px rgba(77, 131, 235, 0.08);
     }}
 
     .rr-app-sidebar-subtitle {{
-        margin-top: 18px;
+        margin-top: 10px;
         font-size: 13px;
         line-height: 1.6;
         color: #a9bdd9;
