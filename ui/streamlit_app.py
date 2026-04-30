@@ -11,30 +11,50 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from ui.chat_store import list_threads, load_thread, new_thread_id, now_iso, save_thread, thread_title
-import ui.components.panels as panels
-from ui.components.primitives import render_callout, render_restore_status_badge
-from ui.config.tokens import DARK_THEME, TEXT, THEME
-from ui.services import run_analysis_pipeline, run_followup_coaching
-from ui.state import (
-    append_history,
-    bump_chat_upload_nonce,
-    clear_chat_upload_notice,
-    clear_ui_message,
-    initialize_session_state,
-    request_followup_draft_clear,
-    reset_draft_session,
-    reset_group,
-    set_chat_upload_notice,
-    set_ui_busy,
-    set_ui_message,
-)
 try:
+    from .chat_store import list_threads, load_thread, new_thread_id, now_iso, save_thread, thread_title
+    from .components import panels
+    from .components.primitives import render_callout, render_restore_status_badge
+    from .config.tokens import DARK_THEME, TEXT, THEME
+    from .services import run_analysis_pipeline, run_followup_coaching
+    from .state import (
+        append_history,
+        bump_chat_upload_nonce,
+        clear_chat_upload_notice,
+        clear_ui_message,
+        initialize_session_state,
+        request_followup_draft_clear,
+        reset_draft_session,
+        reset_group,
+        set_chat_upload_notice,
+        set_ui_busy,
+        set_ui_message,
+    )
     from .runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
+    from .theme_css import build_global_css
+    from .view_models import resolve_overlay_path
 except Exception:
+    from ui.chat_store import list_threads, load_thread, new_thread_id, now_iso, save_thread, thread_title
+    import ui.components.panels as panels
+    from ui.components.primitives import render_callout, render_restore_status_badge
+    from ui.config.tokens import DARK_THEME, TEXT, THEME
+    from ui.services import run_analysis_pipeline, run_followup_coaching
+    from ui.state import (
+        append_history,
+        bump_chat_upload_nonce,
+        clear_chat_upload_notice,
+        clear_ui_message,
+        initialize_session_state,
+        request_followup_draft_clear,
+        reset_draft_session,
+        reset_group,
+        set_chat_upload_notice,
+        set_ui_busy,
+        set_ui_message,
+    )
     from ui.runtime import coach_runtime_label, demo_banner_text, demo_mode_enabled, openai_key_present
-from ui.theme_css import build_global_css
-from ui.view_models import resolve_overlay_path
+    from ui.theme_css import build_global_css
+    from ui.view_models import resolve_overlay_path
 
 
 def _live_panels_module():
@@ -1246,6 +1266,91 @@ def render_nav_rail() -> None:
                     st.rerun()
 
 
+def render_sidebar_panel() -> None:
+    busy = bool(st.session_state.get("ui_busy"))
+    all_threads = list_threads()
+
+    with st.container():
+        st.markdown('<div class="rr-sidebar-panel-shell"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="rr-sidebar-brand rr-sidebar-brand--rail">
+                <div class="rr-sidebar-brand__mark">RR</div>
+                <div>
+                    <div class="rr-sidebar-brand__name">RepRight</div>
+                    <div class="rr-sidebar-brand__copy">Exercise form review and coaching.</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if st.button(
+            TEXT["sidebar"]["new_chat"],
+            use_container_width=True,
+            disabled=busy,
+            type="primary",
+            key="panel_new_chat",
+            help=TEXT["sidebar"].get("new_chat_help"),
+        ):
+            start_new_chat(st.session_state.get("exercise_choice") or "bench")
+            st.rerun()
+
+        if st.button(
+            TEXT["sidebar"]["clear_chat"],
+            use_container_width=True,
+            disabled=busy or (
+                not st.session_state.get("history")
+                and not st.session_state.get("last_response")
+            ),
+            key="panel_clear_chat",
+            help=TEXT["sidebar"].get("clear_chat_help"),
+        ):
+            reset_group("chat")
+            clear_ui_message()
+            if st.session_state.thread_id:
+                save_thread(st.session_state.thread_id)
+            st.rerun()
+
+        st.markdown(
+            f"""
+            <div class="rr-nav-meta">
+                <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
+                <div class="rr-nav-meta__pill">{'Busy' if busy else 'Ready'}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if demo_mode_enabled():
+            render_callout("info", demo_banner_text())
+
+        if all_threads:
+            st.markdown('<div class="rr-nav-label">Sessions</div>', unsafe_allow_html=True)
+            for thread in all_threads[:8]:
+                tid = thread.get("thread_id")
+                if st.button(
+                    thread.get("title") or tid,
+                    key=f"panel_thread_{tid}",
+                    use_container_width=True,
+                    disabled=busy,
+                ):
+                    load_thread(tid)
+                    st.rerun()
+
+
+def render_sidebar_toggle_button() -> None:
+    with st.container():
+        st.markdown('<div class="rr-sidebar-toggle-shell"></div>', unsafe_allow_html=True)
+        if st.button(
+            "✕" if st.session_state.get("ui_sidebar_open", True) else "☰",
+            key="ui_sidebar_toggle",
+            help="Toggle sidebar",
+        ):
+            st.session_state.ui_sidebar_open = not st.session_state.get("ui_sidebar_open", True)
+            st.rerun()
+
+
 def render_nav_drawer_toggle() -> None:
     is_open = bool(st.session_state.get("nav_drawer_open", True))
     shell_class = "rr-drawer-toggle-shell rr-drawer-toggle-shell--open" if is_open else "rr-drawer-toggle-shell rr-drawer-toggle-shell--closed"
@@ -1385,46 +1490,57 @@ def main() -> None:
         page_title="RepRight",
         page_icon="🏋️",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed",
     )
     initialize_session_state()
+    if "ui_sidebar_open" not in st.session_state:
+        st.session_state.ui_sidebar_open = True
     inject_global_css_modern()
-    render_sidebar()
-    render_page_hero()
+    render_sidebar_toggle_button()
 
-    ui_message = st.session_state.get("ui_message")
-    if isinstance(ui_message, dict) and ui_message.get("text"):
-        render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
+    if st.session_state.get("ui_sidebar_open", True):
+        sidebar_col, main_col = st.columns([0.34, 1.66], gap="large")
+        with sidebar_col:
+            render_sidebar_panel()
+    else:
+        main_col = st.container()
 
-    if demo_mode_enabled():
-        render_callout("info", demo_banner_text())
+    with main_col:
+        render_page_hero()
 
-    has_analysis = bool(st.session_state.get("last_analysis"))
-    centre, right = st.columns([1.66, 1.04], gap="large")
+        ui_message = st.session_state.get("ui_message")
+        if isinstance(ui_message, dict) and ui_message.get("text"):
+            render_callout(ui_message.get("kind", "info"), ui_message.get("text", ""))
 
-    with centre:
-        with st.container():
-            st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
-            render_surface_head(
-                "Replay",
-                "Movement Replay",
-                (
-                    "Replay the set, inspect the overlay, and compare what changed before you move on."
-                    if has_analysis
-                    else "Your analysed replay and overlay appear here as soon as the first upload finishes."
-                ),
-                variant="stage",
-            )
-            overlay_path = resolve_overlay_path(
-                st.session_state.last_payload,
-                st.session_state.last_analysis,
-            )
-            panels.render_overlay_panel(overlay_path)
-            panels.render_stage_analysis_panel()
+        if demo_mode_enabled():
+            render_callout("info", demo_banner_text())
 
-    with right:
-        render_restore_status_badge(st.session_state.get("restore_status"))
-        _render_right_workspace(on_analyze, on_followup)
+        has_analysis = bool(st.session_state.get("last_analysis"))
+        centre, right = st.columns([1.66, 1.04], gap="large")
+
+        with centre:
+            with st.container():
+                st.markdown('<div class="rr-stage-shell"></div>', unsafe_allow_html=True)
+                render_surface_head(
+                    "Replay",
+                    "Movement Replay",
+                    (
+                        "Replay the set, inspect the overlay, and compare what changed before you move on."
+                        if has_analysis
+                        else "Your analysed replay and overlay appear here as soon as the first upload finishes."
+                    ),
+                    variant="stage",
+                )
+                overlay_path = resolve_overlay_path(
+                    st.session_state.last_payload,
+                    st.session_state.last_analysis,
+                )
+                panels.render_overlay_panel(overlay_path)
+                panels.render_stage_analysis_panel()
+
+        with right:
+            render_restore_status_badge(st.session_state.get("restore_status"))
+            _render_right_workspace(on_analyze, on_followup)
 
 
 if __name__ == "__main__":

@@ -3440,50 +3440,93 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         }}
     }}
 
-    /* Final native sidebar guardrail */
+    /* Final separate-div sidebar system */
     [data-testid="stSidebar"],
-    section[data-testid="stSidebar"] {{
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }}
-
+    section[data-testid="stSidebar"],
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+
+    .rr-sidebar-panel-shell,
+    .rr-sidebar-toggle-shell {{
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+
+    .st-key-ui_sidebar_toggle {{
         position: fixed !important;
         top: 18px !important;
-        left: 0 !important;
+        left: 18px !important;
         z-index: 4000 !important;
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        width: auto !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
         overflow: visible !important;
     }}
 
-    [data-testid="collapsedControl"] > button,
-    [data-testid="stSidebarCollapsedControl"] > button {{
+    .st-key-ui_sidebar_toggle .stButton {{
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+
+    .st-key-ui_sidebar_toggle .stButton > button {{
         min-width: 46px !important;
+        width: 46px !important;
         min-height: 46px !important;
-        padding: 0 12px !important;
-        border-radius: 0 16px 16px 0 !important;
+        height: 46px !important;
+        padding: 0 !important;
+        border-radius: 16px !important;
         background: linear-gradient(180deg, rgba(25, 67, 150, 0.98), rgba(18, 46, 102, 0.98)) !important;
         border: 1px solid rgba(122, 150, 194, 0.18) !important;
         color: #f8fbff !important;
+        font-size: 20px !important;
+        font-weight: 800 !important;
         box-shadow: 0 16px 32px rgba(2, 6, 23, 0.28) !important;
     }}
 
-    [data-testid="collapsedControl"] > button:hover,
-    [data-testid="stSidebarCollapsedControl"] > button:hover {{
+    .st-key-ui_sidebar_toggle .stButton > button:hover {{
         background: linear-gradient(180deg, rgba(44, 96, 196, 0.98), rgba(23, 57, 122, 0.98)) !important;
     }}
 
+    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) {{
+        position: sticky !important;
+        top: 18px !important;
+        align-self: flex-start !important;
+        width: 100% !important;
+        max-height: calc(100vh - 36px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 16px 14px !important;
+        margin: 0 !important;
+        background: linear-gradient(180deg, rgba(12, 21, 38, 0.97), rgba(8, 15, 28, 0.985)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.14) !important;
+        border-radius: 26px !important;
+        box-shadow:
+            0 24px 50px rgba(2, 6, 23, 0.34),
+            inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        backdrop-filter: blur(12px) saturate(118%) !important;
+    }}
+
     @media (max-width: 900px) {{
-        [data-testid="collapsedControl"],
-        [data-testid="stSidebarCollapsedControl"] {{
+        .st-key-ui_sidebar_toggle {{
             top: 12px !important;
+            left: 12px !important;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) {{
+            position: static !important;
+            top: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            margin-bottom: 10px !important;
         }}
     }}
     </style>
