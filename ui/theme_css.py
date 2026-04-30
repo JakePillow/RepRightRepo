@@ -3440,7 +3440,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         }}
     }}
 
-    /* Final separate-div sidebar system */
+    /* Final desktop rail sidebar system */
     [data-testid="stSidebar"],
     section[data-testid="stSidebar"],
     [data-testid="collapsedControl"],
@@ -3451,8 +3451,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
-    .rr-sidebar-panel-shell,
-    .rr-sidebar-collapsed-shell {{
+    .rr-app-sidebar-shell {{
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
@@ -3460,75 +3459,58 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
-    div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-panel-shell) > div:first-child {{
-        min-width: 250px !important;
-        max-width: 300px !important;
-        flex: 0 0 clamp(250px, 18vw, 300px) !important;
+    div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell) > div:first-child {{
+        min-width: 258px !important;
+        max-width: 286px !important;
+        flex: 0 0 272px !important;
     }}
 
-    div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-collapsed-shell) > div:first-child {{
-        min-width: 72px !important;
-        max-width: 88px !important;
-        flex: 0 0 80px !important;
-    }}
-
-    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) {{
+    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) {{
         position: sticky !important;
-        top: 18px !important;
+        top: 14px !important;
         align-self: flex-start !important;
         width: 100% !important;
-        max-height: calc(100vh - 36px) !important;
+        height: calc(100vh - 28px) !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
-        padding: 18px 16px 16px !important;
+        padding: 18px 16px 18px !important;
         margin: 0 !important;
-        background: linear-gradient(180deg, rgba(11, 19, 34, 0.98), rgba(8, 14, 25, 0.985)) !important;
-        border: 1px solid rgba(122, 150, 194, 0.14) !important;
-        border-radius: 24px !important;
+        background: linear-gradient(180deg, rgba(10, 18, 31, 0.985), rgba(7, 13, 23, 0.992)) !important;
+        border: 1px solid rgba(122, 150, 194, 0.10) !important;
+        border-radius: 20px !important;
         box-shadow:
-            0 22px 48px rgba(2, 6, 23, 0.30),
+            0 20px 44px rgba(2, 6, 23, 0.24),
             inset 0 1px 0 rgba(255,255,255,0.04) !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-collapsed-shell) {{
-        position: sticky !important;
-        top: 18px !important;
-        align-self: flex-start !important;
-        width: 100% !important;
-        padding: 10px 0 !important;
-        margin: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        overflow: visible !important;
+    .rr-app-sidebar-head {{
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid rgba(122, 150, 194, 0.10);
     }}
 
-    .rr-sidebar-panel-head {{
-        margin-bottom: 14px;
-    }}
-
-    .rr-sidebar-panel-title {{
+    .rr-app-sidebar-title {{
         font-family: "Manrope", sans-serif;
-        font-size: 30px;
+        font-size: 28px;
         font-weight: 800;
         line-height: 1;
         letter-spacing: -0.03em;
         color: #f8fbff;
     }}
 
-    .rr-sidebar-panel-subtitle {{
-        margin-top: 8px;
+    .rr-app-sidebar-subtitle {{
+        margin-top: 10px;
         font-size: 13px;
-        line-height: 1.55;
-        color: #9eb3d1;
+        line-height: 1.6;
+        color: #a9bdd9;
     }}
 
-    .rr-sidebar-panel-meta {{
-        margin: 12px 0 18px;
+    .rr-app-sidebar-meta {{
+        margin: 6px 0 18px;
     }}
 
-    .rr-sidebar-section-label {{
-        margin: 6px 0 10px;
+    .rr-app-sidebar-section-label {{
+        margin: 8px 0 12px;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.12em;
@@ -3536,7 +3518,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         color: #9bb0ce;
     }}
 
-    .rr-sidebar-empty {{
+    .rr-app-sidebar-empty {{
         padding: 12px 14px;
         border-radius: 16px;
         background: rgba(13, 22, 39, 0.68);
@@ -3546,25 +3528,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         line-height: 1.55;
     }}
 
-    .rr-sidebar-collapsed-head {{
-        margin-bottom: 10px;
-        text-align: center;
-    }}
-
-    .rr-sidebar-collapsed-label {{
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.10em;
-        text-transform: uppercase;
-        color: #9fb6d8;
-    }}
-
-    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton {{
+    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton {{
         margin-bottom: 10px !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton > button {{
-        min-height: 44px !important;
+    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton > button {{
+        min-height: 46px !important;
         border-radius: 16px !important;
         justify-content: flex-start !important;
         text-align: left !important;
@@ -3576,13 +3545,13 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: none !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton > button:hover {{
+    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton > button:hover {{
         background: rgba(18, 31, 55, 0.84) !important;
         border-color: rgba(122, 150, 194, 0.18) !important;
     }}
 
-    div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell) .stButton > button[kind="primary"] {{
-        min-height: 50px !important;
+    div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) .stButton > button[kind="primary"] {{
+        min-height: 52px !important;
         justify-content: center !important;
         text-align: center !important;
         background: linear-gradient(135deg, #79aefe 0%, #5d95fb 50%, #4d83eb 100%) !important;
@@ -3591,40 +3560,17 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: 0 14px 30px rgba(40, 84, 175, 0.22) !important;
     }}
 
-    .st-key-ui_sidebar_toggle_open .stButton > button,
-    .st-key-ui_sidebar_toggle_closed .stButton > button {{
-        min-height: 44px !important;
-        height: 44px !important;
-        padding: 0 !important;
-        border-radius: 14px !important;
-        justify-content: center !important;
-        text-align: center !important;
-        background: rgba(13, 22, 39, 0.84) !important;
-        border: 1px solid rgba(122, 150, 194, 0.16) !important;
-        color: #eff5ff !important;
-        font-size: 18px !important;
-        font-weight: 800 !important;
-    }}
-
-    .st-key-ui_sidebar_toggle_open .stButton > button:hover,
-    .st-key-ui_sidebar_toggle_closed .stButton > button:hover {{
-        background: rgba(20, 35, 62, 0.92) !important;
-        border-color: rgba(122, 150, 194, 0.22) !important;
-    }}
-
     @media (max-width: 900px) {{
-        div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-panel-shell) > div:first-child,
-        div[data-testid="stHorizontalBlock"]:has(.rr-sidebar-collapsed-shell) > div:first-child {{
+        div[data-testid="stHorizontalBlock"]:has(.rr-app-sidebar-shell) > div:first-child {{
             min-width: 0 !important;
             max-width: none !important;
             flex: 1 1 auto !important;
         }}
 
-        div[data-testid="stVerticalBlock"]:has(.rr-sidebar-panel-shell),
-        div[data-testid="stVerticalBlock"]:has(.rr-sidebar-collapsed-shell) {{
+        div[data-testid="stVerticalBlock"]:has(.rr-app-sidebar-shell) {{
             position: static !important;
             top: auto !important;
-            max-height: none !important;
+            height: auto !important;
             overflow: visible !important;
             margin-bottom: 10px !important;
         }}

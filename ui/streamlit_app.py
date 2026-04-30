@@ -1266,27 +1266,21 @@ def render_nav_rail() -> None:
                     st.rerun()
 
 
-def render_sidebar_panel() -> None:
+def render_app_sidebar() -> None:
     busy = bool(st.session_state.get("ui_busy"))
     all_threads = list_threads()
 
     with st.container():
-        st.markdown('<div class="rr-sidebar-panel-shell"></div>', unsafe_allow_html=True)
-        head_col, toggle_col = st.columns([1, 0.18], gap="small")
-        with head_col:
-            st.markdown(
-                f"""
-                <div class="rr-sidebar-panel-head">
-                    <div class="rr-sidebar-panel-title">RepRight</div>
-                    <div class="rr-sidebar-panel-subtitle">New chat and saved sessions.</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with toggle_col:
-            if st.button("✕", key="ui_sidebar_toggle_open", help="Collapse sidebar", use_container_width=True):
-                st.session_state.ui_sidebar_open = False
-                st.rerun()
+        st.markdown('<div class="rr-app-sidebar-shell"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="rr-app-sidebar-head">
+                <div class="rr-app-sidebar-title">RepRight</div>
+                <div class="rr-app-sidebar-subtitle">New chat and saved sessions.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         if st.button(
             TEXT["sidebar"]["new_chat"],
@@ -1301,14 +1295,14 @@ def render_sidebar_panel() -> None:
 
         st.markdown(
             f"""
-            <div class="rr-sidebar-panel-meta">
+            <div class="rr-app-sidebar-meta">
                 <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        st.markdown('<div class="rr-sidebar-section-label">Past sessions</div>', unsafe_allow_html=True)
+        st.markdown('<div class="rr-app-sidebar-section-label">Past sessions</div>', unsafe_allow_html=True)
         if all_threads:
             for thread in all_threads[:12]:
                 tid = thread.get("thread_id")
@@ -1322,7 +1316,7 @@ def render_sidebar_panel() -> None:
                     st.rerun()
         else:
             st.markdown(
-                '<div class="rr-sidebar-empty">No saved sessions yet.</div>',
+                '<div class="rr-app-sidebar-empty">No saved sessions yet.</div>',
                 unsafe_allow_html=True,
             )
 
@@ -1490,17 +1484,10 @@ def main() -> None:
         initial_sidebar_state="collapsed",
     )
     initialize_session_state()
-    if "ui_sidebar_open" not in st.session_state:
-        st.session_state.ui_sidebar_open = True
     inject_global_css_modern()
-    if st.session_state.get("ui_sidebar_open", True):
-        sidebar_col, main_col = st.columns([0.24, 1.76], gap="large")
-        with sidebar_col:
-            render_sidebar_panel()
-    else:
-        sidebar_col, main_col = st.columns([0.08, 1.92], gap="large")
-        with sidebar_col:
-            render_sidebar_toggle_button()
+    sidebar_col, main_col = st.columns([0.22, 1.78], gap="large")
+    with sidebar_col:
+        render_app_sidebar()
 
     with main_col:
         render_page_hero()
