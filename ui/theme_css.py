@@ -2011,10 +2011,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     [data-testid="stSidebar"],
-    section[data-testid="stSidebar"],
+    section[data-testid="stSidebar"] {{
+        display: block !important;
+    }}
+
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        display: none !important;
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }}
 
     .rr-app-header {{
