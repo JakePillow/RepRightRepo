@@ -1385,16 +1385,11 @@ def main() -> None:
         page_title="RepRight",
         page_icon="🏋️",
         layout="wide",
-        initial_sidebar_state="collapsed",
+        initial_sidebar_state="expanded",
     )
     initialize_session_state()
-    if "nav_drawer_open" not in st.session_state:
-        st.session_state.nav_drawer_open = True
     inject_global_css_modern()
-    render_nav_state_marker()
-    render_nav_drawer_toggle()
-    if st.session_state.get("nav_drawer_open", True):
-        render_nav_rail()
+    render_sidebar()
     render_page_hero()
 
     ui_message = st.session_state.get("ui_message")
