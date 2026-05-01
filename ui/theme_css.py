@@ -2466,8 +2466,9 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     /* ChatGPT-like shell pass: use the canvas, slim the rail, and keep the experience calmer */
     .block-container {{
-        width: calc(100vw - 12px) !important;
+        width: 100% !important;
         max-width: none !important;
+        box-sizing: border-box !important;
         padding-top: 14px !important;
         padding-left: 8px !important;
         padding-right: 8px !important;
@@ -3549,24 +3550,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        position: fixed !important;
-        top: max(74px, env(safe-area-inset-top)) !important;
-        left: 0 !important;
-        right: auto !important;
-        bottom: auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        z-index: 2147483647 !important;
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        height: auto !important;
-        overflow: visible !important;
-        transform: none !important;
+        display: none !important;
     }}
 
     [data-testid="collapsedControl"] > button,
