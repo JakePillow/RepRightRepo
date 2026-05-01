@@ -3433,6 +3433,19 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         margin-left: 0 !important;
     }}
 
+    [data-testid="stSidebar"][aria-expanded="true"] {{
+        width: 272px !important;
+        min-width: 272px !important;
+        max-width: 272px !important;
+    }}
+
+    [data-testid="stSidebar"][aria-expanded="true"] > div,
+    [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {{
+        width: 272px !important;
+        min-width: 272px !important;
+        max-width: 272px !important;
+    }}
+
     section[data-testid="stSidebar"][aria-expanded="false"] {{
         min-width: 0 !important;
         max-width: 0 !important;
@@ -3463,7 +3476,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     [data-testid="stSidebarContent"] {{
-        padding: 14px 12px 14px !important;
+        padding: 18px 14px 18px !important;
         transition: opacity 140ms ease !important;
     }}
 
@@ -3493,8 +3506,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-app-sidebar-head {{
-        margin-bottom: 18px;
-        padding-bottom: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
         border-bottom: 1px solid rgba(122, 150, 194, 0.10);
     }}
 
@@ -3509,18 +3522,18 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-app-sidebar-subtitle {{
-        margin-top: 10px;
+        margin-top: 12px;
         font-size: 13px;
-        line-height: 1.6;
+        line-height: 1.7;
         color: #a9bdd9;
     }}
 
     .rr-app-sidebar-meta {{
-        margin: 6px 0 18px;
+        margin: 8px 0 18px;
     }}
 
     .rr-app-sidebar-section-label {{
-        margin: 8px 0 12px;
+        margin: 10px 0 12px;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.12em;
@@ -3529,7 +3542,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     .rr-app-sidebar-empty {{
-        padding: 12px 14px;
+        padding: 14px 16px;
         border-radius: 16px;
         background: rgba(13, 22, 39, 0.68);
         border: 1px solid rgba(122, 150, 194, 0.10);
@@ -3539,7 +3552,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     section[data-testid="stSidebar"] .stButton {{
-        margin-bottom: 10px !important;
+        margin-bottom: 12px !important;
     }}
 
     section[data-testid="stSidebar"] .stButton > button {{
