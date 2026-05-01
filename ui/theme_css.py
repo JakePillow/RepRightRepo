@@ -3449,6 +3449,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         overflow: visible !important;
     }}
 
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        visibility: visible !important;
+        opacity: 1 !important;
+    }}
+
     section[data-testid="stSidebar"] > div {{
         background: transparent !important;
     }}
