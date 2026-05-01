@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import base64
+from functools import lru_cache
+from pathlib import Path
 from textwrap import dedent
 from typing import Callable
 
 import streamlit as st
+
+ICON_DIR = Path(__file__).resolve().parent / "icons"
 
 
 def render_section(enabled: bool, body: Callable[[], None]) -> None:
@@ -21,6 +26,21 @@ def _render_html(markup: str) -> None:
 
 def _render_markdown_html(markup: str) -> None:
     st.markdown(dedent(markup).strip(), unsafe_allow_html=True)
+
+
+@lru_cache(maxsize=None)
+def icon_data_uri(filename: str) -> str:
+    path = ICON_DIR / filename
+    raw = path.read_bytes()
+    encoded = base64.b64encode(raw).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
+
+def icon_img_markup(filename: str, *, alt: str = "", classes: str = "rr-inline-icon") -> str:
+    return (
+        f'<img src="{icon_data_uri(filename)}" alt="{alt}" '
+        f'class="{classes}" draggable="false" />'
+    )
 
 
 def lift_loop_markup(*, compact: bool = False) -> str:
@@ -104,7 +124,9 @@ def render_empty_state_results() -> None:
     _render_html(
         f"""
         <div class="rr-empty-card rr-empty-card--results">
-            <div class="rr-empty-card__icon rr-empty-card__icon--large">&#127947;</div>
+            <div class="rr-empty-card__icon rr-empty-card__icon--large rr-empty-card__icon--image">
+                {icon_img_markup("weightlifting.png", alt="Weightlifting icon", classes="rr-empty-state-icon")}
+            </div>
             <div class="rr-empty-card__title">{t["empty_title"]}</div>
             <div class="rr-empty-card__body">{t["empty_body"]}</div>
         </div>

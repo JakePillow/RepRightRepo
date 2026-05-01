@@ -1480,7 +1480,7 @@ def on_followup(follow_up, load_kg) -> None:
 def main() -> None:
     st.set_page_config(
         page_title="RepRight",
-        page_icon="🏋️",
+        page_icon=str(ROOT / "ui" / "components" / "icons" / "weightlifting.png"),
         layout="wide",
         initial_sidebar_state="expanded",
     )

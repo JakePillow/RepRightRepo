@@ -9,15 +9,30 @@ from pathlib import Path
 import streamlit as st
 from ui.components.primitives import (
     render_callout, render_empty_state, render_empty_state_results,
-    render_quality_badge,
+    render_quality_badge, icon_img_markup,
 )
-from ui.config.tokens import EMPTY_STATES, EXERCISES, EXERCISE_ICONS, TEXT
+from ui.config.tokens import EMPTY_STATES, EXERCISES, EXERCISE_ICON_FILES, TEXT
 from ui.view_models import (
     artifact_analysis_json_path, comparison_view_model, quality_view_model, summary_metrics, top_fault_rows,
 )
 
 AnalyzeCallback  = Callable[[str, float | None, object, str], None]
 FollowupCallback = Callable[[str, float], None]
+
+
+def _exercise_icon_label_markup(exercise: str) -> str:
+    exercise_key = str(exercise).lower()
+    filename = EXERCISE_ICON_FILES.get(exercise_key)
+    icon = icon_img_markup(
+        filename,
+        alt=f"{exercise_key} icon",
+        classes="rr-inline-icon rr-inline-icon--exercise",
+    ) if filename else ""
+    label = str(exercise_key).capitalize()
+    return (
+        f'<div class="rr-select-icon-label">'
+        f'{icon}<span class="rr-select-icon-label__text">{label}</span></div>'
+    )
 
 
 def _format_response_text_safe(response: dict | None, payload: dict | None) -> str:
@@ -41,15 +56,22 @@ def render_analysis_controls(on_analyze: AnalyzeCallback) -> None:
 
     if exercise_locked:
         locked_val = analysis.get("exercise", EXERCISES[0])
-        icon = EXERCISE_ICONS.get(locked_val, "")
+        st.markdown(_exercise_icon_label_markup(str(locked_val)), unsafe_allow_html=True)
         st.selectbox(TEXT["inputs"]["exercise"],
-                     [f"{icon} {locked_val.capitalize()}"], disabled=True)
+                     [str(locked_val).capitalize()], disabled=True, label_visibility="collapsed")
         exercise = locked_val
     else:
-        labels    = [f"{EXERCISE_ICONS.get(e,'')} {e.capitalize()}" for e in EXERCISES]
+        labels    = [e.capitalize() for e in EXERCISES]
         label_map = dict(zip(labels, EXERCISES))
+        current_label_widget = st.session_state.get("exercise_choice_label")
+        current_exercise = (
+            label_map.get(current_label_widget)
+            if isinstance(current_label_widget, str)
+            else None
+        ) or st.session_state.get("exercise_choice") or EXERCISES[0]
+        st.markdown(_exercise_icon_label_markup(str(current_exercise)), unsafe_allow_html=True)
         chosen    = st.selectbox(TEXT["inputs"]["exercise"], labels,
-                                 key="exercise_choice_label", disabled=busy)
+                                 key="exercise_choice_label", disabled=busy, label_visibility="collapsed")
         exercise  = label_map[chosen]
         st.session_state.exercise_choice = exercise
 
@@ -567,18 +589,25 @@ def _render_coach_composer(
         with exercise_col:
             if exercise_locked:
                 locked_val = (st.session_state.get("last_analysis") or {}).get("exercise", EXERCISES[0])
-                icon = EXERCISE_ICONS.get(locked_val, "")
+                st.markdown(_exercise_icon_label_markup(str(locked_val)), unsafe_allow_html=True)
                 st.selectbox(
                     TEXT["inputs"]["exercise"],
-                    [f"{icon} {str(locked_val).capitalize()}"],
+                    [str(locked_val).capitalize()],
                     disabled=True,
                     key="coach_locked_exercise",
+                    label_visibility="collapsed",
                 )
                 exercise = str(locked_val)
             else:
-                labels = [f"{EXERCISE_ICONS.get(e, '')} {e.capitalize()}" for e in EXERCISES]
+                labels = [e.capitalize() for e in EXERCISES]
                 label_map = dict(zip(labels, EXERCISES))
-                current_exercise = st.session_state.get("exercise_choice") or EXERCISES[0]
+                current_label_widget = st.session_state.get("coach_exercise_choice_label")
+                current_exercise = (
+                    label_map.get(current_label_widget)
+                    if isinstance(current_label_widget, str)
+                    else None
+                ) or st.session_state.get("exercise_choice") or EXERCISES[0]
+                st.markdown(_exercise_icon_label_markup(str(current_exercise)), unsafe_allow_html=True)
                 current_label = next(
                     (label for label, value in label_map.items() if value == current_exercise),
                     labels[0],
@@ -589,6 +618,7 @@ def _render_coach_composer(
                     key="coach_exercise_choice_label",
                     disabled=busy,
                     index=labels.index(current_label),
+                    label_visibility="collapsed",
                 )
                 exercise = label_map[selected]
                 st.session_state.exercise_choice = exercise

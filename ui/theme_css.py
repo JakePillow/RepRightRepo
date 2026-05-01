@@ -3553,6 +3553,48 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         line-height: 1.55;
     }}
 
+    .rr-inline-icon {{
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+        vertical-align: middle;
+        flex-shrink: 0;
+    }}
+
+    .rr-inline-icon--exercise {{
+        width: 20px;
+        height: 20px;
+    }}
+
+    .rr-select-icon-label {{
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 8px;
+        color: #eaf2ff;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.2;
+    }}
+
+    .rr-select-icon-label__text {{
+        color: #eaf2ff;
+    }}
+
+    .rr-empty-card__icon--image {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+
+    .rr-empty-state-icon {{
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+        display: block;
+    }}
+
     section[data-testid="stSidebar"] .stButton {{
         margin-bottom: 12px !important;
     }}

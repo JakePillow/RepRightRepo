@@ -3,10 +3,17 @@ from __future__ import annotations
 EXERCISES = ["bench", "deadlift", "squat", "curl"]
 
 EXERCISE_ICONS = {
-    "bench": "\U0001F3CB\uFE0F",
-    "deadlift": "\u2191",
-    "squat": "\u25BE",
-    "curl": "\U0001F4AA",
+    "bench": "",
+    "deadlift": "",
+    "squat": "",
+    "curl": "",
+}
+
+EXERCISE_ICON_FILES = {
+    "bench": "Bench.png",
+    "deadlift": "deadlift.png",
+    "squat": "Squat.png",
+    "curl": "bicep.png",
 }
 
 PAGE = {
