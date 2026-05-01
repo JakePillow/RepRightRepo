@@ -3467,6 +3467,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         max-width: 0 !important;
         border-right: none !important;
         box-shadow: none !important;
+        overflow: visible !important;
     }}
 
     section[data-testid="stSidebar"] > div {{
@@ -3578,20 +3579,39 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
+        position: fixed !important;
+        top: 18px !important;
+        left: 8px !important;
+        right: auto !important;
+        bottom: auto !important;
         display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-        z-index: 1000 !important;
+        z-index: 2147483647 !important;
+        width: 46px !important;
+        min-width: 46px !important;
+        max-width: 46px !important;
+        height: 46px !important;
+        overflow: visible !important;
+        transform: none !important;
     }}
 
     [data-testid="collapsedControl"] > button,
     [data-testid="stSidebarCollapsedControl"] > button {{
+        min-width: 46px !important;
+        width: 46px !important;
+        min-height: 46px !important;
+        height: 46px !important;
+        padding: 0 !important;
         background: linear-gradient(180deg, rgba(25, 67, 150, 0.96), rgba(18, 46, 102, 0.98)) !important;
         color: #f8fbff !important;
         border: 1px solid rgba(122, 150, 194, 0.18) !important;
         border-radius: 0 14px 14px 0 !important;
         box-shadow: 0 12px 24px rgba(2, 6, 23, 0.22) !important;
+        margin: 0 !important;
     }}
 
     @media (max-width: 900px) {{
