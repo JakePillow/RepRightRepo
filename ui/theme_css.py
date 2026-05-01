@@ -2466,8 +2466,10 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     /* ChatGPT-like shell pass: use the canvas, slim the rail, and keep the experience calmer */
     .block-container {{
-        width: calc(100vw - 12px) !important;
+        width: calc(100% - 300px) !important;
+        margin-left: 300px !important;
         max-width: none !important;
+        box-sizing: border-box !important;
         padding-top: 14px !important;
         padding-left: 8px !important;
         padding-right: 8px !important;
@@ -3449,6 +3451,20 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         overflow: visible !important;
     }}
 
+    section[data-testid="stSidebar"] {{
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+        transform: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 400 !important;
+    }}
+
     section[data-testid="stSidebar"] > div {{
         background: transparent !important;
     }}
@@ -3549,24 +3565,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
-        position: fixed !important;
-        top: max(74px, env(safe-area-inset-top)) !important;
-        left: 0 !important;
-        right: auto !important;
-        bottom: auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        z-index: 2147483647 !important;
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        height: auto !important;
-        overflow: visible !important;
-        transform: none !important;
+        display: none !important;
     }}
 
     [data-testid="collapsedControl"] > button,
