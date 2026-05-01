@@ -1068,14 +1068,66 @@ def inject_sidebar_collapse_bridge() -> None:
         <script>
         (function () {
           const doc = window.parent && window.parent.document ? window.parent.document : document;
+          const BTN_ID = 'rr-sidebar-reopen-button';
+
+          const ensureButton = () => {
+            let btn = doc.getElementById(BTN_ID);
+            if (!btn) {
+              btn = doc.createElement('button');
+              btn.id = BTN_ID;
+              btn.type = 'button';
+              btn.setAttribute('aria-label', 'Open sidebar');
+              btn.textContent = '☰';
+              Object.assign(btn.style, {
+                position: 'fixed',
+                top: '12px',
+                left: '12px',
+                width: '56px',
+                height: '56px',
+                borderRadius: '18px',
+                border: '1px solid rgba(122,150,194,0.18)',
+                background: 'linear-gradient(180deg, rgba(25, 67, 150, 0.96), rgba(18, 46, 102, 0.98))',
+                color: '#f8fbff',
+                boxShadow: '0 12px 24px rgba(2, 6, 23, 0.22)',
+                zIndex: '2147483647',
+                cursor: 'pointer',
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                fontWeight: '700',
+                lineHeight: '1',
+                padding: '0',
+              });
+              btn.addEventListener('click', () => {
+                const nativeBtn =
+                  doc.querySelector('[data-testid="collapsedControl"] > button') ||
+                  doc.querySelector('[data-testid="stSidebarCollapsedControl"] > button');
+                if (nativeBtn) {
+                  nativeBtn.click();
+                }
+              });
+              doc.body.appendChild(btn);
+            }
+            return btn;
+          };
+
           const sync = () => {
             const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
             const toggleWrap = doc.querySelector('[data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"]');
-            if (!sidebar || !toggleWrap) return;
+            const btn = ensureButton();
+            if (!sidebar) return;
 
-            toggleWrap.style.left = '0px';
-            toggleWrap.style.top = 'max(74px, env(safe-area-inset-top))';
-            toggleWrap.style.zIndex = '2147483647';
+            const expanded = sidebar.getAttribute('aria-expanded') === 'true';
+            btn.style.display = expanded ? 'none' : 'flex';
+
+            if (toggleWrap) {
+              toggleWrap.style.position = 'fixed';
+              toggleWrap.style.left = '-9999px';
+              toggleWrap.style.top = '0';
+              toggleWrap.style.opacity = '0';
+              toggleWrap.style.pointerEvents = 'none';
+            }
           };
 
           sync();
@@ -1514,6 +1566,7 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
+    inject_sidebar_collapse_bridge()
     render_app_sidebar()
     render_page_hero()
 
