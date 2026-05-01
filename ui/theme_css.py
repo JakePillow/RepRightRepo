@@ -3479,6 +3479,22 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         max-width: 0 !important;
     }}
 
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        min-width: 300px !important;
+        width: 300px !important;
+        max-width: 300px !important;
+        transform: translateX(-100%) !important;
+        overflow: hidden !important;
+    }}
+
     section[data-testid="stSidebar"] > div {{
         background: transparent !important;
     }}
