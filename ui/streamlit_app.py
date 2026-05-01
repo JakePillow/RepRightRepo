@@ -1091,6 +1091,8 @@ def inject_sidebar_collapse_bridge() -> None:
                 boxShadow: '0 12px 24px rgba(2, 6, 23, 0.22)',
                 zIndex: '2147483647',
                 cursor: 'pointer',
+                pointerEvents: 'auto',
+                userSelect: 'none',
                 display: 'none',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1099,13 +1101,33 @@ def inject_sidebar_collapse_bridge() -> None:
                 lineHeight: '1',
                 padding: '0',
               });
-              btn.addEventListener('click', () => {
+              const fireNativeToggle = () => {
+                const nativeWrap =
+                  doc.querySelector('[data-testid="collapsedControl"]') ||
+                  doc.querySelector('[data-testid="stSidebarCollapsedControl"]');
                 const nativeBtn =
                   doc.querySelector('[data-testid="collapsedControl"] > button') ||
                   doc.querySelector('[data-testid="stSidebarCollapsedControl"] > button');
-                if (nativeBtn) {
-                  nativeBtn.click();
-                }
+                const target = nativeBtn || nativeWrap;
+                if (!target) return;
+                const events = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'];
+                events.forEach((type) => {
+                  try {
+                    target.dispatchEvent(new MouseEvent(type, {
+                      view: window.parent || window,
+                      bubbles: true,
+                      cancelable: true,
+                      composed: true,
+                    }));
+                  } catch (e) {}
+                });
+                try {
+                  target.click();
+                } catch (e) {}
+              };
+              btn.addEventListener('click', () => {
+                fireNativeToggle();
+                setTimeout(fireNativeToggle, 30);
               });
               doc.body.appendChild(btn);
             }
