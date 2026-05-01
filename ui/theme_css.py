@@ -3440,19 +3440,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         }}
     }}
 
-    /* Final desktop rail sidebar system */
-    [data-testid="stSidebar"],
-    section[data-testid="stSidebar"],
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapsedControl"] {{
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}
-
-    .rr-app-sidebar-shell,
-    .rr-app-workspace-shell {{
+    /* Final native sidebar rail */
+    .rr-native-sidebar-shell {{
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
@@ -3460,36 +3449,39 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: none !important;
     }}
 
-    .block-container {{
-        padding-left: 314px !important;
+    section[data-testid="stSidebar"] {{
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 282px !important;
+        min-width: 282px !important;
+        max-width: 282px !important;
+        background: linear-gradient(180deg, rgba(10, 18, 31, 0.995), rgba(7, 13, 23, 0.997)) !important;
+        border-right: 1px solid rgba(122, 150, 194, 0.10) !important;
+        box-shadow: inset -1px 0 0 rgba(255,255,255,0.03) !important;
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) {{
-        position: fixed !important;
-        top: 14px !important;
-        left: 12px !important;
-        bottom: 14px !important;
-        width: 272px !important;
-        min-height: 0 !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        padding: 18px 16px 18px !important;
-        margin: 0 !important;
-        background: linear-gradient(180deg, rgba(10, 18, 31, 0.985), rgba(7, 13, 23, 0.992)) !important;
-        border: 1px solid rgba(122, 150, 194, 0.10) !important;
-        border-radius: 20px !important;
-        box-shadow:
-            0 20px 44px rgba(2, 6, 23, 0.24),
-            inset 0 1px 0 rgba(255,255,255,0.04) !important;
-        z-index: 20 !important;
+    section[data-testid="stSidebar"] > div {{
+        width: 282px !important;
+        min-width: 282px !important;
+        max-width: 282px !important;
+        background: transparent !important;
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-workspace-shell) {{
-        min-width: 0 !important;
-        width: 100% !important;
+    [data-testid="stSidebarContent"] {{
+        padding: 14px 12px 14px !important;
+    }}
+
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {{
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
+        gap: 0 !important;
     }}
 
     .rr-app-sidebar-head {{
@@ -3538,11 +3530,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         line-height: 1.55;
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton {{
+    section[data-testid="stSidebar"] .stButton {{
         margin-bottom: 10px !important;
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton > button {{
+    section[data-testid="stSidebar"] .stButton > button {{
         min-height: 46px !important;
         border-radius: 16px !important;
         justify-content: flex-start !important;
@@ -3555,12 +3547,12 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: none !important;
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton > button:hover {{
+    section[data-testid="stSidebar"] .stButton > button:hover {{
         background: rgba(18, 31, 55, 0.84) !important;
         border-color: rgba(122, 150, 194, 0.18) !important;
     }}
 
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) .stButton > button[kind="primary"] {{
+    section[data-testid="stSidebar"] .stButton > button[kind="primary"] {{
         min-height: 52px !important;
         justify-content: center !important;
         text-align: center !important;
@@ -3570,19 +3562,22 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: 0 14px 30px rgba(40, 84, 175, 0.22) !important;
     }}
 
-    @media (max-width: 900px) {{
-        .block-container {{
-            padding-left: 16px !important;
+    @media (min-width: 901px) {{
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {{
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }}
+    }}
 
-        div[data-testid="stVerticalBlockBorderWrapper"]:has(.rr-app-sidebar-shell) {{
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            bottom: auto !important;
+    @media (max-width: 900px) {{
+        section[data-testid="stSidebar"],
+        section[data-testid="stSidebar"] > div {{
             width: 100% !important;
-            overflow: visible !important;
-            margin-bottom: 10px !important;
+            min-width: 0 !important;
+            max-width: none !important;
         }}
     }}
     </style>

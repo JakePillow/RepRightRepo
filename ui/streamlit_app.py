@@ -1270,8 +1270,8 @@ def render_app_sidebar() -> None:
     busy = bool(st.session_state.get("ui_busy"))
     all_threads = list_threads()
 
-    with st.container(border=True):
-        st.markdown('<div class="rr-app-sidebar-shell"></div>', unsafe_allow_html=True)
+    with st.sidebar:
+        st.markdown('<div class="rr-native-sidebar-shell"></div>', unsafe_allow_html=True)
         st.markdown(
             """
             <div class="rr-app-sidebar-head">
@@ -1287,7 +1287,7 @@ def render_app_sidebar() -> None:
             use_container_width=True,
             disabled=busy,
             type="primary",
-            key="panel_new_chat",
+            key="sidebar_new_chat",
             help=TEXT["sidebar"].get("new_chat_help"),
         ):
             start_new_chat(st.session_state.get("exercise_choice") or "bench")
@@ -1308,7 +1308,7 @@ def render_app_sidebar() -> None:
                 tid = thread.get("thread_id")
                 if st.button(
                     thread.get("title") or tid,
-                    key=f"panel_thread_{tid}",
+                    key=f"sidebar_thread_{tid}",
                     use_container_width=True,
                     disabled=busy,
                 ):
@@ -1481,12 +1481,11 @@ def main() -> None:
         page_title="RepRight",
         page_icon="🏋️",
         layout="wide",
-        initial_sidebar_state="collapsed",
+        initial_sidebar_state="expanded",
     )
     initialize_session_state()
     inject_global_css_modern()
     render_app_sidebar()
-    st.markdown('<div class="rr-app-workspace-shell"></div>', unsafe_allow_html=True)
     render_page_hero()
 
     ui_message = st.session_state.get("ui_message")
