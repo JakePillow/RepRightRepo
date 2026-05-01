@@ -3447,6 +3447,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-right: 1px solid rgba(122, 150, 194, 0.10) !important;
         box-shadow: inset -1px 0 0 rgba(255,255,255,0.03) !important;
         overflow: visible !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+        left: 0 !important;
+        min-width: 280px !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        transform: none !important;
+        margin-left: 0 !important;
     }}
 
     section[data-testid="stSidebar"] > div {{
