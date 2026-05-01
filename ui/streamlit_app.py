@@ -1514,6 +1514,7 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
+    render_app_sidebar()
     render_page_hero()
 
     ui_message = st.session_state.get("ui_message")
@@ -1524,10 +1525,7 @@ def main() -> None:
         render_callout("info", demo_banner_text())
 
     has_analysis = bool(st.session_state.get("last_analysis"))
-    nav, centre, right = st.columns([0.34, 1.46, 1.04], gap="large")
-
-    with nav:
-        render_nav_rail()
+    centre, right = st.columns([1.46, 1.04], gap="large")
 
     with centre:
         with st.container():

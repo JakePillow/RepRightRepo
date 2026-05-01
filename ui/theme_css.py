@@ -3434,7 +3434,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         }}
     }}
 
-    /* Final native sidebar rail */
+    /* Final native sidebar styling */
     .rr-native-sidebar-shell {{
         width: 0 !important;
         height: 0 !important;
@@ -3452,61 +3452,6 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         opacity: 1 !important;
         transform: none !important;
         left: 0 !important;
-        min-width: 280px !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="false"] {{
-        transform: none !important;
-        margin-left: 0 !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="true"] {{
-        visibility: visible !important;
-        opacity: 1 !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="true"] {{
-        visibility: visible !important;
-        opacity: 1 !important;
-        width: 300px !important;
-        min-width: 300px !important;
-        max-width: 300px !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="false"] {{
-        min-width: 0 !important;
-        width: 0 !important;
-        max-width: 0 !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="true"] {{
-        visibility: visible !important;
-        opacity: 1 !important;
-        width: 300px !important;
-        min-width: 300px !important;
-        max-width: 300px !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="false"] {{
-        min-width: 300px !important;
-        width: 300px !important;
-        max-width: 300px !important;
-        transform: translateX(-100%) !important;
-        overflow: hidden !important;
-    }}
-
-    section[data-testid="stSidebar"] {{
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        bottom: 0 !important;
-        width: 300px !important;
-        min-width: 300px !important;
-        max-width: 300px !important;
-        transform: none !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        z-index: 400 !important;
     }}
 
     section[data-testid="stSidebar"] > div {{
@@ -3607,11 +3552,6 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: 0 14px 30px rgba(40, 84, 175, 0.22) !important;
     }}
 
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapsedControl"] {{
-        display: none !important;
-    }}
-
     [data-testid="collapsedControl"] > button,
     [data-testid="stSidebarCollapsedControl"] > button {{
         min-width: 46px !important;
@@ -3626,18 +3566,9 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         touch-action: manipulation !important;
     }}
 
-    @media (max-width: 900px) {{
-        [data-testid="collapsedControl"],
-        [data-testid="stSidebarCollapsedControl"] {{
-            top: max(66px, env(safe-area-inset-top)) !important;
-        }}
-    }}
-
-    @media (max-width: 900px) {{
-        [data-testid="collapsedControl"],
-        [data-testid="stSidebarCollapsedControl"] {{
-            top: max(66px, env(safe-area-inset-top)) !important;
-        }}
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] {{
+        z-index: 1000 !important;
     }}
     </style>
     """
