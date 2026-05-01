@@ -1270,7 +1270,7 @@ def render_app_sidebar() -> None:
     busy = bool(st.session_state.get("ui_busy"))
     all_threads = list_threads()
 
-    with st.container():
+    with st.container(border=True):
         st.markdown('<div class="rr-app-sidebar-shell"></div>', unsafe_allow_html=True)
         st.markdown(
             """
