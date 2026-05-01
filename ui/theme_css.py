@@ -2466,8 +2466,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     /* ChatGPT-like shell pass: use the canvas, slim the rail, and keep the experience calmer */
     .block-container {{
-        width: calc(100% - 300px) !important;
-        margin-left: 300px !important;
+        width: 100% !important;
         max-width: none !important;
         box-sizing: border-box !important;
         padding-top: 14px !important;
@@ -3449,6 +3448,51 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-right: 1px solid rgba(122, 150, 194, 0.10) !important;
         box-shadow: inset -1px 0 0 rgba(255,255,255,0.03) !important;
         overflow: visible !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+        left: 0 !important;
+        min-width: 280px !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        transform: none !important;
+        margin-left: 0 !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        visibility: visible !important;
+        opacity: 1 !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        min-width: 0 !important;
+        width: 0 !important;
+        max-width: 0 !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        min-width: 300px !important;
+        width: 300px !important;
+        max-width: 300px !important;
+        transform: translateX(-100%) !important;
+        overflow: hidden !important;
     }}
 
     section[data-testid="stSidebar"] {{

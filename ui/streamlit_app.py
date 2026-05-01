@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -1061,6 +1062,34 @@ def inject_global_css() -> None:
     )
 
 
+def inject_sidebar_collapse_bridge() -> None:
+    components.html(
+        """
+        <script>
+        (function () {
+          const doc = window.parent && window.parent.document ? window.parent.document : document;
+          const sync = () => {
+            const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+            const toggleWrap = doc.querySelector('[data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"]');
+            if (!sidebar || !toggleWrap) return;
+
+            toggleWrap.style.left = '0px';
+            toggleWrap.style.top = 'max(74px, env(safe-area-inset-top))';
+            toggleWrap.style.zIndex = '2147483647';
+          };
+
+          sync();
+          const obs = new MutationObserver(sync);
+          obs.observe(doc.body, { attributes: true, subtree: true, childList: true, attributeFilter: ['aria-expanded', 'style', 'class'] });
+          window.addEventListener('resize', sync, { passive: true });
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
 def inject_global_css_modern() -> None:
     light_vars = _css_vars(THEME)
     dark_vars = _css_vars(DARK_THEME)
@@ -1485,6 +1514,7 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
+    inject_sidebar_collapse_bridge()
     render_app_sidebar()
     render_page_hero()
 
