@@ -3421,11 +3421,40 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         left: 0 !important;
     }}
 
+    [data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, rgba(10, 18, 31, 0.995), rgba(7, 13, 23, 0.997)) !important;
+        border-right: 1px solid rgba(122, 150, 194, 0.10) !important;
+        box-shadow: inset -1px 0 0 rgba(255,255,255,0.03) !important;
+        overflow: visible !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+        left: 0 !important;
+        margin-left: 0 !important;
+    }}
+
     section[data-testid="stSidebar"][aria-expanded="false"] {{
         min-width: 0 !important;
         max-width: 0 !important;
         width: 0 !important;
         transform: none !important;
+        overflow: visible !important;
+    }}
+
+    [data-testid="stSidebar"][aria-expanded="false"] {{
+        min-width: 0 !important;
+        max-width: 0 !important;
+        width: 0 !important;
+        transform: none !important;
+        margin-left: 0 !important;
+        overflow: visible !important;
+    }}
+
+    [data-testid="stSidebar"][aria-expanded="false"] > div,
+    [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {{
+        transform: none !important;
+        left: 0 !important;
+        margin-left: 0 !important;
         overflow: visible !important;
     }}
 
@@ -3544,8 +3573,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
         position: fixed !important;
-        top: 12px !important;
-        left: 12px !important;
+        top: 16px !important;
+        left: 16px !important;
         right: auto !important;
         bottom: auto !important;
         width: 56px !important;
@@ -3562,6 +3591,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         pointer-events: auto !important;
         z-index: 2147483647 !important;
         overflow: visible !important;
+        transform: none !important;
+        margin-left: 0 !important;
     }}
 
     [data-testid="collapsedControl"] > button,
