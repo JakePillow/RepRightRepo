@@ -2466,8 +2466,9 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     /* ChatGPT-like shell pass: use the canvas, slim the rail, and keep the experience calmer */
     .block-container {{
-        width: calc(100vw - 12px) !important;
+        width: 100% !important;
         max-width: none !important;
+        box-sizing: border-box !important;
         padding-top: 14px !important;
         padding-left: 8px !important;
         padding-right: 8px !important;
@@ -3462,6 +3463,20 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     section[data-testid="stSidebar"][aria-expanded="true"] {{
         visibility: visible !important;
         opacity: 1 !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="true"] {{
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        min-width: 0 !important;
+        width: 0 !important;
+        max-width: 0 !important;
     }}
 
     section[data-testid="stSidebar"] > div {{
