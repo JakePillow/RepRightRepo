@@ -3434,16 +3434,16 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     [data-testid="stSidebar"][aria-expanded="true"] {{
-        width: 272px !important;
-        min-width: 272px !important;
-        max-width: 272px !important;
+        width: 296px !important;
+        min-width: 296px !important;
+        max-width: 296px !important;
     }}
 
     [data-testid="stSidebar"][aria-expanded="true"] > div,
     [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {{
-        width: 272px !important;
-        min-width: 272px !important;
-        max-width: 272px !important;
+        width: 296px !important;
+        min-width: 296px !important;
+        max-width: 296px !important;
     }}
 
     section[data-testid="stSidebar"][aria-expanded="false"] {{
@@ -3517,6 +3517,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         font-weight: 850;
         line-height: 1;
         letter-spacing: -0.04em;
+        white-space: nowrap;
         color: #f8fbff;
         text-shadow: 0 8px 20px rgba(77, 131, 235, 0.08);
     }}
@@ -3526,6 +3527,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         font-size: 13px;
         line-height: 1.7;
         color: #a9bdd9;
+        max-width: 220px;
     }}
 
     .rr-app-sidebar-meta {{
