@@ -3446,34 +3446,11 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         background: linear-gradient(180deg, rgba(10, 18, 31, 0.995), rgba(7, 13, 23, 0.997)) !important;
         border-right: 1px solid rgba(122, 150, 194, 0.10) !important;
         box-shadow: inset -1px 0 0 rgba(255,255,255,0.03) !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="true"] {{
-        width: 282px !important;
-        min-width: 282px !important;
-        max-width: 282px !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="false"] {{
-        width: 0 !important;
-        min-width: 0 !important;
-        max-width: 0 !important;
-        border-right: none !important;
-        box-shadow: none !important;
         overflow: visible !important;
     }}
 
     section[data-testid="stSidebar"] > div {{
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
         background: transparent !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="true"] > div {{
-        width: 282px !important;
-        min-width: 282px !important;
-        max-width: 282px !important;
     }}
 
     [data-testid="stSidebarContent"] {{
@@ -3595,10 +3572,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     [data-testid="collapsedControl"] > button,
     [data-testid="stSidebarCollapsedControl"] > button {{
         min-width: 46px !important;
-        width: 46px !important;
         min-height: 46px !important;
-        height: 46px !important;
-        padding: 0 !important;
+        padding: 0 12px !important;
         background: linear-gradient(180deg, rgba(25, 67, 150, 0.96), rgba(18, 46, 102, 0.98)) !important;
         color: #f8fbff !important;
         border: 1px solid rgba(122, 150, 194, 0.18) !important;
@@ -3616,11 +3591,9 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     @media (max-width: 900px) {{
-        section[data-testid="stSidebar"],
-        section[data-testid="stSidebar"] > div {{
-            width: 100% !important;
-            min-width: 0 !important;
-            max-width: none !important;
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {{
+            top: max(66px, env(safe-area-inset-top)) !important;
         }}
     }}
     </style>
