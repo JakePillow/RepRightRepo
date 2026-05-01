@@ -3563,7 +3563,7 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         bottom: auto !important;
         display: flex !important;
         align-items: center !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
@@ -3587,6 +3587,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-radius: 0 14px 14px 0 !important;
         box-shadow: 0 12px 24px rgba(2, 6, 23, 0.22) !important;
         margin: 0 !important;
+        touch-action: manipulation !important;
+    }}
+
+    @media (max-width: 900px) {{
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {{
+            top: max(66px, env(safe-area-inset-top)) !important;
+        }}
     }}
 
     @media (max-width: 900px) {{
