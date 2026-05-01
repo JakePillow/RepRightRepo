@@ -3460,6 +3460,26 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
 
     [data-testid="stSidebarContent"] {{
         padding: 14px 12px 14px !important;
+        transition: opacity 140ms ease !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"] {{
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"] * {{
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }}
+
+    section[data-testid="stSidebar"][aria-expanded="true"] [data-testid="stSidebarContent"] {{
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }}
 
     section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {{
@@ -3552,23 +3572,33 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         box-shadow: 0 14px 30px rgba(40, 84, 175, 0.22) !important;
     }}
 
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] {{
+        position: fixed !important;
+        top: 12px !important;
+        left: 12px !important;
+        right: auto !important;
+        bottom: auto !important;
+        z-index: 2147483647 !important;
+        overflow: visible !important;
+    }}
+
     [data-testid="collapsedControl"] > button,
     [data-testid="stSidebarCollapsedControl"] > button {{
-        min-width: 46px !important;
-        min-height: 46px !important;
-        padding: 0 12px !important;
+        width: 54px !important;
+        min-width: 54px !important;
+        max-width: 54px !important;
+        height: 54px !important;
+        min-height: 54px !important;
+        max-height: 54px !important;
+        padding: 0 14px !important;
         background: linear-gradient(180deg, rgba(25, 67, 150, 0.96), rgba(18, 46, 102, 0.98)) !important;
         color: #f8fbff !important;
         border: 1px solid rgba(122, 150, 194, 0.18) !important;
-        border-radius: 0 14px 14px 0 !important;
+        border-radius: 18px !important;
         box-shadow: 0 12px 24px rgba(2, 6, 23, 0.22) !important;
         margin: 0 !important;
         touch-action: manipulation !important;
-    }}
-
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapsedControl"] {{
-        z-index: 1000 !important;
     }}
     </style>
     """
