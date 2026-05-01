@@ -3401,7 +3401,8 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     }}
 
     /* Final native sidebar styling */
-    .rr-native-sidebar-shell {{
+    .rr-native-sidebar-shell,
+    .rr-native-sidebar-content-shell {{
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
@@ -3420,6 +3421,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         left: 0 !important;
     }}
 
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        min-width: 0 !important;
+        max-width: 0 !important;
+        width: 0 !important;
+        transform: none !important;
+        overflow: visible !important;
+    }}
+
     section[data-testid="stSidebar"] > div {{
         background: transparent !important;
     }}
@@ -3429,20 +3438,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         transition: opacity 140ms ease !important;
     }}
 
-    section[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"] {{
+    section[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stVerticalBlock"]:has(.rr-native-sidebar-content-shell) {{
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
         overflow: hidden !important;
     }}
 
-    section[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"] * {{
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }}
-
-    section[data-testid="stSidebar"][aria-expanded="true"] [data-testid="stSidebarContent"] {{
+    section[data-testid="stSidebar"][aria-expanded="true"] [data-testid="stVerticalBlock"]:has(.rr-native-sidebar-content-shell) {{
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;

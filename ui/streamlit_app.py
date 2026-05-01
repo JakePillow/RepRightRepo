@@ -1271,54 +1271,55 @@ def render_app_sidebar() -> None:
     all_threads = list_threads()
 
     with st.sidebar:
-        st.markdown('<div class="rr-native-sidebar-shell"></div>', unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div class="rr-app-sidebar-head">
-                <div class="rr-app-sidebar-title">RepRight</div>
-                <div class="rr-app-sidebar-subtitle">New chat and saved sessions.</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        if st.button(
-            TEXT["sidebar"]["new_chat"],
-            use_container_width=True,
-            disabled=busy,
-            type="primary",
-            key="sidebar_new_chat",
-            help=TEXT["sidebar"].get("new_chat_help"),
-        ):
-            start_new_chat(st.session_state.get("exercise_choice") or "bench")
-            st.rerun()
-
-        st.markdown(
-            f"""
-            <div class="rr-app-sidebar-meta">
-                <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown('<div class="rr-app-sidebar-section-label">Past sessions</div>', unsafe_allow_html=True)
-        if all_threads:
-            for thread in all_threads[:12]:
-                tid = thread.get("thread_id")
-                if st.button(
-                    thread.get("title") or tid,
-                    key=f"sidebar_thread_{tid}",
-                    use_container_width=True,
-                    disabled=busy,
-                ):
-                    load_thread(tid)
-                    st.rerun()
-        else:
+        with st.container():
+            st.markdown('<div class="rr-native-sidebar-content-shell"></div>', unsafe_allow_html=True)
             st.markdown(
-                '<div class="rr-app-sidebar-empty">No saved sessions yet.</div>',
+                """
+                <div class="rr-app-sidebar-head">
+                    <div class="rr-app-sidebar-title">RepRight</div>
+                    <div class="rr-app-sidebar-subtitle">New chat and saved sessions.</div>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
+
+            if st.button(
+                TEXT["sidebar"]["new_chat"],
+                use_container_width=True,
+                disabled=busy,
+                type="primary",
+                key="sidebar_new_chat",
+                help=TEXT["sidebar"].get("new_chat_help"),
+            ):
+                start_new_chat(st.session_state.get("exercise_choice") or "bench")
+                st.rerun()
+
+            st.markdown(
+                f"""
+                <div class="rr-app-sidebar-meta">
+                    <div class="rr-nav-meta__pill">{len(all_threads)} saved session{'s' if len(all_threads) != 1 else ''}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown('<div class="rr-app-sidebar-section-label">Past sessions</div>', unsafe_allow_html=True)
+            if all_threads:
+                for thread in all_threads[:12]:
+                    tid = thread.get("thread_id")
+                    if st.button(
+                        thread.get("title") or tid,
+                        key=f"sidebar_thread_{tid}",
+                        use_container_width=True,
+                        disabled=busy,
+                    ):
+                        load_thread(tid)
+                        st.rerun()
+            else:
+                st.markdown(
+                    '<div class="rr-app-sidebar-empty">No saved sessions yet.</div>',
+                    unsafe_allow_html=True,
+                )
 
 
 def render_sidebar_toggle_button() -> None:
