@@ -2010,13 +2010,6 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         backdrop-filter: none !important;
     }}
 
-    [data-testid="stSidebar"],
-    section[data-testid="stSidebar"] {{
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }}
-
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
         position: fixed !important;
@@ -3580,21 +3573,21 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
         position: fixed !important;
-        top: 18px !important;
-        left: 8px !important;
+        top: max(74px, env(safe-area-inset-top)) !important;
+        left: 0 !important;
         right: auto !important;
         bottom: auto !important;
         display: flex !important;
         align-items: center !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
         z-index: 2147483647 !important;
-        width: 46px !important;
-        min-width: 46px !important;
-        max-width: 46px !important;
-        height: 46px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: auto !important;
         overflow: visible !important;
         transform: none !important;
     }}
@@ -3612,6 +3605,14 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         border-radius: 0 14px 14px 0 !important;
         box-shadow: 0 12px 24px rgba(2, 6, 23, 0.22) !important;
         margin: 0 !important;
+        touch-action: manipulation !important;
+    }}
+
+    @media (max-width: 900px) {{
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {{
+            top: max(66px, env(safe-area-inset-top)) !important;
+        }}
     }}
 
     @media (max-width: 900px) {{
