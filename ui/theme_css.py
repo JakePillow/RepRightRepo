@@ -2010,13 +2010,6 @@ def build_global_css(light_vars: str, dark_vars: str) -> str:
         backdrop-filter: none !important;
     }}
 
-    [data-testid="stSidebar"],
-    section[data-testid="stSidebar"] {{
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }}
-
     [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {{
         position: fixed !important;
