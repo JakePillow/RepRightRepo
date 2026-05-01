@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -1062,108 +1061,6 @@ def inject_global_css() -> None:
     )
 
 
-def inject_sidebar_collapse_bridge() -> None:
-    components.html(
-        """
-        <script>
-        (function () {
-          const doc = window.parent && window.parent.document ? window.parent.document : document;
-          const BTN_ID = 'rr-sidebar-reopen-button';
-
-          const ensureButton = () => {
-            let btn = doc.getElementById(BTN_ID);
-            if (!btn) {
-              btn = doc.createElement('button');
-              btn.id = BTN_ID;
-              btn.type = 'button';
-              btn.setAttribute('aria-label', 'Open sidebar');
-              btn.textContent = '☰';
-              Object.assign(btn.style, {
-                position: 'fixed',
-                top: '12px',
-                left: '12px',
-                width: '56px',
-                height: '56px',
-                borderRadius: '18px',
-                border: '1px solid rgba(122,150,194,0.18)',
-                background: 'linear-gradient(180deg, rgba(25, 67, 150, 0.96), rgba(18, 46, 102, 0.98))',
-                color: '#f8fbff',
-                boxShadow: '0 12px 24px rgba(2, 6, 23, 0.22)',
-                zIndex: '2147483647',
-                cursor: 'pointer',
-                pointerEvents: 'auto',
-                userSelect: 'none',
-                display: 'none',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '24px',
-                fontWeight: '700',
-                lineHeight: '1',
-                padding: '0',
-              });
-              const fireNativeToggle = () => {
-                const nativeWrap =
-                  doc.querySelector('[data-testid="collapsedControl"]') ||
-                  doc.querySelector('[data-testid="stSidebarCollapsedControl"]');
-                const nativeBtn =
-                  doc.querySelector('[data-testid="collapsedControl"] > button') ||
-                  doc.querySelector('[data-testid="stSidebarCollapsedControl"] > button');
-                const target = nativeBtn || nativeWrap;
-                if (!target) return;
-                const events = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'];
-                events.forEach((type) => {
-                  try {
-                    target.dispatchEvent(new MouseEvent(type, {
-                      view: window.parent || window,
-                      bubbles: true,
-                      cancelable: true,
-                      composed: true,
-                    }));
-                  } catch (e) {}
-                });
-                try {
-                  target.click();
-                } catch (e) {}
-              };
-              btn.addEventListener('click', () => {
-                fireNativeToggle();
-                setTimeout(fireNativeToggle, 30);
-              });
-              doc.body.appendChild(btn);
-            }
-            return btn;
-          };
-
-          const sync = () => {
-            const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-            const toggleWrap = doc.querySelector('[data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"]');
-            const btn = ensureButton();
-            if (!sidebar) return;
-
-            const expanded = sidebar.getAttribute('aria-expanded') === 'true';
-            btn.style.display = expanded ? 'none' : 'flex';
-
-            if (toggleWrap) {
-              toggleWrap.style.position = 'fixed';
-              toggleWrap.style.left = '-9999px';
-              toggleWrap.style.top = '0';
-              toggleWrap.style.opacity = '0';
-              toggleWrap.style.pointerEvents = 'none';
-            }
-          };
-
-          sync();
-          const obs = new MutationObserver(sync);
-          obs.observe(doc.body, { attributes: true, subtree: true, childList: true, attributeFilter: ['aria-expanded', 'style', 'class'] });
-          window.addEventListener('resize', sync, { passive: true });
-        })();
-        </script>
-        """,
-        height=0,
-        width=0,
-    )
-
-
 def inject_global_css_modern() -> None:
     light_vars = _css_vars(THEME)
     dark_vars = _css_vars(DARK_THEME)
@@ -1588,7 +1485,6 @@ def main() -> None:
     )
     initialize_session_state()
     inject_global_css_modern()
-    inject_sidebar_collapse_bridge()
     render_app_sidebar()
     render_page_hero()
 
