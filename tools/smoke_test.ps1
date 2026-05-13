@@ -4,17 +4,24 @@ param(
 )
 
 $RepoRoot = Split-Path -Parent $PSScriptRoot
-$Canonical = 'C:\Users\jakep\OneDrive\Desktop\Dissertation- RepRight\Dissertation-Rep-Right\RepRightRepo\data\raw\deadlift\deadlift_27.mp4'
-$RepoRelative = Join-Path $RepoRoot 'data\raw\deadlift\deadlift_27.mp4'
+function Resolve-RepoPath([string]$PathValue) {
+  if ([System.IO.Path]::IsPathRooted($PathValue)) { return $PathValue }
+  return (Join-Path $RepoRoot $PathValue)
+}
+
+$DefaultVideo = Resolve-RepoPath 'data\raw\deadlift\deadlift_27.mp4'
 
 if (-not $VideoPath) {
-  if (Test-Path $RepoRelative) { $VideoPath = $RepoRelative }
-  elseif (Test-Path $Canonical) { $VideoPath = $Canonical }
+  if (Test-Path $DefaultVideo) {
+    $VideoPath = $DefaultVideo
+  }
   else {
-    Write-Error "Deadlift smoke test video not found. Checked: $RepoRelative and $Canonical"
+    Write-Error "Deadlift smoke test video not found. Provide -VideoPath or add a sample video at: $DefaultVideo"
     exit 1
   }
 }
+
+$VideoPath = Resolve-RepoPath $VideoPath
 
 $AnalyzerOut = '.\_out\last_analyzer.json'
 $PayloadOut = '.\_out\last_coach_payload.json'

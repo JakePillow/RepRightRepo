@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import random
@@ -560,3 +561,40 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
             break
 
     return _stub_response(payload, reason=last_err, status_code=last_status)
+
+
+def _parse_cli_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run RepRight coach wrapper")
+    parser.add_argument("--payload", required=True, help="Path to input coach payload JSON")
+    parser.add_argument("--out", required=True, help="Path to output coach response JSON")
+    parser.add_argument(
+        "--mode",
+        default="auto",
+        choices=["auto", "gpt", "stub"],
+        help="Coach mode: auto uses GPT if OPENAI_API_KEY is set; stub forces a safe fallback",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = _parse_cli_args()
+    if not os.path.exists(args.payload):
+        raise SystemExit(f"Payload file not found: {args.payload}")
+
+    with open(args.payload, "r", encoding="utf-8") as payload_file:
+        payload = json.load(payload_file)
+
+    response = run_coach(payload, mode=args.mode)
+
+    out_dir = os.path.dirname(args.out)
+    if out_dir and not os.path.isdir(out_dir):
+        os.makedirs(out_dir, exist_ok=True)
+
+    with open(args.out, "w", encoding="utf-8") as out_file:
+        json.dump(response, out_file, indent=2, ensure_ascii=False)
+
+    print(f"Coach response JSON written to: {args.out}")
+
+
+if __name__ == "__main__":
+    main()

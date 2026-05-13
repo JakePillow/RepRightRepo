@@ -56,6 +56,14 @@ _gpt_inspect/
 _out/
 _patch_backup/
 
+# Local nested repository copy
+RepRightRepo/
+
+# Temporary scratch and editor artifacts
+tmp/
+*_tmp_*
+*.bak*
+
 # Python
 __pycache__/
 *.pyc
