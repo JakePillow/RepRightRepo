@@ -22,8 +22,7 @@ python -m pip install -r requirements.txt
 ## Running the UI
 
 ```powershell
-.
-un_ui.cmd
+.\run_ui.cmd
 ```
 
 This uses `.venv\Scripts\python.exe` and starts the Streamlit app at `ui\streamlit_app.py`.
@@ -43,7 +42,7 @@ If `OPENAI_API_KEY` is not set, the CLI falls back to a safe stub response.
 A repository-local smoke test is available in `tools\smoke_test.ps1`.
 
 ```powershell
-.	ools\smoke_test.ps1 -VideoPath data\raw\deadlift\deadlift_27.mp4
+.\tools\smoke_test.ps1 -VideoPath data\raw\deadlift\deadlift_27.mp4
 ```
 
 If the sample video is not present, pass `-VideoPath` explicitly.

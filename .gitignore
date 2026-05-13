@@ -63,6 +63,7 @@ RepRightRepo/
 tmp/
 *_tmp_*
 *.bak*
+data_raw_*
 
 # Python
 __pycache__/
