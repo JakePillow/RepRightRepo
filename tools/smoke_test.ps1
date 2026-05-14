@@ -9,14 +9,20 @@ function Resolve-RepoPath([string]$PathValue) {
   return (Join-Path $RepoRoot $PathValue)
 }
 
-$DefaultVideo = Resolve-RepoPath 'data\raw\deadlift\deadlift_27.mp4'
+$RawCandidate1 = Resolve-RepoPath (Join-Path (Join-Path 'data' 'raw') 'deadlift\deadlift_27.mp4')
+$RawCandidate2 = Resolve-RepoPath (Join-Path (Join-Path 'data' 'raw-Jakes_PC') 'deadlift\deadlift_27.mp4')
+$DefaultVideoCandidates = @($RawCandidate1, $RawCandidate2)
 
 if (-not $VideoPath) {
-  if (Test-Path $DefaultVideo) {
-    $VideoPath = $DefaultVideo
+  foreach ($candidate in $DefaultVideoCandidates) {
+    if (Test-Path $candidate) {
+      $VideoPath = $candidate
+      break
+    }
   }
-  else {
-    Write-Error "Deadlift smoke test video not found. Provide -VideoPath or add a sample video at: $DefaultVideo"
+  if (-not $VideoPath) {
+    Write-Error "Deadlift smoke test video not found. Provide -VideoPath or add a sample video at one of:"
+    $DefaultVideoCandidates | ForEach-Object { Write-Host "  $_" }
     exit 1
   }
 }

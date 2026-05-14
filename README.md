@@ -42,8 +42,10 @@ If `OPENAI_API_KEY` is not set, the CLI falls back to a safe stub response.
 A repository-local smoke test is available in `tools\smoke_test.ps1`.
 
 ```powershell
-.\tools\smoke_test.ps1 -VideoPath data\raw\deadlift\deadlift_27.mp4
+.\tools\smoke_test.ps1 -VideoPath data\raw-Jakes_PC\deadlift\deadlift_27.mp4
 ```
+
+The script also checks `data\raw\deadlift\deadlift_27.mp4` if present, so it supports either raw video folder layout.
 
 If the sample video is not present, pass `-VideoPath` explicitly.
 

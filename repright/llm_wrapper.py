@@ -163,6 +163,7 @@ def _stub_response(payload: dict, reason: str | None = None, status_code: int | 
         dbg["status_code"] = int(status_code)
 
     return {
+        "schema_version": "coach_response_v1",
         "mode": "stub",
         "response_text": text,
         "structured": {},
@@ -521,6 +522,7 @@ def run_coach(payload: dict, mode: str = "auto") -> Dict[str, Any]:
             dt = time.time() - t0
 
             return {
+                "schema_version": "coach_response_v1",
                 "mode": "gpt",
                 "response_text": text,
                 "structured": structured,
