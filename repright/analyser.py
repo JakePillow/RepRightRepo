@@ -119,6 +119,9 @@ class RepRightAnalyzer:
         if "schema_version" not in analysis:
             analysis["schema_version"] = "analysis_v1"
 
+        # Keep the user-facing identity stable even though uploads are staged with timestamps.
+        analysis["video_id"] = vp.stem
+
         # Ensure video_path points to staged input (useful for UI)
         analysis.setdefault("video_path", str(staged).replace("\\", "/"))
         analysis.setdefault("exercise", ex)
