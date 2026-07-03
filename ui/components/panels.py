@@ -1,12 +1,12 @@
 ﻿from __future__ import annotations
 from collections.abc import Callable
-import json
 import logging
 import shutil
 import subprocess
 from pathlib import Path
 
 import streamlit as st
+from repright.video_orientation import probe_video_stream
 from ui.components.primitives import (
     render_callout, render_empty_state, render_empty_state_results,
     render_quality_badge, icon_img_markup,
@@ -116,99 +116,43 @@ def render_recent_sessions_in_main() -> None:
 
 
 def _probe_video_stream(src: Path) -> tuple[str | None, str | None, int]:
-    ffprobe = shutil.which("ffprobe")
-    if ffprobe is None:
-        return None, None, 0
-
-    cmd = [
-        ffprobe,
-        "-v", "error",
-        "-select_streams", "v:0",
-        "-show_entries", "stream=codec_name,pix_fmt:stream_tags=rotate:stream_side_data=rotation",
-        "-of", "json",
-        str(src),
-    ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-        logging.warning("[FFPROBE FAILED] %s", proc.stderr.strip()[:240])
-        return None, None, 0
-
-    try:
-        payload = json.loads(proc.stdout or "{}")
-        stream = (payload.get("streams") or [{}])[0]
-    except Exception:
-        logging.warning("[FFPROBE PARSE FAILED] Could not decode probe output for %s", src)
-        return None, None, 0
-
-    codec = stream.get("codec_name")
-    pix_fmt = stream.get("pix_fmt")
-    rotation = 0
-
-    tags = stream.get("tags") or {}
-    if tags.get("rotate") is not None:
-        try:
-            rotation = int(float(tags.get("rotate")))
-        except Exception:
-            rotation = 0
-
-    for entry in stream.get("side_data_list") or []:
-        raw = entry.get("rotation")
-        if raw is None:
-            continue
-        try:
-            rotation = int(float(raw))
-            break
-        except Exception:
-            continue
-
-    return codec, pix_fmt, rotation % 360
+    probe = probe_video_stream(src)
+    return probe.codec, probe.pix_fmt, probe.rotation or 0
 
 
 def _browser_ready_overlay_path(src: Path) -> Path:
-    return src.with_name(f"{src.stem}_browser.mp4")
+    # Invalidate files created by the old hand-authored rotation filters.
+    return src.with_name(f"{src.stem}_browser_orientation_v2.mp4")
 
 
-def _rotation_filter(rotation: int) -> str | None:
-    normalized = rotation % 360
-    if normalized == 90:
-        return "transpose=1"
-    if normalized == 180:
-        return "hflip,vflip"
-    if normalized == 270:
-        return "transpose=2"
-    return None
-
-
-def _transcode_to_browser_mp4(src: Path, dst: Path, *, rotation: int = 0) -> Path | None:
+def _transcode_to_browser_mp4(src: Path, dst: Path) -> Path | None:
     ffmpeg = shutil.which("ffmpeg")
     if ffmpeg is None:
         return None
 
     dst.parent.mkdir(parents=True, exist_ok=True)
-    filters: list[str] = []
-    rotation_filter = _rotation_filter(rotation)
-    if rotation_filter:
-        filters.append(rotation_filter)
-    filters.extend(["format=yuv420p", "setsar=1"])
     try:
         cmd = [
             ffmpeg,
             "-y",
-            "-noautorotate",
+            "-autorotate",
             "-i", str(src),
             "-map", "0:v:0",
+            "-map_metadata", "-1",
             "-metadata:s:v:0", "rotate=0",
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",
-            "-vf", ",".join(filters),
+            "-vf", "setsar=1,format=yuv420p",
             "-movflags", "+faststart",
             str(dst),
         ]
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0:
+            dst.unlink(missing_ok=True)
             logging.warning("[REENCODE FAILED] %s", proc.stderr.strip()[:240])
             return None
         if not dst.exists() or dst.stat().st_size <= 50 * 1024:
+            dst.unlink(missing_ok=True)
             return None
         return dst
     except Exception as exc:
@@ -230,7 +174,7 @@ def _ensure_browser_ready_overlay(src: Path) -> Path | None:
     if src.suffix.lower() == ".mp4" and codec == "h264" and (pix_fmt is None or "420" in pix_fmt) and rotation == 0:
         return src
 
-    return _transcode_to_browser_mp4(src, cache_path, rotation=rotation)
+    return _transcode_to_browser_mp4(src, cache_path)
 
 
 def render_overlay_panel(overlay_path) -> None:

@@ -74,6 +74,15 @@ class SetSummaryV1(TypedDict, total=False):
     quality_band: Literal["green", "yellow", "red"]
 
 
+class VideoOrientationV1(TypedDict, total=False):
+    source_rotation_degrees: Optional[int]
+    source_width: Optional[int]
+    source_height: Optional[int]
+    output_width: Optional[int]
+    output_height: Optional[int]
+    normalized: bool
+
+
 class AnalysisV1(TypedDict, total=False):
     schema_version: SchemaVersion
     exercise: str
@@ -92,5 +101,6 @@ class AnalysisV1(TypedDict, total=False):
 
     reps: List[RepV1]
     set_summary_v1: SetSummaryV1
+    video_orientation_v1: VideoOrientationV1
 
     raw: Dict[str, Any]  # keep raw metrics for debugging / future upgrades

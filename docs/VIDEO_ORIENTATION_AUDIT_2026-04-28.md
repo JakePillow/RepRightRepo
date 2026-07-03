@@ -1,7 +1,15 @@
 # Video Orientation Audit (2026-04-28)
 
+> **Resolved in the current pipeline:** uploads with display rotation are now
+> autorotated into physically upright pixels before OpenCV/MediaPipe processing,
+> and their rotation metadata is removed. Browser fallback transcoding uses the
+> same ffmpeg autorotation behavior and a versioned cache. When external ffmpeg
+> tools are unavailable, the OpenCV decode path explicitly enables metadata
+> autorotation and sizes the overlay from the corrected frame. Regression coverage
+> is in `tests/test_video_orientation.py`, including the 180° mobile case.
+
 ## Scope
-This is an audit-only report (no behavior fix in this change) for the persistent 90° rotated overlay issue.
+This document records the original audit findings for the persistent rotated-overlay issue.
 
 ## What the current pipeline does
 
@@ -54,10 +62,10 @@ So the observed rotation is real at product level, even if technically it is a m
 - UI transcode sets `rotate=0` but does not rotate pixels.
 - Overlay transcode helpers in pipeline stages do not enforce a canonical orientation policy.
 
-## Recommended fix direction (next step, not implemented here)
-1. Define a canonical rule: **all pipeline outputs must be physically upright with no rotation metadata**.
-2. Enforce this once near ingest using ffprobe + ffmpeg transform (apply required transpose/rotate), then strip metadata.
-3. Keep downstream OpenCV stages metadata-agnostic because input has already been normalized.
-4. Add one regression test fixture with known 90° metadata clip and assert upright output dimensions + visual orientation.
-5. Add orientation debug logging (width/height + rotate/displaymatrix before and after normalization).
+## Resolution implemented
+1. The canonical rule is now: **all pipeline outputs must be physically upright with no rotation metadata**.
+2. The pipeline probes rotation near ingest and delegates signed display-matrix handling to ffmpeg autorotation before stripping metadata.
+3. Downstream OpenCV explicitly enables metadata autorotation as a runtime fallback and derives output dimensions from the corrected decoded frame.
+4. Regression tests cover signed display matrices, 180° mobile input, OpenCV fallback, zero-copy desktop input, and browser fallback transcoding.
+5. Orientation diagnostics record rotation and dimensions before and after normalization.
 

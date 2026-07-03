@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2
 
 from repright.schema.validate_analysis import validate_analysis
+from repright.video_orientation import normalize_video_orientation
 
 MIN_VALID_OVERLAY_BYTES = 50 * 1024
 
@@ -92,14 +93,17 @@ def run_full_pipeline(
     run_dir: str | Path | None = None,
     processed_root: str | Path = "data/processed",
 ) -> tuple[Path | None, Path, Path]:
-    video_path = Path(video_path)
+    source_video_path = Path(video_path)
     ex = (exercise or "").strip().lower()
 
     if run_dir is None:
-        run_dir_p = new_run_dir(video_path, ex, processed_root=processed_root)
+        run_dir_p = new_run_dir(source_video_path, ex, processed_root=processed_root)
     else:
         run_dir_p = Path(run_dir)
         run_dir_p.mkdir(parents=True, exist_ok=True)
+
+    orientation = normalize_video_orientation(source_video_path, run_dir_p)
+    video_path = orientation.path
 
     from scripts import extract_all
     from scripts.compute_rep_metrics import compute_rep_metrics_file
@@ -175,7 +179,15 @@ def run_full_pipeline(
     analysis["schema_version"] = "analysis_v1"
     analysis["exercise"] = ex
     analysis["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%S")
-    analysis["video_id"] = video_path.stem
+    analysis["video_id"] = source_video_path.stem
+    analysis["video_orientation_v1"] = {
+        "source_rotation_degrees": orientation.source_rotation,
+        "source_width": orientation.source_width,
+        "source_height": orientation.source_height,
+        "output_width": orientation.output_width,
+        "output_height": orientation.output_height,
+        "normalized": orientation.normalized,
+    }
 
     git_commit = _git_commit_short()
     if git_commit:
@@ -191,6 +203,9 @@ def run_full_pipeline(
             "overlay_path": overlay_abs,
             "metrics_path": str(metrics_json.resolve()),
             "run_dir": str(run_dir_p.resolve()),
+            "normalized_input_path": (
+                str(video_path.resolve()) if orientation.normalized else None
+            ),
         }
     )
     analysis["artifacts_v1"] = artifacts

@@ -3,6 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import mediapipe as mp
+from repright.video_orientation import enable_capture_autorotation
 
 VIDEO_EXTS = {'.mp4', '.mov', '.m4v', '.avi', '.webm', '.mkv'}
 
@@ -203,9 +204,18 @@ def process_video(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cap = cv2.VideoCapture(str(in_path))
+    if not cap.isOpened():
+        raise RuntimeError(f"Could not open input video: {in_path}")
+    enable_capture_autorotation(cap, in_path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
-    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 640
-    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 480
+    first_frame_ok, first_frame = cap.read()
+    if not first_frame_ok or first_frame is None:
+        cap.release()
+        raise RuntimeError(f"Could not decode the first video frame: {in_path}")
+
+    # Rotation can swap width and height. Size the writer from an actual frame
+    # after OpenCV autorotation instead of trusting pre-decode container fields.
+    h, w = first_frame.shape[:2]
 
     raw_overlay_mp4 = out_dir / f"{in_path.stem}_overlay_raw.mp4"
     overlay_mp4 = out_dir / f"{in_path.stem}_overlay.mp4"
@@ -214,6 +224,7 @@ def process_video(
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     writer = cv2.VideoWriter(str(raw_overlay_mp4), fourcc, fps, (w, h))
     if not writer.isOpened():
+        cap.release()
         raise RuntimeError(f"Failed to open VideoWriter for {raw_overlay_mp4}")
 
     jsonl = (out_dir / f"{in_path.stem}.jsonl").open("w", encoding="utf-8")
@@ -235,11 +246,16 @@ def process_video(
     rep_events = []
 
     t0 = time.time()
+    pending_frame = first_frame
     try:
         while True:
-            ok, frame = cap.read()
-            if not ok:
-                break
+            if pending_frame is not None:
+                frame = pending_frame
+                pending_frame = None
+            else:
+                ok, frame = cap.read()
+                if not ok:
+                    break
 
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             res = pose.process(rgb)
